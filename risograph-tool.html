@@ -43,6 +43,10 @@ body {
   display:flex; align-items:center; gap:10px;
   font-weight:800; font-size:15px; letter-spacing:0.4px; white-space:nowrap;
 }
+.brand-link {
+  display:flex; align-items:center; gap:10px;
+  color:inherit; text-decoration:none;
+}
 .logo-mark {
   width:34px; height:34px; flex-shrink:0;
   display:block; object-fit:contain;
@@ -483,6 +487,11 @@ input[type=range]::-moz-range-thumb {
   color:var(--muted); text-align:center;
   letter-spacing:0.2px;
 }
+.tool-credit a {
+  color:var(--text);
+  text-decoration:none;
+}
+.tool-credit a:hover { color:var(--accent); }
 .tool-credit strong {
   color:var(--text);
   font-weight:800;
@@ -501,8 +510,10 @@ input[type=range]::-moz-range-thumb {
 <!-- ═══ App Bar ═══ -->
 <header class="app-bar">
   <div class="logo" aria-label="Ziner Studio">
-    <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
-    <span class="logo-text">Ziner Studio</span>
+    <a class="brand-link" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
+      <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
+      <span class="logo-text">Ziner Studio</span>
+    </a>
   </div>
   <div class="seg">
     <button class="seg-btn on" onclick="switchApp('sep',this)">分色模擬器</button>
@@ -564,6 +575,10 @@ input[type=range]::-moz-range-thumb {
       <div class="sb-title">匯出</div>
       <button class="btn btn-acc w100" onclick="downloadComposite()">下載合成預覽</button>
       <button class="btn btn-ghost w100" onclick="downloadAllLayers()">下載所有色版（灰階）</button>
+      <div class="tool-credit">
+        <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> from Taiwan<br>
+        Thanks Claude Code &amp; Codex
+      </div>
     </div>
 
   </aside><!-- /sidebar -->
@@ -685,7 +700,7 @@ input[type=range]::-moz-range-thumb {
       <div class="sgrid" id="sheetsGrid"></div>
     </div>
     <div class="tool-credit">
-      <strong>Ziner Studio</strong> from Taiwan<br>
+      <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> from Taiwan<br>
       Thanks Claude Code &amp; Codex
     </div>
   </div>
