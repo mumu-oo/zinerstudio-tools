@@ -73,7 +73,7 @@ body {
   flex-wrap:wrap;
 }
 .brand-meta {
-  font-size:11px; font-weight:700; letter-spacing:1px;
+  font-size:15px; font-weight:800; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--muted);
 }
 .title-divider {
@@ -511,6 +511,11 @@ input[type=range]::-moz-range-thumb {
   color:var(--text);
   font-weight:800;
 }
+.export-note {
+  margin-top:8px;
+  font-size:10px; line-height:1.6;
+  color:var(--muted);
+}
 
 @media (max-width: 760px) {
   .hero-row { grid-template-columns:1fr; gap:14px; }
@@ -591,6 +596,7 @@ input[type=range]::-moz-range-thumb {
       <div class="sb-title">匯出</div>
       <button class="btn btn-acc w100" onclick="downloadComposite()">下載合成預覽</button>
       <button class="btn btn-ghost w100" onclick="downloadAllLayers()">下載所有色版（灰階）</button>
+      <div class="export-note">色版下載（含各色版「下載」與「下載所有色版」）會輸出原稿尺寸 300 DPI。合成預覽則保留目前預覽尺寸，並附帶 300 DPI 標記。</div>
       <div class="tool-credit">
         <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> from Taiwan<br>
         Thanks Claude Code &amp; Codex
