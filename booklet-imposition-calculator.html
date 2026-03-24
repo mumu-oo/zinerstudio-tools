@@ -36,11 +36,11 @@ body {
 /* ─── App header ─── */
 .app-bar {
   height:52px; background:var(--surf); border-bottom:2px solid var(--border);
-  display:flex; align-items:center; gap:20px; padding:0 20px;
+  display:flex; align-items:center; justify-content:center; gap:20px; padding:0 24px;
   position:sticky; top:0; z-index:100;
 }
 .logo {
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
   font-weight:800; font-size:15px; letter-spacing:0.4px; white-space:nowrap;
 }
 .brand-link {
@@ -68,11 +68,19 @@ body {
 .seg-btn:last-child { border-right:none; }
 .seg-btn:hover { color:var(--text); background:var(--panel); }
 .seg-btn.on { background:var(--text); color:var(--surf); }
-.page-chip {
-  margin-left:auto;
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:5px 14px; border:2px solid var(--border); border-radius:var(--r);
-  font-size:12px; font-weight:700; color:var(--text); background:var(--panel);
+.title-cluster {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  flex-wrap:wrap;
+}
+.brand-meta {
+  font-size:11px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; color:var(--muted);
+}
+.title-divider {
+  width:6px; height:6px; border-radius:50%; background:var(--accent); opacity:.8;
+}
+.tool-name {
+  font-size:13px; font-weight:800; color:var(--text);
 }
 
 /* ─── Views ─── */
@@ -518,13 +526,17 @@ input[type=range]::-moz-range-thumb {
 
 <!-- ═══ App Bar ═══ -->
 <header class="app-bar">
-  <div class="logo" aria-label="Ziner Studio">
-    <a class="brand-link" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
-      <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
-      <span class="logo-text">Ziner Studio</span>
-    </a>
+  <div class="title-cluster" aria-label="Ziner Studio Tools">
+    <div class="logo">
+      <a class="brand-link" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
+        <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
+        <span class="logo-text">Ziner Studio</span>
+      </a>
+    </div>
+    <span class="brand-meta">Tools</span>
+    <span class="title-divider" aria-hidden="true"></span>
+    <span class="tool-name">騎馬釘落版計算器</span>
   </div>
-  <div class="page-chip">騎馬釘落版計算器</div>
 </header>
 
 <!-- ═══════════════════════════════════════════════
