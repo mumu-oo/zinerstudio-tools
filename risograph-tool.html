@@ -196,14 +196,15 @@ input[type=range]::-moz-range-thumb {
   text-align:left; cursor:pointer;
   color:var(--muted); transition:all .12s;
   background:var(--surf); font-family:var(--font);
-  display:flex; align-items:center; gap:14px;
+  display:flex; align-items:center; justify-content:center; gap:18px;
 }
 .dir-btn:last-child { border-right:none; }
 .dir-btn:hover { background:var(--panel); color:var(--text); }
 .dir-btn.on { background:var(--text); color:var(--surf); }
 .dir-btn.on svg rect[fill="rgba(212,113,74,0.18)"] { fill:rgba(255,255,255,0.25); }
-.dir-fig { flex-shrink:0; width:68px; display:flex; align-items:center; justify-content:center; }
-.dir-copy { min-width:0; }
+.dir-fig { flex:0 0 96px; display:flex; align-items:center; justify-content:center; }
+.dir-icon { width:92px; height:56px; object-fit:contain; display:block; }
+.dir-copy { min-width:0; max-width:240px; }
 .dir-label { font-size:18px; font-weight:800; line-height:1.1; margin-bottom:5px; display:block; }
 .dir-sub { font-size:11px; opacity:.72; line-height:1.45; display:block; }
 
@@ -653,15 +654,7 @@ input[type=range]::-moz-range-thumb {
           <!-- 左翻（西式）：封面在左，向左翻 -->
           <div class="dir-btn on" data-dir="ltr" onclick="setDir(this)">
             <div class="dir-fig">
-              <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
-                <path d="M44 5 H58 V31 H44" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
-                <path d="M30 7 L44 5 V31 L30 33 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
-                <path d="M44 5 V31" stroke="currentColor" stroke-width="2"/>
-                <text x="37" y="17.5" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">封</text>
-                <text x="37" y="24.8" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">面</text>
-                <path d="M21 24 H7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity="0.8"/>
-                <path d="M13 18 L6 24 L13 30" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
-              </svg>
+              <img class="dir-icon" src="cover-l.png" alt="">
             </div>
             <div class="dir-copy">
               <span class="dir-label">左翻</span>
@@ -672,16 +665,7 @@ input[type=range]::-moz-range-thumb {
           <!-- 右翻（中日式）：封面在右，向右翻 -->
           <div class="dir-btn" data-dir="rtl" onclick="setDir(this)">
             <div class="dir-fig">
-              <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
-                <path d="M10 5 H24 V31 H10" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
-                <path d="M24 5 L38 7 V33 L24 31 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
-                <path d="M24 5 V31" stroke="currentColor" stroke-width="2"/>
-                <path d="M38 7 V33" stroke="currentColor" stroke-width="2"/>
-                <text x="31" y="17.5" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">封</text>
-                <text x="31" y="24.8" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">面</text>
-                <path d="M47 24 H61" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity="0.8"/>
-                <path d="M55 18 L62 24 L55 30" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
-              </svg>
+              <img class="dir-icon" src="cover-r.png" alt="">
             </div>
             <div class="dir-copy">
               <span class="dir-label">右翻</span>
