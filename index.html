@@ -648,7 +648,7 @@ input[type=range]::-moz-range-thumb {
         <label class="flbl">翻頁方向</label>
         <div class="dir-mode-seg">
 
-          <!-- 右翻（西式）：封面在左，向右翻 -->
+          <!-- 左翻（西式）：封面在左，向左翻 -->
           <div class="dir-btn on" data-dir="ltr" onclick="setDir(this)">
             <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
               <rect x="4" y="4" width="26" height="30" fill="rgba(212,113,74,0.2)" stroke="currentColor" stroke-width="2"/>
@@ -656,14 +656,14 @@ input[type=range]::-moz-range-thumb {
               <line x1="34" y1="4" x2="34" y2="34" stroke="currentColor" stroke-width="3"/>
               <text x="17" y="23" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.85">封面</text>
               <text x="51" y="23" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.4">2</text>
-              <path d="M40 34 L60 34" stroke="currentColor" stroke-width="1.5" opacity="0.45"/>
-              <path d="M55 31 L60 34 L55 37" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none" opacity="0.45"/>
+              <path d="M60 34 L40 34" stroke="currentColor" stroke-width="1.5" opacity="0.45"/>
+              <path d="M45 31 L40 34 L45 37" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none" opacity="0.45"/>
             </svg>
-            <span class="dir-label">右翻</span>
+            <span class="dir-label">左翻</span>
             <span class="dir-sub">封面在左・由左至右閱讀<br>（西式裝訂）</span>
           </div>
 
-          <!-- 左翻（中日式）：封面在右，向左翻 -->
+          <!-- 右翻（中日式）：封面在右，向右翻 -->
           <div class="dir-btn" data-dir="rtl" onclick="setDir(this)">
             <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
               <rect x="4" y="4" width="26" height="30" fill="rgba(255,255,255,0.25)" stroke="currentColor" stroke-width="1.5"/>
@@ -671,11 +671,11 @@ input[type=range]::-moz-range-thumb {
               <line x1="34" y1="4" x2="34" y2="34" stroke="currentColor" stroke-width="3"/>
               <text x="17" y="23" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.4">2</text>
               <text x="51" y="23" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.85">封面</text>
-              <path d="M28 34 L8 34" stroke="currentColor" stroke-width="1.5" opacity="0.45"/>
-              <path d="M13 31 L8 34 L13 37" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none" opacity="0.45"/>
+              <path d="M8 34 L28 34" stroke="currentColor" stroke-width="1.5" opacity="0.45"/>
+              <path d="M23 31 L28 34 L23 37" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none" opacity="0.45"/>
             </svg>
-            <span class="dir-label">左翻</span>
-            <span class="dir-sub">封面在右・由右至左閱讀<br>（中日式裝訂）</span>
+            <span class="dir-label">右翻</span>
+            <span class="dir-sub">封面在右・由右至左的直式閱讀<br>（中日式裝訂）</span>
           </div>
 
         </div>
@@ -1343,8 +1343,8 @@ function calcImpo() {
 
     const isOuter = (k === 1);
     const dirLabel = bookDir === 'rtl'
-      ? '← 左翻（由右至左閱讀）'
-      : '右翻（由左至右閱讀）→';
+      ? '← 右翻（由右至左閱讀）'
+      : '左翻（由左至右閱讀）→';
 
     const card = document.createElement('div');
     card.className = 'icard';
