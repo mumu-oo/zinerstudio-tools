@@ -1,6 +1,6 @@
 {
   "name": "ziner-invoice-app",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Ziner Studio invoice generator desktop app",
   "main": "main.js",
   "author": "Ziner Studio",

@@ -154,6 +154,7 @@ input,select,textarea,button{font-family:var(--font);}
 .w100{width:100%;margin-bottom:6px;}
 .btn-row{display:flex;gap:8px;margin-bottom:6px;}
 .btn-row .btn{flex:1;margin-bottom:0;}
+.hidden{display:none!important;}
 
 /* ─── Preview panel ─── */
 #preview-panel{
@@ -226,7 +227,8 @@ input,select,textarea,button{font-family:var(--font);}
 .inv-trial-note{font-size:10px;color:#666;text-decoration:underline;}
 
 /* Order info */
-.inv-info-block{margin-bottom:16px;}
+.inv-info-wrap{margin-bottom:14px;}
+.inv-info-block{margin-bottom:0;}
 .inv-info-row{
   display:flex;align-items:baseline;gap:14px;
   padding:3px 0;font-size:13px;
@@ -234,6 +236,31 @@ input,select,textarea,button{font-family:var(--font);}
 .inv-info-lbl{color:#555;white-space:nowrap;min-width:58px;}
 .inv-info-val{font-weight:500;}
 .inv-info-val.payment{font-weight:700;}
+
+.notepad-pricing-card{
+  display:none;
+  width:auto;
+  max-width:100%;
+  min-width:0;
+  margin:0 0 14px;
+  padding:10px 12px;
+  border:1px solid #d6cdea;
+  border-radius:8px;
+  background:#fff;
+  box-sizing:border-box;
+}
+.notepad-pricing-card.show{display:inline-block;}
+.notepad-pricing-card-title{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:#8A87A0;
+  margin-bottom:4px;
+}
+.notepad-pricing-card-line{
+  font-size:12px;
+  line-height:1.55;
+}
 
 /* Section divider */
 .inv-div{border:none;border-top:1.5px solid #111;margin:6px 0 0;}
@@ -246,14 +273,68 @@ input,select,textarea,button{font-family:var(--font);}
   font-size:11.5px;font-weight:700;letter-spacing:.4px;
 }
 .inv-table thead th.r{text-align:right;}
+.inv-table thead th:last-child{padding-right:18px;}
 .inv-table tbody td{
   padding:7px 10px;border-bottom:1px solid #f0f0f0;
-  font-size:13px;vertical-align:middle;
+  font-size:12.5px;vertical-align:middle;
 }
 .inv-table tbody td.r{text-align:right;}
-.inv-table tbody td.name{font-weight:500;}
+.inv-table tbody td:last-child{padding-right:18px;}
+.inv-table tbody td.name{font-weight:700;}
 .inv-table tbody td.note{white-space:nowrap;}
 .inv-table tbody tr:last-child td{border-bottom:none;}
+
+.notepad-calc{
+  display:none;
+  margin:10px 0 2px;
+}
+.notepad-calc.show{display:block;}
+.notepad-calc-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+.notepad-calc-table thead tr{
+  background:#8a7bb5;
+  color:#fff;
+}
+.notepad-calc-table thead th{
+  padding:8px 10px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.1px;
+  line-height:1.2;
+  text-align:left;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.notepad-calc-table thead th.r{
+  text-align:right;
+}
+.notepad-calc-table thead th:last-child{
+  padding-right:18px;
+}
+.notepad-calc-table tbody td{
+  padding:7px 10px;
+  border-bottom:1px dotted #999;
+  font-size:12.5px;
+  font-weight:600;
+  color:#222;
+  vertical-align:middle;
+}
+.notepad-calc-table tbody td.r{
+  text-align:right;
+}
+.notepad-calc-table tbody td:last-child{
+  padding-right:18px;
+}
+.notepad-calc-sub{
+  margin-left:6px;
+  font-size:8px;
+  font-weight:500;
+  color:rgba(255,255,255,.82);
+  white-space:nowrap;
+}
 
 /* Table → summary gap */
 .inv-gap{height:1px;background:repeating-linear-gradient(90deg,#bbb 0,#bbb 6px,transparent 6px,transparent 12px);margin:14px 0;}
@@ -261,6 +342,8 @@ input,select,textarea,button{font-family:var(--font);}
 /* Summary */
 .inv-summary{display:flex;justify-content:space-between;gap:24px;}
 .inv-notes-col{flex:1;}
+.inv-summary.notepad-mode{align-items:flex-start;}
+.inv-summary.notepad-mode .inv-notes-col{flex:0 0 320px;}
 .inv-notes-lbl{font-size:11px;color:#888;margin-bottom:4px;}
 .inv-notes-val{font-size:12px;line-height:1.6;}
 .inv-totals-col{width:230px;flex-shrink:0;}
@@ -269,7 +352,7 @@ input,select,textarea,button{font-family:var(--font);}
   gap:20px;padding:4px 0;font-size:13px;
   border-bottom:1px dashed #d0cdd8;
 }
-.inv-trow .amt{min-width:72px;text-align:right;}
+.inv-trow .amt{min-width:72px;text-align:right;padding-right:18px;}
 .inv-totals-above{padding-bottom:0;margin-bottom:0;}
 .inv-trow.final{
   font-size:18px;font-weight:800;
@@ -282,7 +365,7 @@ input,select,textarea,button{font-family:var(--font);}
 .inv-trow.negative .amt{color:#888;}
 
 /* Tax note */
-.inv-tax{font-size:10px;color:#aaa;margin-top:6px;line-height:1.7;text-align:right;}
+.inv-tax{font-size:10px;color:#aaa;margin-top:6px;line-height:1.7;text-align:right;padding-right:18px;}
 
 /* Footer */
 .inv-footer{
@@ -318,7 +401,7 @@ input,select,textarea,button{font-family:var(--font);}
 <div id="form-panel">
   <div class="form-top">
     Ziner Studio ✦ 報價單產生器
-    <small>填寫左欄，右側即時預覽</small>
+    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v1.2｜2026.03.26</span></small>
   </div>
 
   <!-- Logo upload hidden (logo is embedded) -->
@@ -339,10 +422,11 @@ input,select,textarea,button{font-family:var(--font);}
     </div>
     <div style="margin-bottom:8px;">
       <label class="flbl">訂單類型</label>
-      <select class="fsel" id="orderType">
+      <select class="fsel" id="orderType" onchange="orderTypeChange()">
         <option value="">正式印刷</option>
         <option value="試印">試印</option>
         <option value="製本">製本</option>
+        <option value="便條紙">便條紙</option>
       </select>
     </div>
     <div>
@@ -358,8 +442,47 @@ input,select,textarea,button{font-family:var(--font);}
     </div>
   </div>
 
+  <!-- 便條紙專用 -->
+  <div class="fsec hidden" id="notepadModeSection">
+    <div class="stitle">便條紙專用設定</div>
+    <div class="frow">
+      <div class="fw1">
+        <label class="flbl">加工本數</label>
+        <input class="finp" id="notepadJobCount" type="number" min="10" step="10" value="20" oninput="normalizeNotepadJobCount(); update()">
+      </div>
+      <div class="fw1">
+        <label class="flbl">每本張數</label>
+        <input class="finp" id="notepadSheetsPerPad" type="number" min="5" step="5" value="30" oninput="normalizeNotepadSheetsPerPad(); update()">
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fw1">
+        <label class="flbl">實際製作本數（含耗損）</label>
+        <input class="finp" id="notepadActualBooks" type="number" value="30" readonly style="background:var(--panel);color:var(--muted);cursor:not-allowed;">
+      </div>
+      <div class="fw1">
+        <label class="flbl">加工單價</label>
+        <input class="finp" id="notepadUnitPrice" type="text" value="$15" readonly style="background:var(--panel);color:var(--muted);cursor:not-allowed;">
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fw1">
+        <label class="flbl">便條A3張數（含耗量）</label>
+        <input class="finp" id="notepadPaperSheets" type="number" value="90" readonly style="background:var(--panel);color:var(--muted);cursor:not-allowed;">
+      </div>
+      <div class="fw1">
+        <label class="flbl">底紙A3張數</label>
+        <input class="finp" id="notepadBackingSheets" type="number" value="3" readonly style="background:var(--panel);color:var(--muted);cursor:not-allowed;">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+      便條紙模式會自動計算用紙、底紙與加工費。
+      <br>本數以 10 為單位計算，每本張數以 5 張為單位調整。
+    </div>
+  </div>
+
   <!-- 訂單內容 -->
-  <div class="fsec">
+  <div class="fsec" id="generalOrderSection">
     <div class="stitle">訂單內容</div>
     <div class="frow" style="gap:6px;align-items:end;margin-bottom:10px;">
       <div style="flex:2">
@@ -381,7 +504,7 @@ input,select,textarea,button{font-family:var(--font);}
   </div>
 
   <!-- 印刷費 -->
-  <div class="fsec">
+  <div class="fsec" id="generalPrintSection">
     <div class="stitle">印刷費</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">基本費 $250／件 ＋ $5.5／A3張（同紙材張數）</div>
     <label class="chk-row" onclick="toggleChk('chkUrgent','urgentSub')">
@@ -405,7 +528,7 @@ input,select,textarea,button{font-family:var(--font);}
   </div>
 
   <!-- 紙材費 -->
-  <div class="fsec">
+  <div class="fsec" id="generalPaperSection">
     <div class="sec-hd">
       <div class="stitle">紙材費</div>
       <button class="btn-add-row" onclick="addPaperRow()">＋ 追加紙材</button>
@@ -421,7 +544,7 @@ input,select,textarea,button{font-family:var(--font);}
   </div>
 
   <!-- 裁切費 -->
-  <div class="fsec">
+  <div class="fsec" id="generalCutSection">
     <div class="sec-hd">
       <div class="stitle">裁切費</div>
       <button class="btn-add-row" onclick="addCutRow()">＋ 追加裁切</button>
@@ -430,16 +553,16 @@ input,select,textarea,button{font-family:var(--font);}
   </div>
 
   <!-- 加工費 -->
-  <div class="fsec">
+  <div class="fsec" id="generalProcessSection">
     <div class="stitle">加工費</div>
-    <label class="chk-row" onclick="toggleChk('chkNotepad','notepadSub')">
+    <label class="chk-row" onclick="toggleChk('chkNotepad','notepadSub')" style="display:none;">
       <div class="chk-info">
         <span class="chk-lbl">便條紙加工</span>
         <span class="chk-sub">$25/本</span>
       </div>
       <div class="sw"><input type="checkbox" id="chkNotepad" onchange="update()"><span class="sw-tr"></span></div>
     </label>
-    <div id="notepadSub" class="sub-content">
+    <div id="notepadSub" class="sub-content" style="display:none;">
       <label class="flbl">本數</label>
       <input class="finp" id="notepadCount" type="number" min="1" value="40" style="width:100px" oninput="update()">
     </div>
@@ -483,7 +606,7 @@ input,select,textarea,button{font-family:var(--font);}
   </div>
 
   <!-- 折扣 -->
-  <div class="fsec">
+  <div class="fsec" id="generalDiscountSection">
     <div class="stitle">折扣</div>
     <label class="chk-row">
       <div class="chk-info">
@@ -556,14 +679,16 @@ input,select,textarea,button{font-family:var(--font);}
     </div>
 
     <!-- Order info -->
-    <div class="inv-info-block">
-      <div class="inv-info-row">
-        <span class="inv-info-lbl">訂單內容</span>
-        <div class="inv-info-val" id="invOrderDesc" style="line-height:1.8;">—</div>
-      </div>
-      <div class="inv-info-row">
-        <span class="inv-info-lbl">付款方式</span>
-        <span class="inv-info-val payment" id="invPayment">—</span>
+    <div class="inv-info-wrap" id="invInfoWrap">
+      <div class="inv-info-block">
+        <div class="inv-info-row">
+          <span class="inv-info-lbl">訂單內容</span>
+          <div class="inv-info-val" id="invOrderDesc" style="line-height:1.8;">—</div>
+        </div>
+        <div class="inv-info-row">
+          <span class="inv-info-lbl">付款方式</span>
+          <span class="inv-info-val payment" id="invPayment">—</span>
+        </div>
       </div>
     </div>
 
@@ -585,11 +710,41 @@ input,select,textarea,button{font-family:var(--font);}
       </tbody>
     </table>
 
-    <div class="inv-gap"></div>
+    <div id="notepadCalcBlock" class="notepad-calc">
+      <table class="notepad-calc-table">
+        <thead>
+          <tr>
+            <th style="width:16%">每本張數</th>
+            <th style="width:44%">實際製作本數（含耗損）<span class="notepad-calc-sub">備品成功會一併提供</span></th>
+            <th class="r" style="width:14%">單價</th>
+            <th class="r" style="width:10%">加工本數</th>
+            <th class="r" style="width:16%">加工費</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="npSheetsPerPad">30</td>
+            <td id="npActualBooks">30</td>
+            <td id="npUnitPrice" class="r">$15</td>
+            <td id="npJobCount" class="r">20</td>
+            <td id="npProcessFee" class="r">$300</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inv-gap" id="invGap"></div>
 
     <!-- Summary -->
-    <div class="inv-summary">
+    <div class="inv-summary" id="invSummary">
       <div class="inv-notes-col">
+        <div id="notepadPricingCard" class="notepad-pricing-card">
+          <div class="notepad-pricing-card-title">便條紙加工價目</div>
+          <div class="notepad-pricing-card-line">30 本以內：NT$15 / 本</div>
+          <div class="notepad-pricing-card-line">50 本以內：NT$13 / 本</div>
+          <div class="notepad-pricing-card-line">100 本以內：NT$12 / 本</div>
+          <div class="notepad-pricing-card-line">110 本以上：NT$10 / 本</div>
+        </div>
         <div class="inv-notes-lbl">備註</div>
         <div class="inv-notes-val" id="invNotes">無。</div>
       </div>
@@ -688,6 +843,54 @@ const num = id => parseFloat(val(id)) || 0;
 const chk = id => $(id)?.checked ?? false;
 const fmt = n  => '$' + Math.round(n).toLocaleString();
 
+function isNotepadMode() {
+  return val('orderType') === '便條紙';
+}
+
+function normalizeNotepadJobCount() {
+  const raw = Math.max(10, parseInt(val('notepadJobCount')) || 10);
+  const normalized = Math.ceil(raw / 10) * 10;
+  $('notepadJobCount').value = String(normalized);
+  return normalized;
+}
+
+function normalizeNotepadSheetsPerPad() {
+  const raw = Math.max(5, parseInt(val('notepadSheetsPerPad')) || 30);
+  const normalized = Math.ceil(raw / 5) * 5;
+  $('notepadSheetsPerPad').value = String(normalized);
+  return normalized;
+}
+
+function getNotepadModeData() {
+  const jobCount = normalizeNotepadJobCount();
+  const sheetsPerPad = normalizeNotepadSheetsPerPad();
+  const actualBooks = Math.ceil((jobCount * 1.5) / 10) * 10;
+  const paperSheets = Math.ceil((actualBooks * sheetsPerPad) / 10);
+  const backingSheets = Math.ceil(actualBooks / 10);
+  const unitPrice = jobCount <= 30 ? 15 : jobCount <= 50 ? 13 : jobCount <= 100 ? 12 : 10;
+  const processFee = unitPrice * jobCount;
+  return { jobCount, sheetsPerPad, actualBooks, paperSheets, backingSheets, unitPrice, processFee };
+}
+
+function orderTypeChange() {
+  const on = isNotepadMode();
+  $('notepadModeSection')?.classList.toggle('hidden', !on);
+  $('generalOrderSection')?.classList.toggle('hidden', on);
+  $('generalPaperSection')?.classList.toggle('hidden', on);
+  $('generalCutSection')?.classList.toggle('hidden', on);
+  $('generalProcessSection')?.classList.toggle('hidden', on);
+  $('generalDiscountSection')?.classList.toggle('hidden', on);
+  $('invInfoWrap')?.classList.toggle('notepad-mode', on);
+  $('notepadCalcBlock')?.classList.toggle('notepad-mode', on);
+  $('invSummary')?.classList.toggle('notepad-mode', on);
+  $('invGap')?.classList.toggle('hidden', on);
+  if (on && $('chkNotepad')) {
+    $('chkNotepad').checked = false;
+    $('notepadSub')?.classList.remove('open');
+  }
+  update();
+}
+
 function setArrayState(target, rows) {
   target.length = 0;
   rows.forEach(row => target.push({ ...row }));
@@ -713,6 +916,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.invoiceApp?.onMenuImportBackup?.(() => {
     importBackup();
   });
+  orderTypeChange();
   update();
 });
 
@@ -1039,7 +1243,7 @@ function toggleChk(id, subId) {
 /* ════════════════════════════
    Calculation
 ════════════════════════════ */
-function calcAll() {
+function calcStandardAll() {
   // ── Pre-pass: paper totals ──
   let totalPaperSheets = 0;
   let liningEligibleSheets = 0;
@@ -1151,11 +1355,64 @@ function calcAll() {
   return { items, subtotal, urgentAmt, discAmt, shipFee, shipLabel, total, totalPaperSheets, liningEligibleSheets };
 }
 
+function calcNotepadAll() {
+  const np = getNotepadModeData();
+  const items = [];
+
+  const allInks = {};
+  INKS.forEach(ink => {
+    const total = (inkFront[ink.id] || 0) + (inkBack[ink.id] || 0);
+    if (total > 0) allInks[ink.id] = total;
+  });
+  const tierGroups = { normal:[], neon:[], premium:[] };
+  INKS.forEach(ink => { if (allInks[ink.id]) tierGroups[ink.tier].push(ink); });
+  ['normal','neon','premium'].forEach(tier => {
+    const grp = tierGroups[tier];
+    if (!grp.length) return;
+    const price = grp[0].price;
+    const totalQty = grp.reduce((sum, ink) => sum + allInks[ink.id], 0);
+    const note = grp.map(ink => `${ink.short}${allInks[ink.id]}`).join('+');
+    items.push({ name:'製版費', note, price, qty:totalQty });
+  });
+
+  items.push({ name:'印刷基本費', note:'', price:250, qty:1 });
+  items.push({ name:'印刷費', note:'', price:5.5, qty:np.paperSheets });
+  items.push({ name:'紙材費', note:'便條A3:白尺＋耗量', price:3, qty:np.paperSheets });
+  items.push({ name:'紙材費', note:'底紙A3:白尺', price:6, qty:np.backingSheets });
+
+  extraRows.forEach(row => {
+    if (row.name.trim() && row.price > 0) {
+      items.push({ name: row.name.trim(), note: row.note || '', price: row.price, qty: Math.max(1, row.qty) });
+    }
+  });
+
+  const subtotal = items.reduce((sum, it) => sum + it.price * it.qty, 0) + np.processFee;
+
+  let urgentAmt = 0;
+  if (chk('chkUrgent')) {
+    urgentAmt = Math.round(subtotal * 0.3);
+  }
+
+  const shipType = val('shippingType');
+  let shipFee = 38, shipLabel = '超商取貨';
+  if (shipType === 'kuroneko')    { shipFee = num('kuronekoFee') || 150; shipLabel = '黑貓宅配'; }
+  else if (shipType === 'pickup') { shipFee = 0; shipLabel = '工作室自取'; }
+  else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
+
+  const total = subtotal + urgentAmt + shipFee;
+  return { items, subtotal, urgentAmt, discAmt:0, shipFee, shipLabel, total, notepad:np };
+}
+
+function calcAll() {
+  return isNotepadMode() ? calcNotepadAll() : calcStandardAll();
+}
+
 /* ════════════════════════════
    Render
 ════════════════════════════ */
 function update() {
   const data = calcAll();
+  const notepadMode = isNotepadMode();
 
   // 色數 auto
   const frontColors = Object.keys(inkFront).length;
@@ -1163,26 +1420,41 @@ function update() {
   $('colorFront').value = frontColors;
   $('colorBack').value  = backColors;
 
+  if (notepadMode) {
+    const np = data.notepad;
+    $('notepadSheetsPerPad').value = String(np.sheetsPerPad);
+    $('notepadActualBooks').value = String(np.actualBooks);
+    $('notepadUnitPrice').value = `$${np.unitPrice}`;
+    $('notepadPaperSheets').value = String(np.paperSheets);
+    $('notepadBackingSheets').value = String(np.backingSheets);
+  }
+
   // Invoice fields
   $('invDate').textContent   = val('quoteDate') || '—';
   $('invClient').textContent = val('clientName') || '（未填姓名）';
-  $('invNotes').textContent  = val('invoiceNote') || '無。';
+  $('invNotes').textContent  = notepadMode
+    ? (val('invoiceNote') || '便條紙專用報價，已含備量試算。')
+    : (val('invoiceNote') || '無。');
 
   // 訂單內容字串
   const orderDescEl = $('invOrderDesc');
-  const orders = Math.max(1, parseInt(val('printOrders')) || 1);
-  if (orders > 1) {
-    orderDescEl.textContent = '請見下單資訊';
+  if (notepadMode) {
+    orderDescEl.textContent = `便條紙｜${data.notepad.jobCount} 本｜每本 ${data.notepad.sheetsPerPad} 張`;
   } else {
-    const row = orderRows[0] || {};
-    const sz = row.size === 'custom' ? (row.customSize || '?') : (row.size || 'A5');
-    let colorStr = '';
-    if (frontColors > 0 && backColors > 0) colorStr = `正${frontColors}色 ／ 背${backColors}色`;
-    else if (frontColors > 0)              colorStr = `${frontColors}色`;
-    const parts = [sz];
-    if (colorStr) parts.push(colorStr);
-    if (row.qty)  parts.push(`${row.qty} 張`);
-    orderDescEl.textContent = parts.join(' ｜ ');
+    const orders = Math.max(1, parseInt(val('printOrders')) || 1);
+    if (orders > 1) {
+      orderDescEl.textContent = '請見下單資訊';
+    } else {
+      const row = orderRows[0] || {};
+      const sz = row.size === 'custom' ? (row.customSize || '?') : (row.size || 'A5');
+      let colorStr = '';
+      if (frontColors > 0 && backColors > 0) colorStr = `正${frontColors}色 ／ 背${backColors}色`;
+      else if (frontColors > 0)              colorStr = `${frontColors}色`;
+      const parts = [sz];
+      if (colorStr) parts.push(colorStr);
+      if (row.qty)  parts.push(`${row.qty} 張`);
+      orderDescEl.textContent = parts.join(' ｜ ');
+    }
   }
 
   // 試印提示
@@ -1213,6 +1485,16 @@ function update() {
         <td class="r">${fmt(it.price * it.qty)}</td>
       </tr>`;
     }).join('');
+  }
+
+  $('notepadCalcBlock').classList.toggle('show', notepadMode);
+  $('notepadPricingCard').classList.toggle('show', notepadMode);
+  if (notepadMode) {
+    $('npSheetsPerPad').textContent = String(data.notepad.sheetsPerPad);
+    $('npActualBooks').textContent = String(data.notepad.actualBooks);
+    $('npUnitPrice').textContent = `$${data.notepad.unitPrice}`;
+    $('npJobCount').textContent = String(data.notepad.jobCount);
+    $('npProcessFee').textContent = fmt(data.notepad.processFee);
   }
 
   // Totals
@@ -1247,6 +1529,8 @@ function buildBackupPayload() {
       colorBack: val('colorBack'),
       shippingType: val('shippingType'),
       kuronekoFee: val('kuronekoFee'),
+      notepadJobCount: val('notepadJobCount'),
+      notepadSheetsPerPad: val('notepadSheetsPerPad'),
       notepadCount: val('notepadCount'),
       bindingType: val('bindingType'),
       bindingCount: val('bindingCount'),
@@ -1278,6 +1562,8 @@ function applyBackupPayload(payload = {}) {
   $('printOrders').value = form.printOrders || '1';
   $('shippingType').value = form.shippingType || 'convenience';
   $('kuronekoFee').value = form.kuronekoFee || '150';
+  $('notepadJobCount').value = form.notepadJobCount || '20';
+  $('notepadSheetsPerPad').value = form.notepadSheetsPerPad || '30';
   $('notepadCount').value = form.notepadCount || '40';
   $('bindingType').value = form.bindingType || 'saddle';
   $('bindingCount').value = form.bindingCount || '20';
@@ -1299,6 +1585,7 @@ function applyBackupPayload(payload = {}) {
 
   payChange();
   shippingChange();
+  orderTypeChange();
   $('notepadSub')?.classList.toggle('open', chk('chkNotepad'));
   $('bindingSub')?.classList.toggle('open', chk('chkBinding'));
   renderOrderRows();
@@ -1412,12 +1699,15 @@ function resetForm() {
   renderOrderRows();
   $('shippingType').value = 'convenience';
   $('kuronekoFee').value  = '150';
+  $('notepadJobCount').value = '20';
+  $('notepadSheetsPerPad').value = '30';
   $('notepadCount').value = '40';
   $('bindingType').value  = 'saddle';
   $('bindingCount').value = '20';
   $('invoiceNote').value  = '';
   ['chkUrgent','chkLining','chkNotepad','chkBinding','chkDiscount'].forEach(id => $(id).checked = false);
   ['notepadSub','bindingSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
+  $('orderType').value = '';
 
   // Reset inks
   Object.keys(inkFront).forEach(k => delete inkFront[k]);
@@ -1441,6 +1731,7 @@ function resetForm() {
   _extraId = 1;
   renderExtraRows();
 
+  orderTypeChange();
   update();
 }
 </script>
