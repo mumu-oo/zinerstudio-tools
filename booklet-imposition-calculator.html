@@ -208,19 +208,21 @@ input[type=range]::-moz-range-thumb {
 /* ─── 翻頁方向按鈕（大圖示版）─── */
 .dir-mode-seg { display:flex; gap:0; border:2px solid var(--border); overflow:hidden; }
 .dir-btn {
-  flex:1; padding:10px 8px 8px;
+  flex:1; padding:12px 14px;
   border:none; border-right:2px solid var(--border);
-  text-align:center; cursor:pointer;
+  text-align:left; cursor:pointer;
   color:var(--muted); transition:all .12s;
   background:var(--surf); font-family:var(--font);
-  display:flex; flex-direction:column; align-items:center; gap:4px;
+  display:flex; align-items:center; gap:14px;
 }
 .dir-btn:last-child { border-right:none; }
 .dir-btn:hover { background:var(--panel); color:var(--text); }
 .dir-btn.on { background:var(--text); color:var(--surf); }
 .dir-btn.on svg rect[fill="rgba(212,113,74,0.18)"] { fill:rgba(255,255,255,0.25); }
-.dir-label { font-size:13px; font-weight:700; }
-.dir-sub { font-size:10px; opacity:.65; line-height:1.3; }
+.dir-fig { flex-shrink:0; width:68px; display:flex; align-items:center; justify-content:center; }
+.dir-copy { min-width:0; }
+.dir-label { font-size:18px; font-weight:800; line-height:1.1; margin-bottom:5px; display:block; }
+.dir-sub { font-size:11px; opacity:.72; line-height:1.45; display:block; }
 
 /* ─── Slider row ─── */
 .sl-row { margin-bottom:8px; }
@@ -668,28 +670,39 @@ input[type=range]::-moz-range-thumb {
 
           <!-- 左翻（西式）：封面在左，向左翻 -->
           <div class="dir-btn on" data-dir="ltr" onclick="setDir(this)">
-            <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
-              <path d="M44 5 H58 V31 H44" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M30 7 L44 5 V31 L30 33 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
-              <text x="37" y="22" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.85">封面</text>
-              <path d="M24 22 C20 22 16 23 11 26" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
-              <path d="M15 22 L11 26 L16 28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
-            </svg>
-            <span class="dir-label">左翻</span>
-            <span class="dir-sub">封面在左・由左至右閱讀<br>西式裝訂，橫式閱讀</span>
+            <div class="dir-fig">
+              <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
+                <path d="M44 5 H58 V31 H44" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M30 7 L44 5 V31 L30 33 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
+                <text x="37" y="17.5" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">封</text>
+                <text x="37" y="24.8" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">面</text>
+                <path d="M22 24 H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.72"/>
+                <path d="M12 19 L7 24 L12 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.72"/>
+              </svg>
+            </div>
+            <div class="dir-copy">
+              <span class="dir-label">左翻</span>
+              <span class="dir-sub">封面在左・由左至右閱讀<br>西式裝訂，橫式閱讀</span>
+            </div>
           </div>
 
           <!-- 右翻（中日式）：封面在右，向右翻 -->
           <div class="dir-btn" data-dir="rtl" onclick="setDir(this)">
-            <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
-              <path d="M10 5 H24 V31 H10" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M38 7 L24 5 V31 L38 33 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
-              <text x="31" y="22" text-anchor="middle" font-size="8.5" font-weight="bold" fill="currentColor" opacity="0.85">封面</text>
-              <path d="M44 22 C48 22 52 23 57 26" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
-              <path d="M52 22 L57 26 L52 28" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
-            </svg>
-            <span class="dir-label">右翻</span>
-            <span class="dir-sub">封面在右・由右至左閱讀<br>中日式裝訂，直式閱讀</span>
+            <div class="dir-fig">
+              <svg width="68" height="38" viewBox="0 0 68 38" fill="none">
+                <path d="M10 5 H24 V31 H10" fill="rgba(98,168,229,0.22)" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M38 7 L24 5 V31 L38 33 Z" fill="rgba(212,113,74,0.22)" stroke="currentColor" stroke-width="2"/>
+                <path d="M24 5 V31" stroke="currentColor" stroke-width="2"/>
+                <text x="31" y="17.5" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">封</text>
+                <text x="31" y="24.8" text-anchor="middle" font-size="6.7" font-weight="bold" fill="currentColor" opacity="0.85">面</text>
+                <path d="M46 24 H61" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.72"/>
+                <path d="M56 19 L61 24 L56 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.72"/>
+              </svg>
+            </div>
+            <div class="dir-copy">
+              <span class="dir-label">右翻</span>
+              <span class="dir-sub">封面在右・由右至左閱讀<br>中日式裝訂，直式閱讀</span>
+            </div>
           </div>
 
         </div>
