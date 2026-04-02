@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>印刷估價 — Ziner Studio</title>
+<style>
+:root {
+  --bg:     #F5F0E4;
+  --surf:   #FDFAF2;
+  --panel:  #EDE8DA;
+  --accent: #D4714A;
+  --acc-h:  #B95C38;
+  --acc-lt: #FDF0EA;
+  --text:   #33334D;
+  --muted:  #6B6878;
+  --faint:  #9B97A8;
+  --border: #33334D;
+  --font:   -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Noto Sans TC', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: hidden; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, rgba(51,51,77,0.09) 0.75px, transparent 0.75px);
+  background-size: 8px 8px;
+}
+
+/* ── Header ── */
+.app-bar {
+  height: 52px;
+  background: var(--surf);
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 800;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.logo-mark { width: 30px; height: 30px; object-fit: contain; }
+.bar-sep { width: 1px; height: 18px; background: var(--border); opacity: 0.25; }
+.tool-name { font-size: 13px; font-weight: 700; color: var(--muted); }
+
+/* ── Page layout ── */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 50px;
+}
+
+/* ── Tab switcher（大色塊，置中在 page 內）── */
+.tab-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tab-btn {
+  padding: 16px 8px;
+  border: 2px solid var(--border);
+  background: var(--surf);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 3px 3px 0 var(--border);
+  transition: all .12s;
+  line-height: 1.3;
+  white-space: normal;
+}
+.tab-btn:hover { background: var(--panel); color: var(--text); }
+.tab-btn.on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--acc-h);
+  box-shadow: 3px 3px 0 var(--acc-h);
+}
+.tab-view { display: none; }
+.tab-view.on { display: block; }
+
+/* ── Shared components ── */
+.sec-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.block {
+  background: var(--surf);
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.seg { display: flex; border: 2px solid var(--border); overflow: hidden; }
+.seg.vertical { flex-direction: column; }
+.seg-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-right: 2px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  background: var(--surf);
+  font-family: var(--font);
+  transition: all .12s;
+  text-align: center;
+}
+.seg.vertical .seg-btn { border-right: none; border-bottom: 2px solid var(--border); text-align: left; padding: 9px 12px;}
+.seg-btn:last-child { border-right: none; }
+.seg.vertical .seg-btn:last-child { border-bottom: none; }
+.seg-btn:hover { background: var(--panel); color: var(--text); }
+.seg-btn.on { background: var(--text); color: var(--surf); }
+.seg-btn small { font-weight: 400; opacity: .6; font-size: 11px; margin-left: 4px; }
+/* ── 2×2 grid seg (印刷尺寸) ── */
+.seg.grid2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.seg.grid2x2 .seg-btn {
+  border-right: none;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 16px 10px;
+  font-size: 20px;
+  font-weight: 900;
+}
+.seg.grid2x2 .seg-btn:nth-child(odd)  { border-right: 2px solid var(--border); }
+.seg.grid2x2 .seg-btn:nth-child(3),
+.seg.grid2x2 .seg-btn:nth-child(4)    { border-bottom: none; }
+.seg.grid2x2 .seg-btn small { font-size: 10px; font-weight: 400; opacity: .6; margin-left: 0; }
+/* ── qty info box ── */
+.qty-info-box {
+  background: var(--panel);
+  border: 1.5px solid rgba(51,51,77,0.18);
+  padding: 8px 10px;
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-col { display: grid; gap: 12px; align-content: start; min-width: 0; overflow: hidden; }
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+.qty-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
+.qty-btn {
+  width: 36px; height: 36px; flex-shrink: 0;
+  border: 2px solid var(--border);
+  background: var(--panel);
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; font-family: var(--font);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s; user-select: none;
+}
+.qty-btn:hover { background: var(--text); color: var(--surf); }
+.qty-input {
+  flex: 1; min-width: 0;
+  border: 2px solid var(--border);
+  background: var(--surf);
+  padding: 6px 10px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  text-align: center;
+  box-shadow: 2px 2px 0 var(--border);
+}
+.qty-input:focus { border-color: var(--accent); box-shadow: 2px 2px 0 var(--accent); }
+.qty-hint { font-size: 10px; color: var(--faint); margin-top: 3px; }
+.select {
+  width: 100%;
+  border: 2px solid var(--border);
+  background: var(--surf);
+  padding: 8px 30px 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2333334D' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+/* ── Ink columns ── */
+.ink-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  background: var(--surf);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.ink-col { padding: 14px 16px; min-width: 0; }
+.ink-col + .ink-col { border-left: 2px solid var(--border); }
+.ink-col-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  margin: -14px -16px 12px;
+  border-bottom: 1.5px solid rgba(51,51,77,0.15);
+  background: var(--panel);
+  color: var(--muted);
+}
+.ink-col.dim .ink-tier-label,
+.ink-col.dim .ink-cell { opacity: 0.25; pointer-events: none; }
+.ink-tier { margin-bottom: 10px; }
+.ink-tier:last-child { margin-bottom: 0; }
+.ink-tier-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 6px;
+}
+.ink-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.ink-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 2px;
+  transition: all .12s;
+  min-width: 40px;
+}
+.ink-cell:hover { background: var(--panel); }
+.ink-cell.on { border-color: var(--border); background: var(--panel); box-shadow: 2px 2px 0 var(--border); }
+.ink-circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); }
+.ink-name { font-size: 9px; text-align: center; color: var(--muted); line-height: 1.2; font-weight: 500; }
+
+/* ── Booklet section header ── */
+.section-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: var(--text);
+  color: var(--surf);
+  padding: 3px 8px;
+  margin-bottom: 10px;
+}
+
+/* ── Summary panel ── */
+.summary { margin-top: 4px; }
+.summary-block {
+  background: var(--surf);
+  border: 2px solid var(--border);
+  box-shadow: 5px 5px 0 var(--border);
+  overflow: hidden;
+}
+.summary-head {
+  padding: 10px 14px;
+  background: var(--panel);
+  border-bottom: 2px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.summary-body { padding: 14px; }
+.price-box {
+  border: 2px solid var(--border);
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+  box-shadow: 2px 2px 0 var(--border);
+}
+.price-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.price-value { font-size: 38px; font-weight: 900; color: var(--accent); line-height: 1; }
+.price-sub { font-size: 9.5px; color: var(--faint); margin-top: 4px; }
+.breakdown { margin-bottom: 12px; }
+.bd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11.5px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(51,51,77,0.1);
+}
+.bd-row span { color: var(--muted); }
+.bd-row strong { font-weight: 700; }
+.bd-total {
+  border-bottom: none !important;
+  border-top: 2px solid var(--border);
+  padding-top: 7px !important;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.notice {
+  background: var(--panel);
+  border: 1.5px solid rgba(51,51,77,0.2);
+  padding: 9px 11px;
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.cta-group { display: grid; gap: 7px; }
+.btn {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  background: var(--surf);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--border);
+  transition: all .12s;
+}
+.btn:hover { background: var(--panel); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--acc-h); box-shadow: 2px 2px 0 var(--acc-h); }
+.btn.primary:hover { background: var(--acc-h); }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--faint);
+  padding-top: 8px;
+  line-height: 1.8;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .form-cols { grid-template-columns: 1fr; }
+  .ink-cols { grid-template-columns: 1fr; }
+  .ink-col + .ink-col { border-left: none; border-top: 2px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<header class="app-bar">
+  <a class="logo" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
+    <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
+    Ziner Studio
+  </a>
+  <div class="bar-sep"></div>
+  <span class="tool-name">印刷估價計算機</span>
+</header>
+
+<main class="page">
+
+  <div class="tab-switcher">
+    <button class="tab-btn on" onclick="switchTab('riso',this)">孔版印刷</button>
+    <button class="tab-btn"   onclick="switchTab('memo',this)">便條紙</button>
+    <button class="tab-btn"   onclick="switchTab('book',this)">騎馬釘製本</button>
+  </div>
+
+  <!-- ═══════════════════════════════
+       TAB 1 — 孔版印刷
+  ═══════════════════════════════ -->
+  <div class="tab-view on" id="view-riso">
+
+    <div class="block">
+      <div class="sec-title">印刷方式</div>
+      <div class="seg">
+        <button class="seg-btn on" data-group="riso-sides" data-val="single" onclick="setChip('riso-sides','single',this)">單面印刷</button>
+        <button class="seg-btn"    data-group="riso-sides" data-val="double" onclick="setChip('riso-sides','double',this)">雙面印刷</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="form-cols">
+        <div class="form-col">
+          <div>
+            <div class="field-label">印刷尺寸</div>
+            <div class="seg grid2x2">
+              <button class="seg-btn"    data-group="riso-size" data-val="a3"           onclick="setChip('riso-size','a3',this)">A3<small>420×297 mm</small></button>
+              <button class="seg-btn on" data-group="riso-size" data-val="a4"           onclick="setChip('riso-size','a4',this)">A4<small>297×210 mm</small></button>
+              <button class="seg-btn"    data-group="riso-size" data-val="postcard"     onclick="setChip('riso-size','postcard',this)">明信片<small>86×121 mm~</small></button>
+              <button class="seg-btn"    data-group="riso-size" data-val="businessCard" onclick="setChip('riso-size','businessCard',this)">名片<small>30×55 mm~</small></button>
+            </div>
+          </div>
+        </div>
+        <div class="form-col">
+          <div>
+            <div class="field-label">訂購張數</div>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="stepQty('riso-qty',-1)">−</button>
+              <input class="qty-input" type="number" id="riso-qty" value="200" min="1" oninput="recalc()">
+              <button class="qty-btn" onclick="stepQty('riso-qty',1)">＋</button>
+            </div>
+            <div class="qty-hint">單張可訂購</div>
+          </div>
+          <div>
+            <div class="field-label">印刷紙材</div>
+            <select class="select" id="riso-material" onchange="recalc()">
+              <option value="6">【厚】白尺紙（峻揚CP象牙）220g</option>
+              <option value="6">【厚】米牙紙（峻揚CP象牙）220g</option>
+              <option value="3">白尺紙（峻揚CP象牙）100g</option>
+              <option value="3">米牙紙（峻揚CP象牙）100g</option>
+              <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+              <option value="7">枯土紙（峻揚日本古月）105g</option>
+              <option value="7">寶藍紙（聯美馬卡龍）89g</option>
+              <option value="7">柳橙紙（聯美馬卡龍）89g</option>
+              <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
+              <option value="10">元素紙-可可（采憶元素）116g</option>
+              <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+              <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">防油墨背印</div>
+            <div class="seg">
+              <button class="seg-btn on" data-group="riso-liner" data-val="false" onclick="setChip('riso-liner','false',this)">不需襯紙</button>
+              <button class="seg-btn"    data-group="riso-liner" data-val="true"  onclick="setChip('riso-liner','true',this)">追加襯紙</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ink-cols">
+      <div class="ink-col" id="riso-front-col">
+        <div class="ink-col-label">正面油墨</div>
+        <div id="riso-front-inks"></div>
+      </div>
+      <div class="ink-col dim" id="riso-back-col">
+        <div class="ink-col-label">背面油墨 <span style="font-weight:400;font-size:9px;">（雙面時啟用）</span></div>
+        <div id="riso-back-inks"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════
+       TAB 2 — 便條紙
+  ═══════════════════════════════ -->
+  <div class="tab-view" id="view-memo">
+
+    <div class="block">
+      <div class="sec-title">印刷方式</div>
+      <div class="seg">
+        <button class="seg-btn on" data-group="memo-sides" data-val="single" onclick="setChip('memo-sides','single',this)">單面</button>
+        <button class="seg-btn"    data-group="memo-sides" data-val="double" onclick="setChip('memo-sides','double',this)">雙面</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="form-cols">
+        <div class="form-col">
+          <div>
+            <div class="field-label">加工本數 <span style="font-weight:400;font-size:10px;color:var(--faint);">10本一單位</span></div>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="stepQty('memo-pads',-10)">−</button>
+              <input class="qty-input" type="number" id="memo-pads" value="30" min="10" step="10" oninput="recalc()">
+              <button class="qty-btn" onclick="stepQty('memo-pads',10)">＋</button>
+            </div>
+            <div class="qty-info-box">
+              <div id="memo-unit-price-hint">≤30本：$15/本</div>
+              <div style="color:var(--accent);font-weight:600;">↗ 若有封面追加需求請訊息洽談</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-col">
+          <div>
+            <div class="field-label">每本張數 <span style="font-weight:400;font-size:10px;color:var(--faint);">5張一單位，最少30張</span></div>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="stepQty('memo-sheets',-5)">−</button>
+              <input class="qty-input" type="number" id="memo-sheets" value="30" min="30" step="5" oninput="recalc()">
+              <button class="qty-btn" onclick="stepQty('memo-sheets',5)">＋</button>
+            </div>
+            <div class="qty-hint" id="memo-a3-hint">— 張 A3</div>
+          </div>
+          <div>
+            <div class="field-label">便條紙材</div>
+            <select class="select" id="memo-material" onchange="recalc()">
+              <option value="3">白尺紙（峻揚CP象牙）100g</option>
+              <option value="3">米牙紙（峻揚CP象牙）100g</option>
+              <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+              <option value="7">枯土紙（峻揚日本古月）105g</option>
+              <option value="7">寶藍紙（聯美馬卡龍）89g</option>
+              <option value="7">柳橙紙（聯美馬卡龍）89g</option>
+              <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
+              <option value="10">元素紙-可可（采憶元素）116g</option>
+              <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+              <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ink-cols">
+      <div class="ink-col" id="memo-front-col">
+        <div class="ink-col-label">正面油墨</div>
+        <div id="memo-front-inks"></div>
+      </div>
+      <div class="ink-col dim" id="memo-back-col">
+        <div class="ink-col-label">背面油墨 <span style="font-weight:400;font-size:9px;">（雙面時啟用）</span></div>
+        <div id="memo-back-inks"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════
+       TAB 3 — 騎馬釘製本
+  ═══════════════════════════════ -->
+  <div class="tab-view" id="view-book">
+
+    <div class="block">
+      <div class="form-cols">
+        <div class="form-col">
+          <div>
+            <div class="field-label">本數 <span style="font-weight:400;font-size:10px;color:var(--faint);">10本一單位</span></div>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="stepQty('book-count',-10)">−</button>
+              <input class="qty-input" type="number" id="book-count" value="50" min="10" step="10" oninput="recalc()">
+              <button class="qty-btn" onclick="stepQty('book-count',10)">＋</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-col">
+          <div>
+            <div class="field-label">內頁頁數 <span style="font-weight:400;font-size:10px;color:var(--faint);">不含封面，4的倍數</span></div>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="stepQty('book-pages',-4)">−</button>
+              <input class="qty-input" type="number" id="book-pages" value="16" min="4" step="4" oninput="recalc()">
+              <button class="qty-btn" onclick="stepQty('book-pages',4)">＋</button>
+            </div>
+            <div class="qty-hint" id="book-sheets-hint">— 張 A3 / 本（內頁）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 封面 -->
+    <div class="block">
+      <div class="section-tag">封面</div>
+      <div class="form-cols">
+        <div class="form-col">
+          <div>
+            <div class="field-label">印刷方式</div>
+            <div class="seg">
+              <button class="seg-btn on" data-group="book-cover-sides" data-val="single" onclick="setChip('book-cover-sides','single',this)">單面</button>
+              <button class="seg-btn"    data-group="book-cover-sides" data-val="double" onclick="setChip('book-cover-sides','double',this)">雙面</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-col">
+          <div>
+            <div class="field-label">封面紙材</div>
+            <select class="select" id="book-cover-material" onchange="recalc()">
+              <option value="6">【厚】白尺紙（峻揚CP象牙）220g</option>
+              <option value="6">【厚】米牙紙（峻揚CP象牙）220g</option>
+              <option value="3">白尺紙（峻揚CP象牙）100g</option>
+              <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+              <option value="7">枯土紙（峻揚日本古月）105g</option>
+              <option value="10">元素紙-可可（采憶元素）116g</option>
+              <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+              <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ink-cols" style="margin-bottom:12px;">
+      <div class="ink-col">
+        <div class="ink-col-label">封面正面油墨</div>
+        <div id="book-cover-front-inks"></div>
+      </div>
+      <div class="ink-col dim" id="book-cover-back-col">
+        <div class="ink-col-label">封面背面油墨 <span style="font-weight:400;font-size:9px;">（雙面時啟用）</span></div>
+        <div id="book-cover-back-inks"></div>
+      </div>
+    </div>
+
+    <!-- 內頁 -->
+    <div class="block">
+      <div class="section-tag">內頁</div>
+      <div class="form-cols">
+        <div class="form-col">
+          <div>
+            <div class="field-label">印刷方式</div>
+            <div class="seg">
+              <button class="seg-btn" data-group="book-inner-sides" data-val="single" onclick="setChip('book-inner-sides','single',this)">單面</button>
+              <button class="seg-btn on" data-group="book-inner-sides" data-val="double" onclick="setChip('book-inner-sides','double',this)">雙面</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-col">
+          <div>
+            <div class="field-label">內頁紙材</div>
+            <select class="select" id="book-inner-material" onchange="recalc()">
+              <option value="3">白尺紙（峻揚CP象牙）100g</option>
+              <option value="3">米牙紙（峻揚CP象牙）100g</option>
+              <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+              <option value="7">枯土紙（峻揚日本古月）105g</option>
+              <option value="7">寶藍紙（聯美馬卡龍）89g</option>
+              <option value="7">柳橙紙（聯美馬卡龍）89g</option>
+              <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
+              <option value="10">元素紙-可可（采憶元素）116g</option>
+              <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+              <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ink-cols">
+      <div class="ink-col">
+        <div class="ink-col-label">內頁正面油墨</div>
+        <div id="book-inner-front-inks"></div>
+      </div>
+      <div class="ink-col" id="book-inner-back-col">
+        <div class="ink-col-label">內頁背面油墨 <span style="font-weight:400;font-size:9px;">（雙面時啟用）</span></div>
+        <div id="book-inner-back-inks"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════
+       右欄：摘要
+  ═══════════════════════════════ -->
+  <aside class="summary">
+    <div class="summary-block">
+      <div class="summary-head" id="summary-head">孔版印刷　估價摘要</div>
+      <div class="summary-body">
+        <div class="price-box">
+          <div class="price-label">預估金額</div>
+          <div class="price-value" id="total-price">—</div>
+          <div class="price-sub">正式報價依實際規格調整</div>
+        </div>
+        <div class="breakdown" id="breakdown"></div>
+        <div class="notice">估算工具，非正式報價單。帶規格去詢價比口頭描述快很多。</div>
+        <div class="cta-group">
+          <a class="btn primary" href="https://forms.gle/oFD7QnbYyNMsSxRCA" target="_blank" rel="noreferrer">去下單</a>
+          <a class="btn" href="https://line.me/R/ti/p/%40257pcqno" target="_blank" rel="noreferrer">LINE 詢價</a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="footer">
+    <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> · 印刷估價計算機<br>
+    估算結果僅供參考，正式金額以工作室確認為準。
+  </div>
+</main>
+
+<script>
+// ═══════════════════════════════
+// 油墨定義
+// ═══════════════════════════════
+const INK_TIERS = [
+  { label:'標準色　$110', inks:[
+    { name:'黑',  hex:'#1a1a1a', price:110 },
+    { name:'青藍', hex:'#0078BF', price:110 },
+    { name:'綠',  hex:'#00A95C', price:110 },
+    { name:'黃',  hex:'#FFE800', price:110 },
+    { name:'赤紅', hex:'#E82020', price:110 },
+    { name:'紫堇', hex:'#9D7AD2', price:110 },
+  ]},
+  { label:'螢光色　$130', inks:[
+    { name:'螢橘', hex:'#FF5F00', price:130 },
+    { name:'螢粉', hex:'#FF6E9A', price:130 },
+  ]},
+  { label:'特殊色　$170', inks:[
+    { name:'天空', hex:'#62A8E5', price:170 },
+    { name:'金',  hex:'#C9A227', price:170 },
+    { name:'薄荷', hex:'#5EC8A0', price:170 },
+  ]},
+];
+const ALL_INKS = INK_TIERS.flatMap(t => t.inks);
+
+// ═══════════════════════════════
+// 狀態
+// ═══════════════════════════════
+const S = {
+  tab: 'riso',
+  // 孔版
+  risoSides: 'single', risoSize: 'a4', risoLiner: false,
+  risoFront: [], risoBack: [],
+  // 便條紙
+  memoSides: 'single',
+  memoFront: [], memoBack: [],
+  // 製本
+  bookCoverSides: 'single', bookInnerSides: 'double',
+  bookCoverFront: [], bookCoverBack: [],
+  bookInnerFront: [], bookInnerBack: [],
+};
+
+// ═══════════════════════════════
+// 計算公式
+// ═══════════════════════════════
+function inkFee(colors) {
+  return colors.reduce((s, n) => { const i = ALL_INKS.find(x => x.name===n); return s+(i?i.price:0); }, 0);
+}
+function risoSheets(size, qty) {
+  switch(size) {
+    case 'a3': return qty;
+    case 'a4': return qty/2;
+    case 'postcard': return qty/4;
+    case 'businessCard': return qty/10;
+    default: return 0;
+  }
+}
+function risoCut(size) {
+  return {a4:50, postcard:250, businessCard:300}[size] || 0;
+}
+function paperPrice(selectId) {
+  const el = document.getElementById(selectId);
+  return el ? parseInt(el.value) || 6 : 6;
+}
+
+function calcRiso() {
+  const qty = Math.max(1, parseInt(document.getElementById('riso-qty').value)||0);
+  const a3  = risoSheets(S.risoSize, qty);
+  const color = inkFee(S.risoFront) + inkFee(S.risoBack);
+  const paper = a3 * paperPrice('riso-material');
+  const liner = S.risoLiner ? a3*1.5 : 0;
+  const base=250, print=5.5*a3, cut=risoCut(S.risoSize);
+  const total = Math.round(color+paper+liner+base+print+cut);
+  return [total,[
+    ['油墨費', color], ['紙材費', paper],
+    ...(liner?[['襯紙費',liner]]:[]),
+    ['底價', base], ['印刷費', print],
+    ...(cut?[['裁切費',cut]]:[]),
+  ]];
+}
+
+function calcMemo() {
+  const jobCount   = Math.max(10, Math.round((parseInt(document.getElementById('memo-pads').value)||30)/10)*10);
+  const sheetsPerPad = Math.max(30, Math.round((parseInt(document.getElementById('memo-sheets').value)||30)/5)*5);
+  const actualBooks = Math.ceil((jobCount*1.5)/10)*10;
+  const paperSheets = Math.ceil((actualBooks*sheetsPerPad)/10);
+  const unitPrice = jobCount<=30?15 : jobCount<=50?13 : jobCount<=100?12 : 10;
+  const processFee = unitPrice * jobCount;
+  const color  = inkFee(S.memoFront) + inkFee(S.memoBack);
+  const paper  = paperSheets * paperPrice('memo-material');
+  const print  = paperSheets * 5;
+  const total  = Math.round(color + paper + print + processFee);
+  // update hints
+  const unitHintEl = document.getElementById('memo-unit-price-hint');
+  if (unitHintEl) unitHintEl.textContent = `$${unitPrice}/本，含耗損共 ${actualBooks} 本`;
+  const a3HintEl = document.getElementById('memo-a3-hint');
+  if (a3HintEl) a3HintEl.textContent = `預計用紙 ${paperSheets} 張 A3`;
+  return [total,[
+    ['油墨費', color], ['紙材費', paper],
+    ['印刷費', print], [`加工費（$${unitPrice}×${jobCount}本）`, processFee],
+  ]];
+}
+
+function calcBook() {
+  const books = Math.max(1, parseInt(document.getElementById('book-count').value)||1);
+  const innerPages = Math.max(4, Math.round((parseInt(document.getElementById('book-pages').value)||16)/4)*4);
+  const coverSheets = books;           // 1 A3 封面 / 本
+  const innerSheets = (innerPages/4)*books;  // 騎馬釘：4頁/張
+  // update hint
+  const hintEl = document.getElementById('book-sheets-hint');
+  if (hintEl) hintEl.textContent = `${innerPages/4} 張 A3 / 本（內頁）`;
+  const coverColor = inkFee(S.bookCoverFront) + inkFee(S.bookCoverBack);
+  const innerColor = inkFee(S.bookInnerFront) + inkFee(S.bookInnerBack);
+  const coverPaper = coverSheets * paperPrice('book-cover-material');
+  const innerPaper = innerSheets * paperPrice('book-inner-material');
+  const coverPrint = coverSheets * 5.5;
+  const innerPrint = innerSheets * 5.5;
+  const base=250, bindBase=1000, bindFee=40*books;
+  const total = Math.round(coverColor+innerColor+coverPaper+innerPaper+coverPrint+innerPrint+base+bindBase+bindFee);
+  return [total,[
+    ['油墨費（封面）', coverColor], ['油墨費（內頁）', innerColor],
+    ['紙材費（封面）', coverPaper], ['紙材費（內頁）', innerPaper],
+    ['印刷費（封面）', coverPrint], ['印刷費（內頁）', innerPrint],
+    ['底價', base], ['加工基本費', bindBase], [`裝訂費（$40×${books}本）`, bindFee],
+  ]];
+}
+
+// ═══════════════════════════════
+// 渲染
+// ═══════════════════════════════
+function buildInkGrid(containerId, colorKey) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = INK_TIERS.map(tier => `
+    <div class="ink-tier">
+      <div class="ink-tier-label">${tier.label}</div>
+      <div class="ink-row">
+        ${tier.inks.map(ink => `
+          <div class="ink-cell ${S[colorKey].includes(ink.name)?'on':''}"
+               onclick="toggleInk('${colorKey}','${ink.name}',this)">
+            <span class="ink-circle" style="background:${ink.hex}"></span>
+            <span class="ink-name">${ink.name}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderBreakdown(rows) {
+  document.getElementById('breakdown').innerHTML =
+    rows.filter(([,v])=>v!==0).map(([label,val]) => `
+      <div class="bd-row">
+        <span>${label}</span>
+        <strong>$${Math.round(val).toLocaleString()}</strong>
+      </div>`).join('') +
+    `<div class="bd-row bd-total">
+       <span>合計</span>
+       <strong id="bd-total-val">—</strong>
+     </div>`;
+}
+
+function recalc() {
+  let total, rows;
+  if (S.tab==='riso')       [total,rows] = calcRiso();
+  else if (S.tab==='memo')  [total,rows] = calcMemo();
+  else                      [total,rows] = calcBook();
+
+  document.getElementById('total-price').textContent = '$'+total.toLocaleString();
+  renderBreakdown(rows);
+  // update total in breakdown too
+  const bdTotal = document.getElementById('bd-total-val');
+  if (bdTotal) bdTotal.textContent = '$'+total.toLocaleString();
+}
+
+// ═══════════════════════════════
+// 控制項
+// ═══════════════════════════════
+function switchTab(tab, el) {
+  S.tab = tab;
+  document.querySelectorAll('.tab-switcher .tab-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('on'));
+  document.getElementById('view-'+tab).classList.add('on');
+  const labels = { riso:'孔版印刷　估價摘要', memo:'便條紙　估價摘要', book:'騎馬釘　估價摘要' };
+  document.getElementById('summary-head').textContent = labels[tab];
+  recalc();
+}
+
+function setChip(group, val, el) {
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(e => e.classList.remove('on'));
+  el.classList.add('on');
+  const map = {
+    'riso-sides':  () => { S.risoSides=val; toggleBackCol('riso-back-col', val==='double', 'risoBack', 'riso-back-inks'); },
+    'riso-size':   () => { S.risoSize=val; },
+    'riso-liner':  () => { S.risoLiner=(val==='true'); },
+    'memo-sides':  () => { S.memoSides=val; toggleBackCol('memo-back-col', val==='double', 'memoBack', 'memo-back-inks'); },
+    'book-cover-sides': () => { S.bookCoverSides=val; toggleBackCol('book-cover-back-col', val==='double', 'bookCoverBack', 'book-cover-back-inks'); },
+    'book-inner-sides': () => { S.bookInnerSides=val; toggleBackCol('book-inner-back-col', val==='double', 'bookInnerBack', 'book-inner-back-inks'); },
+  };
+  if (map[group]) map[group]();
+  recalc();
+}
+
+function toggleBackCol(colId, show, colorKey, gridId) {
+  const col = document.getElementById(colId);
+  if (!col) return;
+  if (show) {
+    col.classList.remove('dim');
+  } else {
+    col.classList.add('dim');
+    S[colorKey] = [];
+    buildInkGrid(gridId, colorKey);
+  }
+}
+
+function toggleInk(colorKey, name, el) {
+  const arr = S[colorKey];
+  const idx = arr.indexOf(name);
+  if (idx===-1) arr.push(name); else arr.splice(idx,1);
+  el.classList.toggle('on');
+  recalc();
+}
+
+function stepQty(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const step = Math.abs(delta);
+  let val = (parseInt(el.value)||0) + delta;
+  val = Math.max(parseInt(el.min)||1, Math.round(val/step)*step);
+  el.value = val;
+  recalc();
+}
+
+// ═══════════════════════════════
+// 初始化
+// ═══════════════════════════════
+buildInkGrid('riso-front-inks',       'risoFront');
+buildInkGrid('riso-back-inks',        'risoBack');
+buildInkGrid('memo-front-inks',       'memoFront');
+buildInkGrid('memo-back-inks',        'memoBack');
+buildInkGrid('book-cover-front-inks', 'bookCoverFront');
+buildInkGrid('book-cover-back-inks',  'bookCoverBack');
+buildInkGrid('book-inner-front-inks', 'bookInnerFront');
+buildInkGrid('book-inner-back-inks',  'bookInnerBack');
+// 騎馬釘內頁預設雙面已啟用
+document.getElementById('book-inner-back-col')?.classList.remove('dim');
+recalc();
+</script>
+</body>
+</html>
