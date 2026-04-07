@@ -392,6 +392,21 @@ body {
 .btn.primary { background: var(--accent); color: #fff; border-color: var(--acc-h); box-shadow: 2px 2px 0 var(--acc-h); }
 .btn.primary:hover { background: var(--acc-h); }
 
+/* ── Quote card (截圖用，隱藏在畫面外) ── */
+#quote-card {
+  display: none;
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 340px;
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(51,51,77,0.09) 0.75px, transparent 0.75px);
+  background-size: 8px 8px;
+  border: 2px solid var(--border);
+  font-family: var(--font);
+  color: var(--text);
+}
+
 /* ── Footer ── */
 .footer {
   text-align: center;
@@ -738,6 +753,8 @@ body {
     </div>
   </aside>
 
+  <div id="quote-card"></div>
+
   <div class="footer">
     <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> · 印刷估價計算機<br>
     估算結果僅供參考，正式金額以工作室確認為準。
@@ -989,27 +1006,138 @@ function stepQty(id, delta) {
 // ═══════════════════════════════
 // 估價截圖
 // ═══════════════════════════════
+function inkDots(names) {
+  if (!names.length) return '<span style="font-size:11px;color:#9B97A8;">（未選）</span>';
+  return names.map(n => {
+    const ink = ALL_INKS.find(i => i.name === n);
+    return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:6px;">
+      <span style="width:12px;height:12px;border-radius:50%;background:${ink?.hex||'#ccc'};border:1px solid rgba(0,0,0,0.2);flex-shrink:0;display:inline-block;"></span>
+      <span style="font-size:11px;">${n}</span>
+    </span>`;
+  }).join('');
+}
+
+function buildQuoteCard(total, rows) {
+  const tab = S.tab;
+  const tabLabel = {riso:'孔版印刷', memo:'便條紙', book:'車線製本'}[tab];
+
+  let conditions = [];
+  let inkRows = [];
+
+  if (tab === 'riso') {
+    conditions = [
+      ['印刷方式', S.risoSides === 'single' ? '單面印刷' : '雙面印刷'],
+      ['印刷尺寸', {a3:'A3',a4:'A4',postcard:'明信片',businessCard:'名片'}[S.risoSize]],
+      ['訂購張數', document.getElementById('riso-qty').value + ' 張'],
+      ['印刷紙材', document.getElementById('riso-material').selectedOptions[0]?.text || ''],
+      ['防油墨背印', S.risoLiner ? '追加襯紙' : '不需襯紙'],
+    ];
+    inkRows = [
+      ['正面油墨', S.risoFront],
+      ...(S.risoSides === 'double' ? [['背面油墨', S.risoBack]] : []),
+    ];
+  } else if (tab === 'memo') {
+    conditions = [
+      ['印刷方式', S.memoSides === 'single' ? '單面印刷' : '雙面印刷'],
+      ['訂購本數', document.getElementById('memo-pads').value + ' 本'],
+      ['每本張數', document.getElementById('memo-sheets').value + ' 張'],
+      ['印刷紙材', document.getElementById('memo-material').selectedOptions[0]?.text || ''],
+    ];
+    inkRows = [
+      ['正面油墨', S.memoFront],
+      ...(S.memoSides === 'double' ? [['背面油墨', S.memoBack]] : []),
+    ];
+  } else {
+    conditions = [
+      ['本子規格', S.bookSize === 'a4' ? '大本本 A4' : '小本本 A5'],
+      ['訂購本數', document.getElementById('book-count').value + ' 本'],
+      ['內頁張數', document.getElementById('book-pages').value + ' 頁'],
+      ['封面紙材', document.getElementById('book-cover-material').selectedOptions[0]?.text || ''],
+      ['內頁紙材', document.getElementById('book-inner-material').selectedOptions[0]?.text || ''],
+    ];
+    inkRows = [
+      ['封面正面', S.bookCoverFront],
+      ['封面背面', S.bookCoverBack],
+      ['內頁正面', S.bookInnerFront],
+      ['內頁背面', S.bookInnerBack],
+    ];
+  }
+
+  const row = (k, v) => `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(51,51,77,0.08);font-size:12px;">
+      <span style="color:#6B6878;flex-shrink:0;margin-right:8px;">${k}</span>
+      <span style="font-weight:600;text-align:right;">${v}</span>
+    </div>`;
+
+  const sectionTitle = t => `<div style="font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#9B97A8;margin:12px 0 6px;">${t}</div>`;
+
+  const condHtml = conditions.map(([k,v]) => row(k, v)).join('');
+
+  const inkHtml = inkRows.map(([label, names]) => `
+    <div style="padding:5px 0;border-bottom:1px solid rgba(51,51,77,0.08);">
+      <div style="font-size:10px;color:#9B97A8;margin-bottom:5px;">${label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:2px;">${inkDots(names)}</div>
+    </div>`).join('');
+
+  const bdHtml = rows.filter(([,v]) => v !== 0).map(([label, val]) => `
+    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(51,51,77,0.06);">
+      <span style="color:#6B6878;">${label}</span>
+      <strong>$${Math.round(val).toLocaleString()}</strong>
+    </div>`).join('');
+
+  document.getElementById('quote-card').innerHTML = `
+    <div style="background:#EDE8DA;border-bottom:2px solid #33334D;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:14px;font-weight:900;color:#33334D;letter-spacing:0.5px;">Ziner Studio</div>
+      <div style="font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6B6878;">${tabLabel} 估價</div>
+    </div>
+    <div style="padding:14px 16px;">
+      ${sectionTitle('規格')}
+      ${condHtml}
+      ${sectionTitle('油墨')}
+      ${inkHtml}
+      ${sectionTitle('費用明細')}
+      ${bdHtml}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;border-top:2px solid #33334D;margin-top:6px;">
+        <span style="font-size:12px;font-weight:800;">預估合計</span>
+        <span style="font-size:34px;font-weight:900;color:#D4714A;line-height:1;">$${total.toLocaleString()}</span>
+      </div>
+      <div style="background:#EDE8DA;border:1.5px solid rgba(51,51,77,0.18);padding:8px 10px;font-size:10px;color:#6B6878;line-height:1.7;margin-top:10px;">
+        估算工具，非正式報價單。正式金額以工作室確認為準。
+      </div>
+    </div>
+    <div style="background:#EDE8DA;border-top:1px solid rgba(51,51,77,0.15);padding:7px 16px;font-size:9.5px;color:#9B97A8;text-align:right;">
+      zinerstudio.com
+    </div>`;
+}
+
 async function takeScreenshot() {
   const btn = document.getElementById('screenshot-btn');
   const orig = btn.textContent;
   btn.textContent = '截圖中…';
   btn.disabled = true;
   try {
-    const el = document.querySelector('.summary-block');
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      backgroundColor: '#F5F0E4',
-      useCORS: true,
-    });
+    let total, rows;
+    if (S.tab === 'riso')      [total, rows] = calcRiso();
+    else if (S.tab === 'memo') [total, rows] = calcMemo();
+    else                       [total, rows] = calcBook();
+
+    buildQuoteCard(total, rows);
+
+    const card = document.getElementById('quote-card');
+    card.style.display = 'block';
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#F5F0E4', useCORS: true });
+    card.style.display = 'none';
+
     const filename = 'ziner-quote.png';
-    if (navigator.share) {
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch && navigator.share) {
       canvas.toBlob(async (blob) => {
         const file = new File([blob], filename, { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title: 'Ziner Studio 估價' });
-        } else {
-          downloadPng(canvas, filename);
+          return;
         }
+        downloadPng(canvas, filename);
       });
     } else {
       downloadPng(canvas, filename);
@@ -1019,6 +1147,7 @@ async function takeScreenshot() {
     btn.disabled = false;
   }
 }
+
 function downloadPng(canvas, filename) {
   const a = document.createElement('a');
   a.download = filename;
