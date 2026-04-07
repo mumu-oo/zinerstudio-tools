@@ -161,6 +161,9 @@ body {
 .seg.grid2x2 .seg-btn:nth-child(3),
 .seg.grid2x2 .seg-btn:nth-child(4)    { border-bottom: none; }
 .seg.grid2x2 .seg-btn small { font-size: 10px; font-weight: 400; opacity: .6; margin-left: 0; }
+/* ── 便條紙材 dropdown 字體放大 ── */
+.memo-select { font-size: 14px; padding: 10px 32px 10px 12px; }
+
 /* ── 本子尺寸規格表 ── */
 .size-spec { margin-top: 10px; border: 1.5px solid rgba(51,51,77,0.15); overflow: hidden; }
 .size-spec-head {
@@ -517,45 +520,41 @@ body {
     <div class="block">
       <div class="form-cols">
         <div class="form-col">
-          <div>
-            <div class="field-label">加工本數 <span style="font-weight:400;font-size:10px;color:var(--faint);">10本一單位</span></div>
-            <div class="qty-wrap">
-              <button class="qty-btn" onclick="stepQty('memo-pads',-10)">−</button>
-              <input class="qty-input" type="number" id="memo-pads" value="30" min="10" step="10" oninput="recalc()">
-              <button class="qty-btn" onclick="stepQty('memo-pads',10)">＋</button>
-            </div>
-            <div class="qty-info-box">
-              <div id="memo-unit-price-hint">≤30本：$15/本</div>
-              <div style="color:var(--accent);font-weight:600;">↗ 若有封面追加需求請訊息洽談</div>
-            </div>
+          <div class="field-label">加工本數 <span style="font-weight:400;font-size:10px;color:var(--faint);">10本一單位</span></div>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="stepQty('memo-pads',-10)">−</button>
+            <input class="qty-input" type="number" id="memo-pads" value="30" min="10" step="10" oninput="recalc()">
+            <button class="qty-btn" onclick="stepQty('memo-pads',10)">＋</button>
+          </div>
+          <div class="qty-info-box">
+            <div id="memo-unit-price-hint">加工費 $15/本，含耗損共 30 本</div>
+            <div style="color:var(--accent);font-weight:600;">↗ 若有封面追加需求請訊息洽談</div>
           </div>
         </div>
         <div class="form-col">
-          <div>
-            <div class="field-label">每本張數 <span style="font-weight:400;font-size:10px;color:var(--faint);">5張一單位，最少30張</span></div>
-            <div class="qty-wrap">
-              <button class="qty-btn" onclick="stepQty('memo-sheets',-5)">−</button>
-              <input class="qty-input" type="number" id="memo-sheets" value="30" min="30" step="5" oninput="recalc()">
-              <button class="qty-btn" onclick="stepQty('memo-sheets',5)">＋</button>
-            </div>
-            <div class="qty-hint" id="memo-a3-hint">— 張 A3</div>
+          <div class="field-label">每本張數 <span style="font-weight:400;font-size:10px;color:var(--faint);">5張一單位，最少30張</span></div>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="stepQty('memo-sheets',-5)">−</button>
+            <input class="qty-input" type="number" id="memo-sheets" value="30" min="30" step="5" oninput="recalc()">
+            <button class="qty-btn" onclick="stepQty('memo-sheets',5)">＋</button>
           </div>
-          <div>
-            <div class="field-label">便條紙材</div>
-            <select class="select" id="memo-material" onchange="recalc()">
-              <option value="3">白尺紙（峻揚CP象牙）100g</option>
-              <option value="3">米牙紙（峻揚CP象牙）100g</option>
-              <option value="7">灰鐵紙（峻揚日本古月）105g</option>
-              <option value="7">枯土紙（峻揚日本古月）105g</option>
-              <option value="7">寶藍紙（聯美馬卡龍）89g</option>
-              <option value="7">柳橙紙（聯美馬卡龍）89g</option>
-              <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
-              <option value="10">元素紙-可可（采憶元素）116g</option>
-              <option value="10">元素紙-蓮紫（采憶元素）116g</option>
-              <option value="10">元素紙-鴨綠（采憶元素）116g</option>
-            </select>
-          </div>
+          <div class="qty-hint" id="memo-a3-hint">— 張 A3</div>
         </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="field-label">便條紙材</div>
+        <select class="select memo-select" id="memo-material" onchange="recalc()">
+          <option value="3">白尺紙（峻揚CP象牙）100g</option>
+          <option value="3">米牙紙（峻揚CP象牙）100g</option>
+          <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+          <option value="7">枯土紙（峻揚日本古月）105g</option>
+          <option value="7">寶藍紙（聯美馬卡龍）89g</option>
+          <option value="7">柳橙紙（聯美馬卡龍）89g</option>
+          <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
+          <option value="10">元素紙-可可（采憶元素）116g</option>
+          <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+          <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+        </select>
       </div>
     </div>
 
@@ -839,7 +838,7 @@ function calcMemo() {
   const total  = Math.round(color + paper + print + processFee);
   // update hints
   const unitHintEl = document.getElementById('memo-unit-price-hint');
-  if (unitHintEl) unitHintEl.textContent = `$${unitPrice}/本，含耗損共 ${actualBooks} 本`;
+  if (unitHintEl) unitHintEl.textContent = `加工費 $${unitPrice}/本，含耗損共 ${actualBooks} 本`;
   const a3HintEl = document.getElementById('memo-a3-hint');
   if (a3HintEl) a3HintEl.textContent = `預計用紙 ${paperSheets} 張 A3`;
   return [total,[
