@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>印刷估價 — Ziner Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <style>
 :root {
   --bg:     #F5F0E4;
@@ -731,6 +732,7 @@ body {
         <div class="cta-group">
           <a class="btn primary" href="https://forms.gle/oFD7QnbYyNMsSxRCA" target="_blank" rel="noreferrer">去下單</a>
           <a class="btn" href="https://line.me/R/ti/p/%40257pcqno" target="_blank" rel="noreferrer">LINE 詢價</a>
+          <button class="btn" id="screenshot-btn" onclick="takeScreenshot()">估價截圖</button>
         </div>
       </div>
     </div>
@@ -982,6 +984,46 @@ function stepQty(id, delta) {
   val = Math.max(parseInt(el.min)||1, Math.round(val/step)*step);
   el.value = val;
   recalc();
+}
+
+// ═══════════════════════════════
+// 估價截圖
+// ═══════════════════════════════
+async function takeScreenshot() {
+  const btn = document.getElementById('screenshot-btn');
+  const orig = btn.textContent;
+  btn.textContent = '截圖中…';
+  btn.disabled = true;
+  try {
+    const el = document.querySelector('.summary-block');
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      backgroundColor: '#F5F0E4',
+      useCORS: true,
+    });
+    const filename = 'ziner-quote.png';
+    if (navigator.share) {
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Ziner Studio 估價' });
+        } else {
+          downloadPng(canvas, filename);
+        }
+      });
+    } else {
+      downloadPng(canvas, filename);
+    }
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+function downloadPng(canvas, filename) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
 }
 
 // ═══════════════════════════════
