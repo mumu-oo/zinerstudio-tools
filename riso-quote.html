@@ -1156,6 +1156,15 @@ function downloadPng(canvas, filename) {
 }
 
 // ═══════════════════════════════
+// 動態高度（Wix iframe auto-resize）
+// ═══════════════════════════════
+function postHeight() {
+  const h = document.documentElement.scrollHeight;
+  window.parent.postMessage(JSON.stringify({ height: h }), '*');
+}
+new ResizeObserver(postHeight).observe(document.body);
+
+// ═══════════════════════════════
 // 初始化
 // ═══════════════════════════════
 buildInkGrid('riso-front-inks',       'risoFront');
