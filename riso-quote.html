@@ -161,6 +161,23 @@ body {
 .seg.grid2x2 .seg-btn:nth-child(3),
 .seg.grid2x2 .seg-btn:nth-child(4)    { border-bottom: none; }
 .seg.grid2x2 .seg-btn small { font-size: 10px; font-weight: 400; opacity: .6; margin-left: 0; }
+/* ── 本子尺寸規格表 ── */
+.size-spec { margin-top: 10px; border: 1.5px solid rgba(51,51,77,0.15); overflow: hidden; }
+.size-spec-head {
+  font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--faint); padding: 5px 10px; background: var(--panel);
+  border-bottom: 1.5px solid rgba(51,51,77,0.1);
+}
+.size-spec-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 5px 10px; font-size: 11px;
+  border-bottom: 1px solid rgba(51,51,77,0.08);
+}
+.size-spec-row:last-child { border-bottom: none; }
+.size-spec-row span { color: var(--muted); }
+.size-spec-row strong { font-weight: 700; font-size: 12px; font-variant-numeric: tabular-nums; }
+.size-spec + .size-spec { margin-top: 6px; }
+
 /* ── qty info box ── */
 .qty-info-box {
   background: var(--panel);
@@ -561,11 +578,28 @@ body {
   <div class="tab-view" id="view-book">
 
     <div class="block">
-      <div class="sec-title">本子尺寸</div>
+      <div class="sec-title">本子規格</div>
       <div class="seg">
-        <button class="seg-btn on" data-group="book-size" data-val="a4" onclick="setChip('book-size','a4',this)">A4本 <small>約 210×297 mm</small></button>
-        <button class="seg-btn"    data-group="book-size" data-val="a5" onclick="setChip('book-size','a5',this)">A5本 <small>約 148×210 mm</small></button>
+        <button class="seg-btn on" data-group="book-size" data-val="a4" onclick="setChip('book-size','a4',this)">大本本 A4</button>
+        <button class="seg-btn"    data-group="book-size" data-val="a5" onclick="setChip('book-size','a5',this)">小本本 A5</button>
       </div>
+
+      <div class="size-spec" id="book-spec-a4">
+        <div class="size-spec-head">展開尺寸範圍（大本本 A4）</div>
+        <div class="size-spec-row"><span>最大展開</span><strong>277 × 400 mm</strong></div>
+        <div class="size-spec-row"><span>最小展開</span><strong>191 × 278 mm</strong></div>
+      </div>
+
+      <div class="size-spec" id="book-spec-a5" style="display:none">
+        <div class="size-spec-head">展開尺寸範圍（小本本 A5）</div>
+        <div class="size-spec-row"><span>最大展開</span><strong>190 × 277 mm</strong></div>
+        <div class="size-spec-row"><span>最小展開</span><strong>129 × 191 mm</strong></div>
+        <div class="size-spec-head" style="margin-top:1px;">縱長型亦可製作（同 A5 計費）</div>
+        <div class="size-spec-row"><span>最大展開</span><strong>129 × 400 mm</strong></div>
+        <div class="size-spec-row"><span>最小展開</span><strong>55 × 191 mm</strong></div>
+      </div>
+
+      <div class="qty-hint" style="margin-top:8px;">A6 迷你本尺寸另行洽詢</div>
     </div>
 
     <div class="block">
@@ -909,7 +943,12 @@ function setChip(group, val, el) {
     'riso-size':   () => { S.risoSize=val; },
     'riso-liner':  () => { S.risoLiner=(val==='true'); },
     'memo-sides':  () => { S.memoSides=val; toggleBackCol('memo-back-col', val==='double', 'memoBack', 'memo-back-inks'); },
-    'book-size':        () => { S.bookSize=val; recalc(); },
+    'book-size': () => {
+      S.bookSize = val;
+      document.getElementById('book-spec-a4').style.display = val==='a4' ? '' : 'none';
+      document.getElementById('book-spec-a5').style.display = val==='a5' ? '' : 'none';
+      recalc();
+    },
     'book-cover-sides': () => { S.bookCoverSides=val; toggleBackCol('book-cover-back-col', val==='double', 'bookCoverBack', 'book-cover-back-inks'); },
     'book-inner-sides': () => { S.bookInnerSides=val; toggleBackCol('book-inner-back-col', val==='double', 'bookInnerBack', 'book-inner-back-inks'); },
   };
