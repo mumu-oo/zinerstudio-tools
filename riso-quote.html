@@ -134,6 +134,12 @@ body {
 .seg-btn:hover { background: var(--panel); color: var(--text); }
 .seg-btn.on { background: var(--text); color: var(--surf); }
 .seg-btn small { font-weight: 400; opacity: .6; font-size: 11px; margin-left: 4px; }
+/* ── 孔版印刷：左欄印刷尺寸拉滿高度 ── */
+#view-riso .form-col:first-child { align-content: stretch; }
+#view-riso .form-col:first-child > div { display: flex; flex-direction: column; height: 100%; }
+#view-riso .form-col:first-child .seg.grid2x2 { flex: 1; }
+#view-riso .form-col:first-child .seg.grid2x2 .seg-btn { height: 100%; }
+
 /* ── 2×2 grid seg (印刷尺寸) ── */
 .seg.grid2x2 {
   display: grid;
@@ -398,7 +404,7 @@ body {
   <div class="tab-switcher">
     <button class="tab-btn on" onclick="switchTab('riso',this)">孔版印刷</button>
     <button class="tab-btn"   onclick="switchTab('memo',this)">便條紙</button>
-    <button class="tab-btn"   onclick="switchTab('book',this)">騎馬釘製本</button>
+    <button class="tab-btn"   onclick="switchTab('book',this)">車線製本</button>
   </div>
 
   <!-- ═══════════════════════════════
@@ -550,9 +556,17 @@ body {
   </div>
 
   <!-- ═══════════════════════════════
-       TAB 3 — 騎馬釘製本
+       TAB 3 — 車線製本
   ═══════════════════════════════ -->
   <div class="tab-view" id="view-book">
+
+    <div class="block">
+      <div class="sec-title">本子尺寸</div>
+      <div class="seg">
+        <button class="seg-btn on" data-group="book-size" data-val="a4" onclick="setChip('book-size','a4',this)">A4本 <small>約 210×297 mm</small></button>
+        <button class="seg-btn"    data-group="book-size" data-val="a5" onclick="setChip('book-size','a5',this)">A5本 <small>約 148×210 mm</small></button>
+      </div>
+    </div>
 
     <div class="block">
       <div class="form-cols">
@@ -732,7 +746,8 @@ const S = {
   // 便條紙
   memoSides: 'single',
   memoFront: [], memoBack: [],
-  // 製本
+  // 車線製本
+  bookSize: 'a4',
   bookCoverSides: 'single', bookInnerSides: 'double',
   bookCoverFront: [], bookCoverBack: [],
   bookInnerFront: [], bookInnerBack: [],
@@ -802,11 +817,14 @@ function calcMemo() {
 function calcBook() {
   const books = Math.max(1, parseInt(document.getElementById('book-count').value)||1);
   const innerPages = Math.max(4, Math.round((parseInt(document.getElementById('book-pages').value)||16)/4)*4);
-  const coverSheets = books;           // 1 A3 封面 / 本
-  const innerSheets = (innerPages/4)*books;  // 騎馬釘：4頁/張
+  const isA5 = S.bookSize === 'a5';
+  const pagesPerA3 = isA5 ? 8 : 4;   // A5本：A3落2版，每版4頁
+  const coversPerA3 = isA5 ? 2 : 1;  // A5本：封面也落2版
+  const coverSheets = Math.ceil(books / coversPerA3);
+  const innerSheets = (innerPages / pagesPerA3) * books;
   // update hint
   const hintEl = document.getElementById('book-sheets-hint');
-  if (hintEl) hintEl.textContent = `${innerPages/4} 張 A3 / 本（內頁）`;
+  if (hintEl) hintEl.textContent = `${innerPages/pagesPerA3} 張 A3 / 本（內頁）`;
   const coverColor = inkFee(S.bookCoverFront) + inkFee(S.bookCoverBack);
   const innerColor = inkFee(S.bookInnerFront) + inkFee(S.bookInnerBack);
   const coverPaper = coverSheets * paperPrice('book-cover-material');
@@ -878,7 +896,7 @@ function switchTab(tab, el) {
   el.classList.add('on');
   document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-'+tab).classList.add('on');
-  const labels = { riso:'孔版印刷　估價摘要', memo:'便條紙　估價摘要', book:'騎馬釘　估價摘要' };
+  const labels = { riso:'孔版印刷　估價摘要', memo:'便條紙　估價摘要', book:'車線製本　估價摘要' };
   document.getElementById('summary-head').textContent = labels[tab];
   recalc();
 }
@@ -891,6 +909,7 @@ function setChip(group, val, el) {
     'riso-size':   () => { S.risoSize=val; },
     'riso-liner':  () => { S.risoLiner=(val==='true'); },
     'memo-sides':  () => { S.memoSides=val; toggleBackCol('memo-back-col', val==='double', 'memoBack', 'memo-back-inks'); },
+    'book-size':        () => { S.bookSize=val; recalc(); },
     'book-cover-sides': () => { S.bookCoverSides=val; toggleBackCol('book-cover-back-col', val==='double', 'bookCoverBack', 'book-cover-back-inks'); },
     'book-inner-sides': () => { S.bookInnerSides=val; toggleBackCol('book-inner-back-col', val==='double', 'bookInnerBack', 'book-inner-back-inks'); },
   };
