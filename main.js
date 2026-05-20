@@ -2,6 +2,17 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron');
 
+const PREFERRED_OUTPUT_DIR = '/Users/mumu/Library/CloudStorage/GoogleDrive-zinerstudio@gmail.com/我的雲端硬碟/★印刷印單';
+
+async function getPreferredOutputPath(filename = '') {
+  try {
+    await fs.access(PREFERRED_OUTPUT_DIR);
+    return filename ? path.join(PREFERRED_OUTPUT_DIR, filename) : PREFERRED_OUTPUT_DIR;
+  } catch (error) {
+    return filename ? path.join(app.getPath('documents'), filename) : app.getPath('documents');
+  }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1440,
@@ -37,7 +48,7 @@ ipcMain.handle('invoice:save-pdf', async (event, options = {}) => {
   const suggestedName = options.filename || 'ZinerStudio報價單.pdf';
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: '儲存報價單 PDF',
-    defaultPath: path.join(app.getPath('documents'), suggestedName),
+    defaultPath: await getPreferredOutputPath(suggestedName),
     filters: [{ name: 'PDF', extensions: ['pdf'] }]
   });
 
@@ -63,7 +74,7 @@ ipcMain.handle('invoice:export-backup', async (event, options = {}) => {
   const payload = options.payload ?? null;
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: '匯出報價單備份',
-    defaultPath: path.join(app.getPath('documents'), suggestedName),
+    defaultPath: await getPreferredOutputPath(suggestedName),
     filters: [{ name: 'JSON', extensions: ['json'] }]
   });
 
@@ -81,6 +92,7 @@ ipcMain.handle('invoice:import-backup', async (event) => {
 
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
     title: '匯入報價單備份',
+    defaultPath: await getPreferredOutputPath(),
     properties: ['openFile'],
     filters: [{ name: 'JSON', extensions: ['json'] }]
   });

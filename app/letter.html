@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ziner Studio ✦ 信件組合工具</title>
+<style>
+:root {
+  --bg:     #F7F5FB;
+  --surf:   #FFFFFF;
+  --accent: #8B7BB5;
+  --acc-h:  #7365A0;
+  --acc-lt: #EDE8F8;
+  --acc-md: #C4B0DF;
+  --text:   #2C2C3A;
+  --muted:  #8A87A0;
+  --faint:  #C0BCCE;
+  --bdr:    #E3E0EE;
+  --font: system-ui,-apple-system,'Helvetica Neue','PingFang TC','Noto Sans TC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:var(--font);color:var(--text);font-size:14px;line-height:1.6;}
+body{background:var(--bg);display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── Topbar ── */
+.topbar{
+  background:var(--accent);color:#fff;
+  padding:10px 20px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;gap:12px;
+}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.back-btn{
+  font-size:12px;color:rgba(255,255,255,.85);
+  text-decoration:none;background:rgba(255,255,255,.18);
+  padding:3px 10px;border-radius:10px;white-space:nowrap;
+  transition:background .15s;
+}
+.back-btn:hover{background:rgba(255,255,255,.3);}
+.topbar h1{font-size:14px;font-weight:700;letter-spacing:.3px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.settings-btn{
+  font-size:12px;color:rgba(255,255,255,.85);
+  background:rgba(255,255,255,.18);border:none;
+  padding:4px 12px;border-radius:10px;cursor:pointer;
+  font-family:var(--font);font-weight:600;transition:background .15s;
+}
+.settings-btn:hover{background:rgba(255,255,255,.3);}
+
+/* ── Main layout ── */
+.layout{display:grid;grid-template-columns:320px 1fr;flex:1;overflow:hidden;}
+
+/* ── Left panel ── */
+.left{background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;}
+.tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.tab{
+  flex:1;padding:10px 4px;text-align:center;
+  font-size:.82em;font-weight:600;cursor:pointer;
+  color:var(--muted);border-bottom:3px solid transparent;transition:all .18s;
+}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.tab:hover:not(.on){color:var(--text);background:var(--bg);}
+.tab-body{display:none;overflow-y:auto;padding:14px;flex:1;}
+.tab-body.on{display:block;}
+.tab-body::-webkit-scrollbar{width:3px;}
+.tab-body::-webkit-scrollbar-thumb{background:var(--acc-md);border-radius:2px;}
+
+.sec{
+  font-size:.67em;font-weight:700;letter-spacing:.09em;
+  color:var(--muted);text-transform:uppercase;
+  margin:16px 0 8px;
+}
+.sec:first-child{margin-top:0;}
+.sec em{font-weight:400;color:var(--faint);font-size:.9em;letter-spacing:0;text-transform:none;font-style:normal;}
+hr.div{border:none;border-top:1px solid var(--bdr);margin:12px 0;}
+
+/* ── Main format cards (radio) ── */
+.mcard{
+  border:1.5px solid var(--bdr);border-radius:9px;
+  margin-bottom:7px;cursor:pointer;transition:all .18s;overflow:hidden;
+}
+.mcard:hover{border-color:var(--acc-md);}
+.mcard.on{border-color:var(--accent);background:var(--acc-lt);}
+.mcard-hd{display:flex;align-items:center;gap:10px;padding:10px 13px;}
+.rdot{
+  width:17px;height:17px;border:2px solid var(--bdr);
+  border-radius:50%;flex-shrink:0;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;
+}
+.mcard.on .rdot{border-color:var(--accent);}
+.rinner{width:8px;height:8px;border-radius:50%;background:var(--accent);display:none;}
+.mcard.on .rinner{display:block;}
+.mcard-title{font-size:.88em;font-weight:600;}
+.mcard-desc{font-size:.74em;color:var(--muted);margin-top:1px;}
+
+/* delivery sub-chips */
+.del-sub{display:none;padding:0 13px 11px 40px;flex-wrap:wrap;gap:7px;}
+.mcard.on .del-sub{display:flex;}
+.dchip{
+  padding:5px 12px;border:1.5px solid var(--acc-md);
+  border-radius:20px;font-size:.78em;cursor:pointer;
+  color:var(--acc-h);background:white;transition:all .18s;user-select:none;
+}
+.dchip:hover{background:var(--acc-lt);}
+.dchip.on{background:var(--acc-h);color:white;border-color:var(--acc-h);}
+
+/* ── Combo format cards (checkbox) ── */
+.ccard{
+  border:1.5px solid var(--bdr);border-radius:9px;
+  margin-bottom:7px;overflow:hidden;transition:border-color .18s;
+}
+.ccard:hover{border-color:var(--acc-md);}
+.ccard.on{border-color:var(--accent);}
+.ccard-hd{display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;}
+.cbox{
+  width:17px;height:17px;border:2px solid var(--muted);
+  border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:white;transition:all .18s;
+}
+.ccard.on .cbox{background:var(--accent);border-color:var(--accent);}
+.ccard-title{font-size:.87em;font-weight:600;}
+.ccard-desc{font-size:.74em;color:var(--muted);margin-top:1px;}
+.subs{display:none;flex-wrap:wrap;gap:6px;padding:0 13px 11px 40px;}
+.ccard.on .subs{display:flex;}
+.sc{
+  padding:4px 10px;border:1.5px solid var(--acc-md);
+  border-radius:14px;font-size:.76em;cursor:pointer;
+  color:var(--acc-h);background:white;transition:all .18s;user-select:none;
+}
+.sc.on{background:var(--acc-h);color:white;border-color:var(--acc-h);}
+
+/* progress chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{
+  padding:6px 13px;border:1.5px solid var(--bdr);
+  border-radius:20px;font-size:.81em;cursor:pointer;
+  transition:all .18s;color:var(--text);background:white;user-select:none;
+}
+.chip:hover{border-color:var(--acc-md);}
+.chip.on{background:var(--accent);border-color:var(--accent);color:white;font-weight:600;}
+
+/* custom blocks badge */
+.custom-badge{
+  font-size:.62em;padding:1px 5px;border-radius:8px;
+  background:var(--accent);color:white;margin-left:5px;vertical-align:middle;
+}
+
+/* ── Right panel ── */
+.right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+.fields{
+  background:var(--surf);border-bottom:1px solid var(--bdr);
+  padding:14px 20px;flex-shrink:0;
+}
+.fields-shell{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(170px,1fr);
+  align-items:stretch;
+  gap:16px;
+}
+.fields-main{
+  min-width:0;
+}
+.fields-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;}
+.fields-hd h2{font-size:.9em;font-weight:700;}
+#fhint{font-size:.75em;color:var(--muted);}
+.field-row{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  min-height:40px;
+}
+.fld{display:flex;flex-direction:column;min-width:0;}
+.fld label{font-size:.65em;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.fld input{
+  padding:8px 10px;border:1.5px solid var(--bdr);
+  border-radius:7px;font-size:.84em;font-family:inherit;
+  color:var(--text);background:white;transition:border-color .2s;
+}
+.fld input:focus{outline:none;border-color:var(--accent);}
+.fld input.has{border-color:var(--acc-md);background:var(--acc-lt);}
+
+.preview-area{flex:1;overflow-y:auto;padding:16px 20px;}
+.preview-area::-webkit-scrollbar{width:3px;}
+.preview-area::-webkit-scrollbar-thumb{background:var(--acc-md);border-radius:2px;}
+.preview-toolbar{
+  display:grid;
+  grid-template-rows:repeat(3, minmax(0, 1fr));
+  gap:10px;
+  min-width:0;
+  align-self:stretch;
+}
+.plabel{font-size:.65em;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.pbox{
+  background:var(--surf);border:1.5px solid var(--bdr);border-radius:8px;
+  padding:11px 14px;word-break:break-all;
+  font-size:.88em;color:var(--text);margin-bottom:12px;
+}
+.pbox.empty{color:var(--muted);font-style:italic;}
+#body-box{white-space:pre-wrap;line-height:1.9;min-height:120px;padding:16px 18px;}
+#body-box.empty{min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;}
+
+.btns{
+  padding:12px 20px;background:var(--surf);
+  border-top:1px solid var(--bdr);
+  display:flex;gap:9px;flex-shrink:0;
+}
+.btn{
+  min-height:0;
+  height:100%;
+  width:100%;
+  padding:12px 20px;border:none;border-radius:10px;
+  font-size:.9em;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .2s;letter-spacing:.01em;
+  display:flex;align-items:center;justify-content:center;
+}
+.btn-sub{background:var(--acc-lt);color:var(--acc-h);border:1px solid rgba(139,123,181,.14);}
+.btn-sub:hover{background:#e2daf4;}
+.btn-body{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(139,123,181,.18);}
+.btn-body:hover{background:var(--acc-h);}
+.btn-reset{background:#f3eefb;color:var(--acc-h);border:1px solid rgba(139,123,181,.14);}
+.btn-reset:hover{background:#e6def5;}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--text);color:white;
+  padding:10px 24px;border-radius:30px;
+  font-size:.84em;font-weight:700;transition:transform .25s;
+  z-index:9999;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ══════════════════════════════════
+   SETTINGS OVERLAY
+══════════════════════════════════ */
+.settings-overlay{
+  position:fixed;inset:0;z-index:500;
+  display:none;align-items:stretch;
+}
+.settings-overlay.open{display:flex;}
+.settings-scrim{
+  flex:1;background:rgba(44,44,58,.4);cursor:pointer;
+}
+.settings-panel{
+  width:520px;max-width:90vw;background:var(--surf);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:-4px 0 24px rgba(0,0,0,.15);
+}
+.sp-header{
+  background:var(--accent);color:#fff;
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.sp-header h2{font-size:15px;font-weight:700;}
+.sp-close{
+  background:rgba(255,255,255,.2);border:none;color:#fff;
+  width:28px;height:28px;border-radius:50%;font-size:16px;
+  cursor:pointer;font-family:var(--font);transition:background .15s;
+}
+.sp-close:hover{background:rgba(255,255,255,.35);}
+
+.sp-tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.sp-tab{
+  padding:10px 18px;font-size:.82em;font-weight:600;
+  cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;transition:all .18s;
+}
+.sp-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+
+.sp-body{flex:1;overflow-y:auto;padding:18px 20px;}
+.sp-body::-webkit-scrollbar{width:3px;}
+.sp-body::-webkit-scrollbar-thumb{background:var(--acc-md);border-radius:2px;}
+
+/* Settings – built-in list */
+.builtin-group{margin-bottom:18px;}
+.builtin-group-title{
+  font-size:.67em;font-weight:700;letter-spacing:.09em;
+  color:var(--muted);text-transform:uppercase;margin-bottom:8px;
+}
+.builtin-item{
+  border:1px solid var(--bdr);border-radius:8px;
+  margin-bottom:6px;overflow:hidden;
+}
+.builtin-item-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;cursor:pointer;font-size:.85em;font-weight:600;
+  background:var(--bg);
+}
+.builtin-item-hd:hover{background:var(--acc-lt);}
+.builtin-item-body{
+  display:none;padding:10px 12px;
+  font-size:.8em;white-space:pre-wrap;line-height:1.7;
+  color:var(--text);border-top:1px solid var(--bdr);
+  background:white;
+}
+.builtin-item.open .builtin-item-body{display:block;}
+.expand-arrow{color:var(--muted);transition:transform .18s;font-style:normal;}
+.builtin-item.open .expand-arrow{transform:rotate(90deg);}
+
+/* Settings – custom blocks */
+.custom-empty{
+  text-align:center;padding:30px 20px;
+  color:var(--muted);font-size:.85em;
+}
+.custom-block{
+  border:1.5px solid var(--bdr);border-radius:9px;
+  margin-bottom:10px;overflow:hidden;
+}
+.custom-block-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--bg);
+}
+.custom-block-title{font-size:.87em;font-weight:600;}
+.custom-block-desc{font-size:.74em;color:var(--muted);margin-top:1px;}
+.custom-block-actions{display:flex;gap:6px;flex-shrink:0;}
+.cb-btn{
+  padding:3px 9px;border:1px solid var(--bdr);border-radius:6px;
+  font-size:.74em;cursor:pointer;background:white;font-family:var(--font);
+  color:var(--muted);transition:all .15s;
+}
+.cb-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cb-btn.del:hover{border-color:#e05;color:#e05;}
+.custom-block-text{
+  padding:8px 14px 10px;font-size:.78em;
+  white-space:pre-wrap;line-height:1.7;
+  color:var(--text);border-top:1px solid var(--bdr);
+  background:white;
+}
+.builtin-edit-card{
+  border:1.5px solid var(--bdr);border-radius:10px;
+  margin-bottom:12px;overflow:hidden;background:white;
+}
+.builtin-edit-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--bdr);
+}
+.builtin-edit-title{font-size:.87em;font-weight:700;}
+.builtin-edit-desc{font-size:.74em;color:var(--muted);margin-top:1px;}
+.builtin-edit-body{padding:14px;}
+.builtin-edit-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.builtin-tip{
+  font-size:.76em;color:var(--muted);margin-bottom:12px;line-height:1.7;
+}
+.builtin-key{
+  font-size:.7em;color:var(--muted);font-weight:600;white-space:nowrap;
+}
+
+/* Add form */
+.add-form{
+  border:1.5px dashed var(--acc-md);border-radius:9px;
+  padding:16px;margin-top:14px;
+}
+.add-form-title{font-size:.78em;font-weight:700;color:var(--accent);margin-bottom:12px;}
+.af-row{margin-bottom:10px;}
+.af-lbl{display:block;font-size:.65em;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.af-inp,.af-txt{
+  width:100%;padding:7px 10px;
+  border:1.5px solid var(--bdr);border-radius:7px;
+  font-size:.84em;font-family:inherit;color:var(--text);
+  background:white;transition:border-color .2s;
+}
+.af-inp:focus,.af-txt:focus{outline:none;border-color:var(--accent);}
+.af-txt{resize:vertical;min-height:100px;}
+.af-actions{display:flex;gap:8px;margin-top:12px;}
+.af-save{
+  padding:8px 20px;background:var(--accent);color:white;
+  border:none;border-radius:7px;font-size:.84em;font-weight:700;
+  cursor:pointer;font-family:var(--font);transition:background .15s;
+}
+.af-save:hover{background:var(--acc-h);}
+.af-cancel{
+  padding:8px 16px;background:var(--bdr);color:var(--muted);
+  border:none;border-radius:7px;font-size:.84em;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:background .15s;
+}
+.af-cancel:hover{background:var(--faint);}
+
+/* Edit modal */
+.edit-modal{
+  position:fixed;inset:0;z-index:600;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(44,44,58,.5);
+}
+.edit-modal.open{display:flex;}
+.edit-box{
+  background:var(--surf);border-radius:12px;
+  width:480px;max-width:92vw;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.edit-box-hd{
+  background:var(--accent);color:#fff;
+  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+}
+.edit-box-hd h3{font-size:14px;font-weight:700;}
+.edit-box-body{padding:16px 18px;}
+.edit-actions{display:flex;gap:8px;padding:0 18px 16px;justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="back-btn">← 報價單</a>
+    <h1>✉ 信件組合工具</h1>
+  </div>
+  <div class="topbar-right">
+    <button class="settings-btn" onclick="openSettings()">⚙ 格式管理</button>
+  </div>
+</div>
+
+<!-- ── Main layout ── -->
+<div class="layout">
+
+<!-- ═══ Left ═══ -->
+<div class="left">
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab(0)">主格式</div>
+    <div class="tab"    onclick="switchTab(1)">組合格式</div>
+    <div class="tab"    onclick="switchTab(2)">工作坊</div>
+    <div class="tab"    id="tab-custom" onclick="switchTab(3)" style="display:none;">自訂 <span class="custom-badge" id="custom-count">0</span></div>
+  </div>
+
+  <!-- 主格式 -->
+  <div class="tab-body on" id="tb0">
+    <div class="sec">信件主體 <em>（選一個）</em></div>
+
+    <div class="mcard" data-k="checkout" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">報價單 ＆ 結帳資訊</div>
+          <div class="mcard-desc">7-11 超商取件 · 賣場連結付款</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="transfer" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">報價單 ＆ 匯款資訊</div>
+          <div class="mcard-desc">銀行轉帳 · 選收件方式 ↓</div>
+        </div>
+      </div>
+      <div class="del-sub">
+        <div class="dchip" data-d="d_711t"   onclick="pickDel(event,this)">交貨便</div>
+        <div class="dchip" data-d="d_cat"    onclick="pickDel(event,this)">黑貓宅配</div>
+        <div class="dchip" data-d="d_lala"   onclick="pickDel(event,this)">Lalamove</div>
+        <div class="dchip" data-d="d_venue"  onclick="pickDel(event,this)">場送至攤位</div>
+        <div class="dchip" data-d="d_pickup" onclick="pickDel(event,this)">來店自取</div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="invoice" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">報價單 ＆ 請款資訊</div>
+          <div class="mcard-desc">統編開立 · 電子發票 · 選收件方式 ↓</div>
+        </div>
+      </div>
+      <div class="del-sub">
+        <div class="dchip" data-d="d_711t"   onclick="pickDel(event,this)">交貨便</div>
+        <div class="dchip" data-d="d_cat"    onclick="pickDel(event,this)">黑貓宅配</div>
+        <div class="dchip" data-d="d_lala"   onclick="pickDel(event,this)">Lalamove</div>
+        <div class="dchip" data-d="d_venue"  onclick="pickDel(event,this)">場送至攤位</div>
+        <div class="dchip" data-d="d_pickup" onclick="pickDel(event,this)">來店自取</div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="revision" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">修正通知</div>
+          <div class="mcard-desc">搭配「組合格式」Tab 選擇技術問題</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="filesubmit" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">分色檔案遞交</div>
+          <div class="mcard-desc">壓縮檔附件、提供下載通知</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="permission" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">請打開下載權限</div>
+          <div class="mcard-desc">雲端硬碟未開放存取</div>
+        </div>
+      </div>
+    </div>
+    <div id="tb0-user"></div>
+  </div>
+
+  <!-- 組合格式 -->
+  <div class="tab-body" id="tb1">
+    <div class="sec">檔案技術問題</div>
+
+    <div class="ccard" data-k="cc_color" onclick="toggleC(this)">
+      <div class="ccard-hd">
+        <div class="cbox">✓</div>
+        <div><div class="ccard-title">彩稿問題</div><div class="ccard-desc">分層、黑白原稿、濃度設定</div></div>
+      </div>
+      <div class="subs">
+        <div class="sc on" data-s="color_split">各色分開儲存</div>
+        <div class="sc"    data-s="color_bw">原稿必須黑白</div>
+        <div class="sc"    data-s="color_density">黑白濃度設定</div>
+      </div>
+    </div>
+
+    <div class="ccard" data-k="cc_bleed" onclick="toggleC(this)">
+      <div class="ccard-hd">
+        <div class="cbox">✓</div>
+        <div><div class="ccard-title">出血問題</div><div class="ccard-desc">3mm 出血、安全範圍、尺寸檢查、A3 留白</div></div>
+      </div>
+      <div class="subs">
+        <div class="sc on" data-s="bleed_3mm">出血 3mm</div>
+        <div class="sc"    data-s="bleed_safe">安全範圍警示</div>
+        <div class="sc"    data-s="bleed_a3">A3 四邊留白</div>
+        <div class="sc"    data-s="ws_safe">安全範圍提醒</div>
+        <div class="sc"    data-s="ws_sizemis">尺寸不符提示</div>
+      </div>
+    </div>
+
+    <div class="ccard" data-k="cc_trans" onclick="toggleC(this)">
+      <div class="ccard-hd">
+        <div class="cbox">✓</div>
+        <div><div class="ccard-title">透色問題</div><div class="ccard-desc">透明度、白底背景、雜點</div></div>
+      </div>
+      <div class="subs">
+        <div class="sc on" data-s="trans_op">透明度設定</div>
+        <div class="sc"    data-s="trans_white">白底 PSD 背景</div>
+        <div class="sc"    data-s="trans_noise">雜點清除</div>
+        <div class="sc"    data-s="trans_clean">確實清空圖案</div>
+      </div>
+    </div>
+
+    <div class="ccard" data-k="cc_err" onclick="toggleC(this)">
+      <div class="ccard-hd">
+        <div class="cbox">✓</div>
+        <div><div class="ccard-title">常見出錯提示</div><div class="ccard-desc">解析度、嵌入、文字外框、點陣化、多款備註</div></div>
+      </div>
+      <div class="subs">
+        <div class="sc on" data-s="err_dpi">解析度不足</div>
+        <div class="sc"    data-s="err_embed">取消嵌入</div>
+        <div class="sc"    data-s="err_text">文字未外框</div>
+        <div class="sc"    data-s="err_size">尺寸不符</div>
+        <div class="sc"    data-s="err_raster">點陣化</div>
+        <div class="sc"    data-s="err_lock">勿鎖圖層</div>
+        <div class="sc"    data-s="err_border">框線設計</div>
+        <div class="sc"    data-s="err_gradient">漸層網點</div>
+        <div class="sc"    data-s="err_thin">薄紙限制</div>
+        <div class="sc"    data-s="ws_multi">多款設計數量備註</div>
+      </div>
+    </div>
+
+    <div class="ccard" data-k="cc_mix" onclick="toggleC(this)">
+      <div class="ccard-hd">
+        <div class="cbox">✓</div>
+        <div><div class="ccard-title">混色問題</div><div class="ccard-desc">藍黃混色、低濃度、QR 碼、金墨提醒</div></div>
+      </div>
+      <div class="subs">
+        <div class="sc on" data-s="mix_by">藍黃混色</div>
+        <div class="sc"    data-s="mix_low">低於 30%</div>
+        <div class="sc"    data-s="mix_qr">QR 碼濃度</div>
+        <div class="sc on" data-s="gold_overlap">金墨與他色重疊</div>
+        <div class="sc"    data-s="gold_density">金墨濃度建議</div>
+        <div class="sc"    data-s="gold_file">金黑分開儲存</div>
+        <div class="sc"    data-s="ws_nofoil">金墨與燙金說明</div>
+      </div>
+    </div>
+
+    <hr class="div">
+    <div class="sec">進度追蹤</div>
+    <div class="chips">
+      <div class="chip" data-k="prog_updated" onclick="toggleChip(this)">檔案已更新</div>
+      <div class="chip" data-k="prog_wait"    onclick="toggleChip(this)">催回信</div>
+      <div class="chip" data-k="prog_cancel"  onclick="toggleChip(this)">確認是否取消</div>
+    </div>
+  </div>
+
+  <!-- 工作坊 -->
+  <div class="tab-body" id="tb2">
+    <div class="sec">工作坊</div>
+
+    <div class="mcard" data-k="ws_revision_notice" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">春聯 WS 修正通知</div>
+          <div class="mcard-desc">可搭配組合格式補技術問題</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_offer_progress" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">進度回報｜有點便宜提案</div>
+          <div class="mcard-desc">附結帳連結與製作時間說明</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_class_cancel" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">不開課通知</div>
+          <div class="mcard-desc">未達開課條件時使用</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_pre_class" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">行前通知</div>
+          <div class="mcard-desc">自動算開放入場時間</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_spring_ready" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">春聯 WS 受理通知</div>
+          <div class="mcard-desc">檔案確認完成，可進入製作</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_pay_info" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">工作坊報名繳費通知</div>
+          <div class="mcard-desc">報名資訊與匯款資訊</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="ws_pay_success" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">工作坊繳費成功通知</div>
+          <div class="mcard-desc">完整課前資訊與規範</div>
+        </div>
+      </div>
+    </div>
+    <div id="tb2-user"></div>
+  </div>
+
+  <!-- 自訂 -->
+  <div class="tab-body" id="tb3"></div>
+
+</div><!-- /left -->
+
+<!-- ═══ Right ═══ -->
+<div class="right">
+  <div class="fields">
+    <div class="fields-shell">
+      <div class="fields-main">
+        <div class="fields-hd">
+          <h2>填入資料</h2>
+          <span id="fhint">← 先選左側格式</span>
+        </div>
+        <div class="field-row" id="field-row"></div>
+      </div>
+
+      <div class="preview-toolbar">
+        <button class="btn btn-sub"   onclick="doCopy('subj-box','件名')">複製件名</button>
+        <button class="btn btn-body"  onclick="doCopy('body-box','內文')">複製內文</button>
+        <button class="btn btn-reset" onclick="resetAll()">清　　空</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-area">
+    <div class="plabel">件名（信件主旨）</div>
+    <div class="pbox empty" id="subj-box">—</div>
+    <div class="plabel">信件內文</div>
+    <div class="pbox empty" id="body-box">選好格式後，信件會自動顯示在這裡</div>
+  </div>
+</div>
+
+</div><!-- /layout -->
+
+<!-- ═══════════════════════════
+     SETTINGS OVERLAY
+═══════════════════════════ -->
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-scrim" onclick="closeSettings()"></div>
+  <div class="settings-panel">
+    <div class="sp-header">
+      <h2>⚙ 格式管理</h2>
+      <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sp-tabs">
+      <div class="sp-tab on" onclick="switchSpTab(0)">自訂格式</div>
+      <div class="sp-tab"    onclick="switchSpTab(1)">內建格式預覽</div>
+      <div class="sp-tab"    onclick="switchSpTab(2)">公版編輯</div>
+    </div>
+    <div class="sp-body" id="sp-body-0">
+      <!-- 自訂格式 – rendered by JS -->
+    </div>
+    <div class="sp-body" id="sp-body-1" style="display:none;">
+      <!-- 內建格式列表 – rendered by JS -->
+    </div>
+    <div class="sp-body" id="sp-body-2" style="display:none;">
+      <!-- 公版編輯 – rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="edit-modal" id="edit-modal">
+  <div class="edit-box">
+    <div class="edit-box-hd">
+      <h3>編輯格式</h3>
+      <button class="sp-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="edit-box-body">
+      <div class="af-row">
+        <label class="af-lbl">標題</label>
+        <input class="af-inp" id="edit-title" type="text">
+      </div>
+      <div class="af-row">
+        <label class="af-lbl">描述</label>
+        <input class="af-inp" id="edit-desc" type="text">
+      </div>
+      <div class="af-row">
+        <label class="af-lbl">格式內文</label>
+        <textarea class="af-txt" id="edit-text" style="min-height:130px;"></textarea>
+      </div>
+    </div>
+    <div class="edit-actions">
+      <button class="af-cancel" onclick="closeEditModal()">取消</button>
+      <button class="af-save"   onclick="saveEdit()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+var mainKey  = null;
+var delKey   = null;
+var comboSet = {};
+var savedVals = {};
+var customBlocks = loadCustomBlocks();
+var customTemplates = loadCustomTemplates();
+var editingId = null;
+
+// ════════════════════════════════════════
+// CUSTOM BLOCKS – localStorage
+// ════════════════════════════════════════
+function loadCustomBlocks() {
+  try {
+    var raw = localStorage.getItem('ziner-letter-custom');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function saveCustomBlocks() {
+  localStorage.setItem('ziner-letter-custom', JSON.stringify(customBlocks));
+}
+function genId() {
+  return 'c_' + Date.now().toString(36);
+}
+function genTemplateId() {
+  return 't_' + Date.now().toString(36);
+}
+function loadCustomTemplates() {
+  try {
+    var raw = JSON.parse(localStorage.getItem('ziner-letter-custom-templates') || '[]');
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter(function(item){ return item && item.id && item.title && item.subject && item.body; })
+      .map(function(item) {
+        return {
+          id: String(item.id),
+          section: item.section === 'workshop' ? 'workshop' : 'main',
+          title: String(item.title || ''),
+          desc: String(item.desc || ''),
+          subject: String(item.subject || ''),
+          body: String(item.body || '')
+        };
+      });
+  } catch(e) { return []; }
+}
+function saveCustomTemplates() {
+  localStorage.setItem('ziner-letter-custom-templates', JSON.stringify(customTemplates));
+}
+function templateKeyFor(id) {
+  return 'tpl_' + id;
+}
+function customTemplateByKey(key) {
+  if (!key || key.indexOf('tpl_') !== 0) return null;
+  var id = key.slice(4);
+  return customTemplates.find(function(item){ return item.id === id; }) || null;
+}
+
+// ════════════════════════════════════════
+// TAB SWITCH
+// ════════════════════════════════════════
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('on', j===i); });
+  document.querySelectorAll('.tab-body').forEach(function(b,j){ b.classList.toggle('on', j===i); });
+}
+
+// ════════════════════════════════════════
+// MAIN FORMAT
+// ════════════════════════════════════════
+function pickMain(el) {
+  var k = el.dataset.k;
+  var wasOn = el.classList.contains('on');
+  document.querySelectorAll('.mcard').forEach(function(m){ m.classList.remove('on'); });
+  document.querySelectorAll('.dchip').forEach(function(d){ d.classList.remove('on'); });
+  delKey = null;
+  if (!wasOn) { el.classList.add('on'); mainKey = k; }
+  else { mainKey = null; }
+  updateFields(); render();
+}
+
+function pickDel(evt, el) {
+  evt.stopPropagation();
+  var k = el.dataset.d;
+  el.closest('.mcard').querySelectorAll('.dchip').forEach(function(d){ d.classList.remove('on'); });
+  if (delKey === k) { delKey = null; }
+  else { el.classList.add('on'); delKey = k; }
+  updateFields(); render();
+}
+
+// ════════════════════════════════════════
+// COMBO FORMAT
+// ════════════════════════════════════════
+function toggleC(el) {
+  if (event.target.closest('.sc')) return;
+  var k = el.dataset.k;
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) comboSet[k] = true;
+  else delete comboSet[k];
+  render();
+}
+document.querySelectorAll('.sc').forEach(function(sc) {
+  sc.addEventListener('click', function(e) {
+    e.stopPropagation(); sc.classList.toggle('on'); render();
+  });
+});
+function toggleChip(el) {
+  var k = el.dataset.k;
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) comboSet[k] = true;
+  else delete comboSet[k];
+  render();
+}
+
+// ════════════════════════════════════════
+// FIELDS
+// ════════════════════════════════════════
+var FDEFS = {
+  f_client: { label:'客戶姓名（件名用）', ph:'例：王小明' },
+  f_amount: { label:'訂單金額',           ph:'例：$ 1,500' },
+  f_days:   { label:'出貨天數',           ph:'例：3（填數字）' },
+  f_link:   { label:'賣場連結',           ph:'貼上網址，會自動代入內文' },
+  f_course: { label:'課程名稱',           ph:'例：Live 2026 Risograph Printing 實作印刷體驗' },
+  f_slot:   { label:'工作坊時段',         ph:'例：08/07（四）13:00-14:30' },
+  f_plan:   { label:'報名方案',           ph:'例：雙色方案' },
+  f_fee:    { label:'報名費用',           ph:'例：1200' },
+  f_venue:  { label:'場送地點',           ph:'例：5/25 布穀町 A02' },
+  f_pickup: { label:'來店時間',           ph:'例：10/03 pm15' },
+};
+var KFIELDS = {
+  checkout:   ['f_client','f_days','f_link'],
+  transfer:   ['f_client','f_amount','f_days'],
+  invoice:    ['f_client','f_days','f_link'],
+  revision:   ['f_client'],
+  filesubmit: ['f_client'],
+  permission: [],
+  ws_revision_notice:['f_client'],
+  ws_offer_progress:['f_link'],
+  ws_class_cancel:['f_course','f_slot'],
+  ws_pre_class:['f_course','f_slot'],
+  ws_spring_ready:[],
+  ws_pay_info:['f_client','f_course','f_plan','f_fee','f_slot'],
+  ws_pay_success:['f_client','f_course','f_plan','f_fee','f_slot'],
+  d_venue:    ['f_venue'],
+  d_pickup:   ['f_pickup'],
+};
+var PLACEHOLDER_FIELD_MAP = {
+  f_client: ['{{客戶姓名}}','（客戶姓名）'],
+  f_amount: ['{{訂單金額}}','（訂單金額）'],
+  f_days:   ['{{出貨天數}}','（出貨天數）'],
+  f_link:   ['{{賣場連結}}','（賣場連結）'],
+  f_course: ['{{課程名稱}}','（課程名稱）'],
+  f_slot:   ['{{工作坊時段}}','（工作坊時段）'],
+  f_plan:   ['{{報名方案}}','（報名方案）'],
+  f_fee:    ['{{報名費用}}','（報名費用）'],
+  f_venue:  ['{{場送地點}}','（場送地點）'],
+  f_pickup: ['{{來店時間}}','（來店時間）']
+};
+function inferFieldKeysFromTemplate(text) {
+  var found = {};
+  var source = String(text || '');
+  Object.keys(PLACEHOLDER_FIELD_MAP).forEach(function(fieldKey) {
+    PLACEHOLDER_FIELD_MAP[fieldKey].forEach(function(token) {
+      if (source.indexOf(token) !== -1) found[fieldKey] = true;
+    });
+  });
+  if (source.indexOf('{{開放入場時間}}') !== -1 || source.indexOf('（開放入場時間）') !== -1) found.f_slot = true;
+  return Object.keys(found);
+}
+function getTemplateFieldKeys(key) {
+  if (KFIELDS[key]) return KFIELDS[key];
+  var custom = customTemplateByKey(key);
+  if (!custom) return [];
+  return inferFieldKeysFromTemplate((custom.subject || '') + '\n' + (custom.body || ''));
+}
+function updateFields() {
+  var needed = {};
+  if (mainKey) getTemplateFieldKeys(mainKey).forEach(function(f){ needed[f]=true; });
+  if (delKey  && KFIELDS[delKey])  KFIELDS[delKey].forEach(function(f){ needed[f]=true; });
+  var row = document.getElementById('field-row');
+  row.querySelectorAll('input').forEach(function(inp){ savedVals[inp.id]=inp.value; });
+  row.innerHTML = '';
+  var hint = document.getElementById('fhint');
+  if (!mainKey && Object.keys(comboSet).length===0) { hint.textContent='← 先選左側格式'; return; }
+  var keys = ['f_client','f_amount','f_days','f_link','f_course','f_slot','f_plan','f_fee','f_venue','f_pickup'];
+  var shown = 0;
+  keys.forEach(function(fk) {
+    if (!needed[fk]) return; shown++;
+    var def = FDEFS[fk];
+    var wrap = document.createElement('div'); wrap.className='fld';
+    var lbl = document.createElement('label'); lbl.textContent=def.label; lbl.htmlFor=fk;
+    var inp = document.createElement('input');
+    inp.type='text'; inp.id=fk; inp.placeholder=def.ph; inp.value=savedVals[fk]||'';
+    if (inp.value) inp.classList.add('has');
+    inp.addEventListener('input', function(){ inp.classList.toggle('has',!!inp.value); savedVals[fk]=inp.value; render(); });
+    wrap.appendChild(lbl); wrap.appendChild(inp); row.appendChild(wrap);
+  });
+  hint.textContent = shown===0 ? '不需填資料，信件已自動生成' : '填入後信件即時同步 ↓';
+}
+
+// ════════════════════════════════════════
+// FIELD VALUES
+// ════════════════════════════════════════
+function getV() {
+  return {
+    f_client: (document.getElementById('f_client')||{value:''}).value.trim()||'',
+    f_amount: (document.getElementById('f_amount')||{value:''}).value.trim()||'$___',
+    f_days:   (document.getElementById('f_days')  ||{value:''}).value.trim()||'x',
+    f_link:   (document.getElementById('f_link')  ||{value:''}).value.trim()||'（賣場連結）',
+    f_course: (document.getElementById('f_course')||{value:''}).value.trim()||'Live 2026 Risograph Printing 實作印刷體驗',
+    f_slot:   (document.getElementById('f_slot')  ||{value:''}).value.trim()||'00/00（六）13:00-14:30',
+    f_plan:   (document.getElementById('f_plan')  ||{value:''}).value.trim()||'雙色方案',
+    f_fee:    (document.getElementById('f_fee')   ||{value:''}).value.trim()||'1200',
+    f_venue:  (document.getElementById('f_venue') ||{value:''}).value.trim()||'___',
+    f_pickup: (document.getElementById('f_pickup')||{value:''}).value.trim()||'___',
+  };
+}
+
+function getWorkshopEntryTime(slot) {
+  var m = String(slot || '').match(/(\d{1,2}):(\d{2})/);
+  if (!m) return '開始前 10 分鐘';
+  var hh = parseInt(m[1], 10);
+  var mm = parseInt(m[2], 10);
+  var total = hh * 60 + mm - 10;
+  if (total < 0) total += 24 * 60;
+  var outH = String(Math.floor(total / 60)).padStart(2, '0');
+  var outM = String(total % 60).padStart(2, '0');
+  return outH + ':' + outM;
+}
+
+function applyFieldPlaceholders(text, v) {
+  if (!text) return text;
+  return String(text)
+    .replaceAll('（客戶姓名）', v.f_client || '（客戶姓名）')
+    .replaceAll('{{客戶姓名}}', v.f_client || '（客戶姓名）')
+    .replaceAll('（訂單金額）', v.f_amount || '（訂單金額）')
+    .replaceAll('{{訂單金額}}', v.f_amount || '（訂單金額）')
+    .replaceAll('（出貨天數）', v.f_days || '（出貨天數）')
+    .replaceAll('{{出貨天數}}', v.f_days || '（出貨天數）')
+    .replaceAll('（場送地點）', v.f_venue || '（場送地點）')
+    .replaceAll('{{場送地點}}', v.f_venue || '（場送地點）')
+    .replaceAll('（來店時間）', v.f_pickup || '（來店時間）')
+    .replaceAll('{{來店時間}}', v.f_pickup || '（來店時間）')
+    .replaceAll('（賣場連結）', v.f_link || '（賣場連結）')
+    .replaceAll('{{賣場連結}}', v.f_link || '（賣場連結）')
+    .replaceAll('（課程名稱）', v.f_course || '（課程名稱）')
+    .replaceAll('{{課程名稱}}', v.f_course || '（課程名稱）')
+    .replaceAll('（工作坊時段）', v.f_slot || '（工作坊時段）')
+    .replaceAll('{{工作坊時段}}', v.f_slot || '（工作坊時段）')
+    .replaceAll('（報名方案）', v.f_plan || '（報名方案）')
+    .replaceAll('{{報名方案}}', v.f_plan || '（報名方案）')
+    .replaceAll('（報名費用）', v.f_fee || '（報名費用）')
+    .replaceAll('{{報名費用}}', v.f_fee || '（報名費用）')
+    .replaceAll('（開放入場時間）', getWorkshopEntryTime(v.f_slot))
+    .replaceAll('{{開放入場時間}}', getWorkshopEntryTime(v.f_slot));
+}
+
+// ════════════════════════════════════════
+// TEMPLATES
+// ════════════════════════════════════════
+function greet_order() {
+  return 'HI，\n這裡是誌造所，\n感謝您訂購本次的印刷訂單。\n檔案已檢查完畢，可受理印刷。\n本信附件印刷訂單的報價單，請查閱。';
+}
+function greet_revision() {
+  return 'HI，\n這裡是誌造所，\n有收到您下訂孔版印刷的訂單。\n檔案檢查後有些內容需您協助：';
+}
+var DEFAULT_SUBJECTS = {
+  checkout:   '【誌造所】孔版印刷報價單＆結帳資訊｜{{客戶姓名}}',
+  transfer:   '【誌造所】孔版印刷報價單＆匯款資訊｜{{客戶姓名}}',
+  invoice:    '【誌造所】孔版印刷報價單＆請款資訊｜{{客戶姓名}}',
+  revision:   '【誌造所】孔版印刷修正通知｜{{客戶姓名}}',
+  filesubmit: '【誌造所】分色檔案遞交｜',
+  permission: '【誌造所】孔版印刷｜',
+  ws_revision_notice: '【誌造所】春聯WS：孔版印刷修正通知｜{{客戶姓名}}',
+  ws_offer_progress: '【誌造所】孔版印刷進度回報｜有點便宜提案',
+  ws_class_cancel: '【誌造所】不開課通知𓊱孔版印刷體驗工作坊',
+  ws_pre_class: '【誌造所】孔版印刷體驗工作坊𓊱行前通知',
+  ws_spring_ready: '【誌造所】春聯WS：2025孔版春聯印刷工作坊',
+  ws_pay_info: '【誌造所】工作坊報名繳費𓊱相關資訊通知信｜{{客戶姓名}}',
+  ws_pay_success: '【誌造所】工作坊報名繳費成功𓊱相關資訊通知信｜{{客戶姓名}}',
+};
+var DEFAULT_BODY_TEMPLATES = {
+  checkout:   greet_order()+'\n\n選取收件方式為「7-11取件」\n確認金額無誤後，可於以下連結賣場付款：\n（賣場連結）\n\n確認訂單下訂完成後，\n預計約〔{{出貨天數}}日〕後左右出貨。（不包含週末二日）\n謝謝。',
+  transfer:   greet_order()+'\n\n確認金額無誤後，請匯款至：\n--------------------------------------\n國泰世華商業銀行 013\n699505198208\n費用：{{訂單金額}}\n--------------------------------------\n\n確認付款完成後，\n請回覆告知後五碼對帳。\n付款日起〔{{出貨天數}}日〕左右出貨。（不包含週末二日）',
+  invoice:    greet_order().replace('報價單，請查閱。','報價單（明細），請查閱。')+'\n\n確認金額無誤後，可於以下連結付款（需簽名）：\n（賣場連結）\n\n*備註：請確定有品項更改與否（運送方式或張數變更），因平台作廢發票處理需要600元工本，加上處理工作天約2-5日，請謹慎考慮再簽單，小本經營很難處理作廢成本，感謝配合。\n\n確認付款完成後，\n付款日起〔{{出貨天數}}日〕左右出貨。（不包含週末二日）\n\n謝謝。',
+  revision:   greet_revision(),
+  filesubmit: 'HI，\n這裡是誌造所，\n您委託的【彩稿分色：四色版】檔案，\n以壓縮檔的形式附件本信中提供下載。\n謝謝',
+  permission: 'HI，\n不好意思，請記得打開權限。\n這裡才可以下載您的檔案哦！',
+  ws_revision_notice: 'HI，\n這裡是誌造所，\n有收到您下春聯印刷工作坊的訂單。\n檔案檢查後有些事情需您協助：\n\n｜\n\n更新檔案後，\n可在原雲端資料夾中更新提供下載。',
+  ws_offer_progress: 'HI，\n這裡是誌造所，\n感謝您訂購本次的印刷訂單。\n檔案已檢查完畢，可受理印刷。\n結帳頁面請至：\n（賣場連結）\n\n製作時間需1~2日，不含寄送物流天數。\n（遇五六日休息不算製作日）\n若有狀況會額外寄信通知，\n沒有消息就是沒問題：）做好直接出貨。並回信告知更動，謝謝。',
+  ws_class_cancel: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n\n由於週末課需滿兩位以上學員參加才可開課，\n目前未達開課條件，故 （工作坊時段） 的工作坊不開課。\n不好意思，感謝您的報名。\n\n尚有平日其他時段開放報名中，\n請密切關注誌造所公告，謝謝您的支持。',
+  ws_pre_class: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n\n提醒您，別忘了明日您有預約工作坊\n【（工作坊時段）】\n工作室約 （開放入場時間） 可開放入場，還請注意不要遲到。\n\n這堂課已滿員報名，共四位學員參加。\n由於人數較多，印刷機一台需要等候（兩色印刷約10分鐘）\n講課時間約10-15分鐘，會做孔版印刷的基礎說明及稿件製作的注意事項。\n（繪製過程有問題隨時歡迎詢問討論）\n還請先準備好要印製的草稿或素材，盡量於12點之前完成稿件。\n依照之前的經驗，可能課程時間應該會拖延到一點後，\n在作稿時間上需要大家配合（之前有過畫到一點還沒畫完的學員...）\n可以先在家想好的請先準備，到現場會協助檢查並調整成適合孔版印刷的狀態。\n稿件設定可參考：\nhttps://www.zinerstudio.com/files-setup\n\n若是使用procreate繪製的話：\n請先設定好檔案為含出血的尺寸（長+0.6cm/寬+0.6cm）\n並確定色彩模式為CMYK，\n以K值百分比來設定顏色是最快黑白稿的製作方式。\n一色一版＝一色一個圖層\n\n相關資訊請詳閱上封通知信內容。\n期待週六相見玩印刷！',
+  ws_spring_ready: 'HI，\n這裡是誌造所，\n感謝您訂購本次的孔版春聯印刷工作坊訂單。\n檔案已檢查完畢，可受理印刷。\n\n製作時間需3-4日，不含寄送物流天數。\n（遇六日休息不算製作日）\n若有狀況會額外寄信通知，\n沒有消息就是沒問題：）做好直接出貨。',
+  ws_pay_info: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n以下為您的報名資訊及繳費資訊：\n\n--------------------------------------\n報名方案：（報名方案） $（報名費用）\n報名時段：（工作坊時段）\n-\n繳費資訊：\n國泰世華商業銀行 013\n699505198208\n--------------------------------------\n\n確認付款完成後，\n請回信告知後五碼對帳。\n確認到款項後會寄送繳費成功通知信，\n並告知工作坊的細節資訊。',
+  ws_pay_success: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n\n已確認到您的報名費用：（報名方案） $（報名費用）\n報名時段為【（工作坊時段）】\n以下為關於工作坊當日資訊，來場前請詳閱：\n\n𓊱 可帶回：\n- 孔版印刷工作坊講義\n- 明信片尺寸 × 20張\n或 名片尺寸 × 50張\n或 A3 × 5張\n或 A4 × 10張\n（可依照喜好挑選製作尺寸）\n\n𓊱 工作坊行程\n- 印刷說明：約15分鐘\n- 繪製時間：約75分鐘\n- 先畫完先印刷，體驗印刷操作，裁切完即可下課。\n- 工作室位置點我看\n★ https://goo.gl/maps/K6uum7gTFfW9LTtZ9\n→ 從2號出口上來直直走\n（要過一個紅綠燈）\n→ 看到遠東銀行不過去，進入旁邊的大門\n→ 坐電梯到2F（被詢問時請說去二樓工作室）\n→ 電梯出來往右手邊走\n→ 看到誌造所LOGO請按鈴♫\n\n𓊱 工作坊材料\n- 使用墨色：任選使用（金墨需加價$100）\n- 使用紙材：工作室紙架上的紙都可使用\n- 設計款式：建議一款\n- 製作方式：\n現場自行手繪剪貼製作，現場速印。\n現場會備畫筆、剪刀等文具用品借用，也可自行攜帶。（請帶黑色）\n也可直接攜帶電子檔案或自備筆電、平板繪製，屆時檔案可上傳至雲端提供這裡下載。\n（檔案製作格式請參考 https://www.zinerstudio.com/files-setup ，請注意要以黑白格式入稿）\n- 若是使用procreate繪製的話：\n請先設定好檔案為含出血的尺寸（長+0.6cm/寬+0.6cm）\n並確定色彩模式為CMYK，\n以K值百分比來設定顏色是最快黑白稿的製作方式。\n一色一版＝一色一個圖層\n\n𓊱 相關規範\n- 若有購買過誌造所印樣（任一版）可折$100，請帶來現場示出後退現金。\n- 參加者都必需付費，無付費者不可前來不可攜伴。\n- 不可攜帶寵物。\n- 我不會用英文解說印刷業務 NO Engilsh。全日文完全可以。\n- 親子可參加，大人可陪伴小孩（7歲以下）體驗不收兩人費用。\n- 若親子兩人皆要參加體驗的話，請付兩人份的報名費。\n- 請盡量於時間內繪製完成，因為下午需要去接我女鵝下課，無法提供過多時間延長，請見諒。\n- 臨時無法來的話，最晚請在參加日前晚九點前告知，可全額退費或另選它日上課。\n- 當日取消者退回60%的費用，除非遇天災才全額退。\n- 請不要遲到，因為我無法延長上課時間。\n- 有問題都歡迎來IG私訊或回信問問☀\n- 現場有冷熱飲水機，歡迎自帶水瓶。'
+};
+var BUILTIN_TEMPLATE_META = {
+  checkout:{title:'報價單＆結帳資訊', desc:'超商結帳與賣場連結'},
+  transfer:{title:'報價單＆匯款資訊', desc:'銀行轉帳用'},
+  invoice:{title:'報價單＆請款資訊', desc:'統編與電子發票'},
+  revision:{title:'修正通知', desc:'搭配組合格式補充技術問題'},
+  filesubmit:{title:'分色檔案遞交', desc:'附件下載通知'},
+  permission:{title:'請打開下載權限', desc:'雲端存取提醒'},
+  ws_revision_notice:{title:'春聯 WS 修正通知', desc:'可搭配組合格式一起使用'},
+  ws_offer_progress:{title:'進度回報｜有點便宜提案', desc:'附賣場連結與製作時間'},
+  ws_class_cancel:{title:'不開課通知', desc:'未達開課條件'},
+  ws_pre_class:{title:'行前通知', desc:'自動計算開放入場時間'},
+  ws_spring_ready:{title:'春聯 WS 受理通知', desc:'檔案檢查完成'},
+  ws_pay_info:{title:'工作坊報名繳費通知', desc:'報名資訊與匯款資訊'},
+  ws_pay_success:{title:'工作坊繳費成功通知', desc:'完整課前資訊與規範'}
+};
+var BUILTIN_EDITOR_ORDER = ['checkout','transfer','invoice','revision','filesubmit','permission','ws_revision_notice','ws_offer_progress','ws_class_cancel','ws_pre_class','ws_spring_ready','ws_pay_info','ws_pay_success'];
+function getDefaultBuiltinTemplates() {
+  var out = {};
+  BUILTIN_EDITOR_ORDER.forEach(function(k) {
+    out[k] = { subject: DEFAULT_SUBJECTS[k] || '', body: DEFAULT_BODY_TEMPLATES[k] || '' };
+  });
+  return out;
+}
+function loadBuiltinTemplates() {
+  var defaults = getDefaultBuiltinTemplates();
+  try {
+    var raw = JSON.parse(localStorage.getItem('ziner-letter-builtin-templates') || '{}');
+    Object.keys(defaults).forEach(function(k) {
+      if (!raw[k]) return;
+      if (typeof raw[k].subject === 'string') defaults[k].subject = raw[k].subject;
+      if (typeof raw[k].body === 'string') defaults[k].body = raw[k].body;
+    });
+  } catch(e) {}
+  return defaults;
+}
+function saveBuiltinTemplates() {
+  localStorage.setItem('ziner-letter-builtin-templates', JSON.stringify(builtinTemplates));
+}
+function mainSubject(k) {
+  if (builtinTemplates[k]) return builtinTemplates[k].subject;
+  var custom = customTemplateByKey(k);
+  return custom ? custom.subject : '';
+}
+function mainBody(k) {
+  if (builtinTemplates[k]) return builtinTemplates[k].body;
+  var custom = customTemplateByKey(k);
+  return custom ? custom.body : '';
+}
+var builtinTemplates = loadBuiltinTemplates();
+function delBody(k, v) {
+  if (k==='d_711t')  return '選取收件方式為「超商取件」，\n請回信提供收件資訊。\n--------------------------------\n收件門市名稱＆店號：\n--------------------------------\n謝謝。';
+  if (k==='d_cat')   return '選取收件方式為「黑貓宅配」\n\n確認付款完成後，\n請回覆告知後五碼對帳以及收件資訊：\n➤ 收件姓名：\n➤ 聯絡電話：\n➤ 收件地址：\n➤ 收件時段：午前｜下午｜不指定';
+  if (k==='d_lala')  return '選取收件方式為「自叫快遞lalamove」，\n可收件時間會在出貨前日來信告知時間地點，請保持聯繫。';
+  if (k==='d_venue') return '選取收件方式為【場送至攤位上 '+v.f_venue+'】';
+  if (k==='d_pickup')return '已預約來店取件：'+v.f_pickup+'\n工作室位置點點\n★ 捷運中正紀念堂站\n→ 從2號出口上來直直走（要過一個紅綠燈）\n→ 經過香草集，進入旁邊的大門\n→ 坐電梯到2F（被詢問時請說去二樓工作室）\n→ 電梯出來往右手邊走\n→ 看到誌造所LOGO請按鈴♫';
+  return '';
+}
+var SUBS_MAP = {
+  cc_color:['color_split','color_bw','color_density'],
+  cc_bleed:['bleed_3mm','bleed_safe','bleed_a3','ws_safe','ws_sizemis'],
+  cc_trans:['trans_op','trans_white','trans_noise','trans_clean'],
+  cc_err:  ['err_dpi','err_embed','err_text','err_size','err_raster','err_lock','err_border','err_gradient','err_thin','ws_multi'],
+  cc_mix:  ['mix_by','mix_low','mix_qr','gold_overlap','gold_density','gold_file','ws_nofoil'],
+};
+var STXT = {
+  color_split:  '｜各色檔案請分開\n不同墨色的檔案請分開來儲存，請勿存在同一個檔案之中。\n將圖層分開儲存，以防取檔時混亂。\n還有請不要鎖住圖層哦！因為要取用去排版，被鎖住的話有時候會漏抓。',
+  color_bw:     '｜原稿必須提供黑白\n孔版印刷只能識別黑白灰階的檔案印製。\n關於孔版印刷的檔案準備請詳閱：https://www.zinerstudio.com/files-setup',
+  color_density:'｜黑白濃度設定\n黑白的設定下，如果是以CMYK的模式來調整，\n很容易出現CMY三個數值混合的黑色，導致印刷時會出現意料外的雜質狀況。\nai這裡可以從「顏色」右上角的icon中去更改色條為灰階，\n可確保您想設定的黑白濃度不會變成彩色。',
+  bleed_3mm:    '｜須製作出血範圍 3mm\n長、寬各 +6mm（需裁切加工指定用）\n將圖案延長做滿到出血範圍中，可避免裁切時誤差中露出沒有印刷的白邊。\n實際提交檔案尺寸應為 105 x 105 mm',
+  bleed_safe:   '｜重要圖案請收至安全範圍中\n請將重要圖文放置於安全範圍中，也就是從裁切範圍內縮0.3cm。（14.2x9.9cm）\n過於靠邊界的圖案都會有被裁掉的誤差在。\n若您覺得被切掉也無妨的話，也請回信告知。',
+  bleed_a3:     '｜A3全紙印刷請留四邊白邊\n孔版印刷機材限制之因，在A3上無法印刷滿版設計，須留四邊白邊。\n薄紙請四邊各留 10mm 的空白。（最大印刷範圍 277x400mm）\n厚紙請四邊各留 15mm 的空白。（最大印刷範圍 267x390mm）',
+  trans_op:     '｜透明度設定\n建議不要使用透明度做設定，避免印刷效果與預想顯色有誤差。',
+  trans_white:  '｜psd格式搭配白底背景\n在後面墊底白色背景，可以讓電腦數值完整呈現需要的濃度。',
+  trans_noise:  '｜雜點\n白畫面中有些雜點或像是手抹到、橡皮擦擦髒的痕跡，\n這些都可能會被印刷出來，請確定畫面乾淨。',
+  trans_clean:  '｜請確實清空圖案\n用滴管吸取白色背景，不管哪一個圖層，都會有1%的數值出現。\n請清理所有的檔案，確保印刷時不會出現雜點。',
+  err_dpi:      '｜解析度不足\n解析度請設定為300dpi，才可受理印刷。',
+  err_embed:    '｜取消嵌入\n檔案沒有將圖案作連結取消，圖案遺失，請重新設定。',
+  err_text:     '｜文字外框\n文字沒有做外框，字體遺失。',
+  err_size:     '｜檔案尺寸與訂單尺寸數值不同\n檔案尺寸與您在訂單填寫的需求尺寸數值不同，請再次檢查調整。',
+  err_raster:   '｜點陣化效果圖層\n請將後製效果的影像與整個圖層，一起點陣化處理成一個圖層，\n可避免奇怪的花樣在印刷時跑出來。',
+  err_lock:     '｜請勿鎖圖層、鎖物件\n請善用「群組」或「剪裁遮色片」等功能來固定設計物件。\n鎖圖層很容易造成排版過程中遺漏沒複製到的物件。',
+  err_border:   '｜框線設計\n孔版印刷本就容易產生錯版錯位的狀況，有框線設計的話，視覺上會更明顯發現這樣的狀況，還請注意。',
+  err_gradient: '｜漸層網點濃度設定\n若設計填色範圍過小（網點）且濃度低的話，可能會直接印不出來或看不清楚。',
+  err_thin:     '｜薄紙類的襯紙追加\n由於薄紙印刷過程不易追加襯紙，無法提供薄紙類的襯紙加工。',
+  mix_by:       '｜藍黃混色\n黃色版中的線條，若要如預想圖這樣顯色的話，\n請將藍色版重疊的地方清空留白，不然會被高濃度的藍色吃掉而不顯色。',
+  mix_low:      '｜低於30%以下的濃度設定\n物件小加上濃度低的話，會超級看不太清楚，若是故意的設計就請無視這條建議。',
+  mix_qr:       '｜QR碼濃度設定\nQR碼很需要清晰狀態才能被掃瞄到，建議請設定於 K90%以上。',
+  prog_updated: 'HI，\n已更新檔案，感謝協助。',
+  prog_wait:    '您好\n等候許久，尚未收到回信，請盡快回信處理。\n1/16 pm18:00前未有回應，視為默認取消訂單。',
+  prog_cancel:  'HI，請問您還有訂購印刷的需求嗎？\n已過兩日尚未得到回應，若沒有需求也麻煩請告知一聲，\n這裡協助取消您的訂單，避免過時系統留黑單哦。',
+  gold_overlap: '｜金墨使用\n金墨的確可蓋過其他墨，但若其他墨濃度高或面積大，反而使金墨沒這麼閃亮囉！\n建議避開兩色重疊，請將金墨挖空給黑墨放。',
+  gold_density: '｜金墨濃度設定\n建議金墨濃度調整為最高100%，目前不到70%的濃度，\n顆粒亮粉感的金墨反而會更加看不清楚線條與色塊的界線。',
+  gold_file:    '｜金墨、黑墨檔案請分開\n金墨及黑墨檔案請分開來儲存，請將圖層分開儲存，以防取檔時混亂。',
+  ws_safe:      '｜重要圖案請收至安全範圍中\n若設計成品需要裁切，請將重要圖文往內收，避免裁切誤差吃到畫面。\n若成品有特定安全範圍需求，也請依照該尺寸另外檢查後再提交。',
+  ws_multi:     '｜多款設計落版備註\n目前您有提供多款設計，但未備註告知各款設計要落版幾個，請回信告知數量需求。',
+  ws_nofoil:    '｜這裡沒有燙金，只有金墨\n燙金與金墨是完全不同的效果及工法，若本次需求實際要的是燙金效果，還請先再次確認。\n若有誤會的話，也歡迎先回信討論，避免直接進入錯誤製程。',
+  ws_sizemis:   '｜尺寸不符\n目前提供的檔案尺寸與需求不一致，請再次確認裁切尺寸、出血尺寸與安全範圍設定。\n若您不確定正確尺寸，也可以直接回信告知預計成品規格。',
+};
+
+// ════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════
+function render() {
+  var subjEl = document.getElementById('subj-box');
+  var bodyEl = document.getElementById('body-box');
+  var v = getV();
+  var hasAny = mainKey || Object.keys(comboSet).length > 0;
+  if (!hasAny) {
+    subjEl.textContent='—'; subjEl.className='pbox empty';
+    bodyEl.textContent='選好格式後，信件會自動顯示在這裡'; bodyEl.className='pbox empty';
+    return;
+  }
+  if (mainKey && mainSubject(mainKey)) {
+    var subjectText = mainSubject(mainKey);
+    subjEl.textContent = applyFieldPlaceholders(subjectText, v);
+    subjEl.className = 'pbox';
+  } else {
+    subjEl.textContent='—'; subjEl.className='pbox empty';
+  }
+  var parts = [];
+  if (mainKey) parts.push(applyFieldPlaceholders(mainBody(mainKey, v), v));
+  if (delKey) { var dt=delBody(delKey,v); if(dt) parts.push(applyFieldPlaceholders(dt, v)); }
+
+  var COMBO_ORDER = ['cc_color','cc_bleed','cc_trans','cc_err','cc_mix'];
+  COMBO_ORDER.forEach(function(ck) {
+    if (!comboSet[ck]) return;
+    if (SUBS_MAP[ck]) {
+      var block = document.querySelector('.ccard[data-k="'+ck+'"]');
+      if (block) block.querySelectorAll('.sc.on').forEach(function(sc){ var t=STXT[sc.dataset.s]; if(t) parts.push(applyFieldPlaceholders(t, v)); });
+    } else {
+      var t=STXT[ck]; if(t) parts.push(applyFieldPlaceholders(t, v));
+    }
+  });
+  ['prog_updated','prog_wait','prog_cancel'].forEach(function(k){ if(comboSet[k]&&STXT[k]) parts.push(applyFieldPlaceholders(STXT[k], v)); });
+
+  // custom blocks
+  customBlocks.forEach(function(cb) {
+    if (comboSet['custom_'+cb.id]) parts.push(applyFieldPlaceholders(cb.text, v));
+  });
+
+  if (mainKey==='revision' && parts.length>1) {
+    parts.push('更新檔案後，\n可在原雲端資料夾中更新提供下載。\n並回信告知更動，謝謝。');
+  }
+  bodyEl.textContent = parts.join('\n\n');
+  bodyEl.className = 'pbox';
+}
+
+// ════════════════════════════════════════
+// COPY
+// ════════════════════════════════════════
+function doCopy(id, label) {
+  var el = document.getElementById(id);
+  if (el.classList.contains('empty') || el.textContent==='—' || el.textContent.indexOf('選好格式')===0) {
+    showToast('請先選擇格式！'); return;
+  }
+  navigator.clipboard.writeText(el.textContent)
+    .then(function(){ showToast('✓ '+label+'已複製'); })
+    .catch(function(){ showToast('請手動複製'); });
+}
+function showToast(msg) {
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2000);
+}
+
+// ════════════════════════════════════════
+// RESET
+// ════════════════════════════════════════
+function resetAll() {
+  mainKey=null; delKey=null; comboSet={}; savedVals={};
+  document.querySelectorAll('.mcard.on').forEach(function(m){ m.classList.remove('on'); });
+  document.querySelectorAll('.dchip.on').forEach(function(d){ d.classList.remove('on'); });
+  document.querySelectorAll('.ccard.on').forEach(function(c){ c.classList.remove('on'); });
+  document.querySelectorAll('.chip.on').forEach(function(c){ c.classList.remove('on'); });
+  document.querySelectorAll('.sc').forEach(function(sc){
+    sc.classList.toggle('on', sc===sc.parentElement.querySelectorAll('.sc')[0]);
+  });
+  document.getElementById('field-row').innerHTML='';
+  document.getElementById('fhint').textContent='← 先選左側格式';
+  render();
+}
+
+// ════════════════════════════════════════
+// SETTINGS – OPEN / CLOSE
+// ════════════════════════════════════════
+function openSettings() {
+  renderSettingsCustom();
+  renderSettingsBuiltin();
+  renderSettingsBuiltinEditor();
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+function switchSpTab(i) {
+  document.querySelectorAll('.sp-tab').forEach(function(t,j){ t.classList.toggle('on', j===i); });
+  document.getElementById('sp-body-0').style.display = i===0 ? '' : 'none';
+  document.getElementById('sp-body-1').style.display = i===1 ? '' : 'none';
+  document.getElementById('sp-body-2').style.display = i===2 ? '' : 'none';
+}
+
+// ════════════════════════════════════════
+// SETTINGS – CUSTOM TAB
+// ════════════════════════════════════════
+function renderSettingsCustom() {
+  var el = document.getElementById('sp-body-0');
+  var html = '';
+  if (customBlocks.length === 0) {
+    html += '<div class="custom-empty">還沒有自訂格式。<br>用下方表單新增你的第一個！</div>';
+  } else {
+    customBlocks.forEach(function(cb) {
+      html += '<div class="custom-block" id="cb-'+cb.id+'">'
+        + '<div class="custom-block-hd">'
+        + '<div><div class="custom-block-title">'+esc(cb.title)+'</div>'
+        + (cb.desc ? '<div class="custom-block-desc">'+esc(cb.desc)+'</div>' : '')
+        + '</div>'
+        + '<div class="custom-block-actions">'
+        + '<button class="cb-btn" onclick="openEditModal(\''+cb.id+'\')">編輯</button>'
+        + '<button class="cb-btn del" onclick="deleteCustomBlock(\''+cb.id+'\')">刪除</button>'
+        + '</div></div>'
+        + '<div class="custom-block-text">'+esc(cb.text)+'</div>'
+        + '</div>';
+    });
+  }
+  html += '<div class="add-form">'
+    + '<div class="add-form-title">＋ 新增格式</div>'
+    + '<div class="af-row"><label class="af-lbl">標題 *</label><input class="af-inp" id="af-title" type="text" placeholder="例：夏日限定活動說明"></div>'
+    + '<div class="af-row"><label class="af-lbl">描述 <span style="font-weight:400;text-transform:none;">(選填)</span></label><input class="af-inp" id="af-desc" type="text" placeholder="簡短說明用途"></div>'
+    + '<div class="af-row"><label class="af-lbl">格式內文 *</label><textarea class="af-txt" id="af-text" placeholder="輸入格式內文...&#10;支援換行，會直接插入信件中。"></textarea></div>'
+    + '<div class="af-actions"><button class="af-save" onclick="addCustomBlock()">新增</button></div>'
+    + '</div>';
+  el.innerHTML = html;
+  refreshCustomTab();
+}
+
+function addCustomBlock() {
+  var title = document.getElementById('af-title').value.trim();
+  var desc  = document.getElementById('af-desc').value.trim();
+  var text  = document.getElementById('af-text').value.trim();
+  if (!title) { showToast('請填入標題'); return; }
+  if (!text)  { showToast('請填入格式內文'); return; }
+  customBlocks.push({ id: genId(), title: title, desc: desc, text: text });
+  saveCustomBlocks();
+  renderSettingsCustom();
+  refreshCustomTab();
+  showToast('✓ 已新增「'+title+'」');
+}
+
+function deleteCustomBlock(id) {
+  customBlocks = customBlocks.filter(function(cb){ return cb.id!==id; });
+  delete comboSet['custom_'+id];
+  saveCustomBlocks();
+  renderSettingsCustom();
+  refreshCustomTab();
+  render();
+  showToast('已刪除');
+}
+
+// ════════════════════════════════════════
+// SETTINGS – EDIT MODAL
+// ════════════════════════════════════════
+function openEditModal(id) {
+  var cb = customBlocks.find(function(b){ return b.id===id; });
+  if (!cb) return;
+  editingId = id;
+  document.getElementById('edit-title').value = cb.title;
+  document.getElementById('edit-desc').value  = cb.desc  || '';
+  document.getElementById('edit-text').value  = cb.text;
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEditModal() {
+  editingId = null;
+  document.getElementById('edit-modal').classList.remove('open');
+}
+function saveEdit() {
+  var cb = customBlocks.find(function(b){ return b.id===editingId; });
+  if (!cb) return;
+  var title = document.getElementById('edit-title').value.trim();
+  var text  = document.getElementById('edit-text').value.trim();
+  if (!title) { showToast('標題不能空白'); return; }
+  if (!text)  { showToast('內文不能空白'); return; }
+  cb.title = title;
+  cb.desc  = document.getElementById('edit-desc').value.trim();
+  cb.text  = text;
+  saveCustomBlocks();
+  closeEditModal();
+  renderSettingsCustom();
+  refreshCustomTab();
+  render();
+  showToast('✓ 已儲存');
+}
+
+// ════════════════════════════════════════
+// SETTINGS – BUILTIN TAB
+// ════════════════════════════════════════
+var BUILTIN_GROUPS = [
+  { title:'彩稿問題', items:[
+    {k:'color_split',n:'各色分開儲存'},{k:'color_bw',n:'原稿必須黑白'},{k:'color_density',n:'黑白濃度設定'}]},
+  { title:'出血問題', items:[
+    {k:'bleed_3mm',n:'出血 3mm'},{k:'bleed_safe',n:'安全範圍警示'},{k:'bleed_a3',n:'A3 四邊留白'},
+    {k:'ws_safe',n:'安全範圍提醒'},{k:'ws_sizemis',n:'尺寸不符'}]},
+  { title:'透色問題', items:[
+    {k:'trans_op',n:'透明度設定'},{k:'trans_white',n:'白底背景'},{k:'trans_noise',n:'雜點'},{k:'trans_clean',n:'確實清空'}]},
+  { title:'常見出錯', items:[
+    {k:'err_dpi',n:'解析度'},{k:'err_embed',n:'取消嵌入'},{k:'err_text',n:'文字外框'},
+    {k:'err_size',n:'尺寸不符'},{k:'err_raster',n:'點陣化'},{k:'err_lock',n:'勿鎖圖層'},
+    {k:'err_border',n:'框線設計'},{k:'err_gradient',n:'漸層網點'},{k:'err_thin',n:'薄紙限制'},
+    {k:'ws_multi',n:'多款設計數量'}]},
+  { title:'混色問題', items:[
+    {k:'mix_by',n:'藍黃混色'},{k:'mix_low',n:'低於30%'},{k:'mix_qr',n:'QR碼濃度'},
+    {k:'gold_overlap',n:'金墨重疊'},{k:'gold_density',n:'金墨濃度'},{k:'gold_file',n:'金黑分開'},
+    {k:'ws_nofoil',n:'金墨與燙金'}]},
+  { title:'進度追蹤', items:[
+    {k:'prog_updated',n:'檔案已更新'},{k:'prog_wait',n:'催回信'},{k:'prog_cancel',n:'確認取消'}]},
+];
+function renderSettingsBuiltin() {
+  var el = document.getElementById('sp-body-1');
+  var html = '<p style="font-size:.78em;color:var(--muted);margin-bottom:14px;">以下為目前內建的所有格式文字（點選展開預覽）</p>';
+  BUILTIN_GROUPS.forEach(function(g) {
+    html += '<div class="builtin-group"><div class="builtin-group-title">'+esc(g.title)+'</div>';
+    g.items.forEach(function(item) {
+      html += '<div class="builtin-item" onclick="this.classList.toggle(\'open\')">'
+        + '<div class="builtin-item-hd"><span>'+esc(item.n)+'</span><i class="expand-arrow">▶</i></div>'
+        + '<div class="builtin-item-body">'+esc(STXT[item.k]||'')+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderSettingsBuiltinEditor() {
+  var el = document.getElementById('sp-body-2');
+  var html = '<div class="builtin-tip">這裡可以直接修改內建公版的件名與內文。<br>可使用這些代入語法：'
+    + '<span class="builtin-key">{{客戶姓名}}</span> '
+    + '<span class="builtin-key">{{賣場連結}}</span> '
+    + '<span class="builtin-key">{{出貨天數}}</span> '
+    + '<span class="builtin-key">{{課程名稱}}</span> '
+    + '<span class="builtin-key">{{工作坊時段}}</span> '
+    + '<span class="builtin-key">{{報名方案}}</span> '
+    + '<span class="builtin-key">{{報名費用}}</span> '
+    + '<span class="builtin-key">{{開放入場時間}}</span>'
+    + '<br>改壞也沒關係，每張卡都有「還原預設」，你自己新增的公版也可以再刪掉。</div>';
+  html += '<div class="add-form">'
+    + '<div class="add-form-title">＋ 新增公版</div>'
+    + '<div class="af-row"><label class="af-lbl">顯示在哪一欄</label><select class="af-inp" id="bt-new-section"><option value="main">主格式</option><option value="workshop">工作坊</option></select></div>'
+    + '<div class="af-row"><label class="af-lbl">公版標題 *</label><input class="af-inp" id="bt-new-title" type="text" placeholder="例：工作坊改期通知"></div>'
+    + '<div class="af-row"><label class="af-lbl">補充說明 <span style="font-weight:400;text-transform:none;">(選填)</span></label><input class="af-inp" id="bt-new-desc" type="text" placeholder="例：需要變更日期時使用"></div>'
+    + '<div class="af-row"><label class="af-lbl">件名 *</label><input class="af-inp" id="bt-new-subject" type="text" placeholder="例：【誌造所】工作坊改期通知｜{{客戶姓名}}"></div>'
+    + '<div class="af-row"><label class="af-lbl">內文 *</label><textarea class="af-txt" id="bt-new-body" style="min-height:150px;" placeholder="輸入公版內文，可使用 {{客戶姓名}}、{{賣場連結}} 等代入語法。"></textarea></div>'
+    + '<div class="af-actions"><button class="af-save" onclick="addCustomTemplate()">新增公版</button></div>'
+    + '</div>';
+  html += '<div class="add-form-title" style="margin:18px 0 10px;">內建公版</div>';
+  BUILTIN_EDITOR_ORDER.forEach(function(k) {
+    var meta = BUILTIN_TEMPLATE_META[k] || { title:k, desc:'' };
+    var item = builtinTemplates[k] || { subject:'', body:'' };
+    html += '<div class="builtin-edit-card">'
+      + '<div class="builtin-edit-hd">'
+      + '<div><div class="builtin-edit-title">'+esc(meta.title)+'</div>'
+      + (meta.desc ? '<div class="builtin-edit-desc">'+esc(meta.desc)+'</div>' : '')
+      + '</div>'
+      + '<div class="builtin-key">'+esc(k)+'</div>'
+      + '</div>'
+      + '<div class="builtin-edit-body">'
+      + '<div class="af-row"><label class="af-lbl">件名</label><input class="af-inp" id="be-subject-'+k+'" type="text" value="'+esc(item.subject)+'"></div>'
+      + '<div class="af-row"><label class="af-lbl">內文</label><textarea class="af-txt" id="be-body-'+k+'" style="min-height:170px;">'+esc(item.body)+'</textarea></div>'
+      + '<div class="builtin-edit-actions">'
+      + '<button class="af-cancel" onclick="resetBuiltinTemplate(\''+k+'\')">還原預設</button>'
+      + '<button class="af-save" onclick="saveBuiltinTemplate(\''+k+'\')">儲存公版</button>'
+      + '</div></div></div>';
+  });
+  html += '<div class="add-form-title" style="margin:20px 0 10px;">你新增的公版</div>';
+  if (customTemplates.length === 0) {
+    html += '<div class="custom-empty">還沒有自訂公版。<br>上面新增後，就會出現在左邊可直接選用。</div>';
+  } else {
+    customTemplates.forEach(function(item) {
+      html += '<div class="builtin-edit-card">'
+        + '<div class="builtin-edit-hd">'
+        + '<div><div class="builtin-edit-title">'+esc(item.title)+'</div>'
+        + (item.desc ? '<div class="builtin-edit-desc">'+esc(item.desc)+'</div>' : '')
+        + '</div>'
+        + '<div class="builtin-key">'+(item.section === 'workshop' ? '工作坊' : '主格式')+'</div>'
+        + '</div>'
+        + '<div class="builtin-edit-body">'
+        + '<div class="af-row"><label class="af-lbl">顯示在哪一欄</label><select class="af-inp" id="ct-section-'+item.id+'"><option value="main"'+(item.section === 'main' ? ' selected' : '')+'>主格式</option><option value="workshop"'+(item.section === 'workshop' ? ' selected' : '')+'>工作坊</option></select></div>'
+        + '<div class="af-row"><label class="af-lbl">公版標題</label><input class="af-inp" id="ct-title-'+item.id+'" type="text" value="'+esc(item.title)+'"></div>'
+        + '<div class="af-row"><label class="af-lbl">補充說明</label><input class="af-inp" id="ct-desc-'+item.id+'" type="text" value="'+esc(item.desc || '')+'"></div>'
+        + '<div class="af-row"><label class="af-lbl">件名</label><input class="af-inp" id="ct-subject-'+item.id+'" type="text" value="'+esc(item.subject)+'"></div>'
+        + '<div class="af-row"><label class="af-lbl">內文</label><textarea class="af-txt" id="ct-body-'+item.id+'" style="min-height:150px;">'+esc(item.body)+'</textarea></div>'
+        + '<div class="builtin-edit-actions">'
+        + '<button class="af-cancel" onclick="deleteCustomTemplate(\''+item.id+'\')">刪除公版</button>'
+        + '<button class="af-save" onclick="saveCustomTemplate(\''+item.id+'\')">儲存公版</button>'
+        + '</div></div></div>';
+    });
+  }
+  el.innerHTML = html;
+}
+
+function saveBuiltinTemplate(key) {
+  if (!builtinTemplates[key]) return;
+  var subjectEl = document.getElementById('be-subject-'+key);
+  var bodyEl = document.getElementById('be-body-'+key);
+  var subject = subjectEl ? subjectEl.value.trim() : '';
+  var body = bodyEl ? bodyEl.value.trim() : '';
+  if (!subject) { showToast('件名不能空白'); return; }
+  if (!body) { showToast('內文不能空白'); return; }
+  builtinTemplates[key] = { subject: subject, body: body };
+  saveBuiltinTemplates();
+  render();
+  renderSettingsBuiltinEditor();
+  showToast('✓ 已儲存公版');
+}
+
+function resetBuiltinTemplate(key) {
+  if (!DEFAULT_SUBJECTS[key] && !DEFAULT_BODY_TEMPLATES[key]) return;
+  builtinTemplates[key] = {
+    subject: DEFAULT_SUBJECTS[key] || '',
+    body: DEFAULT_BODY_TEMPLATES[key] || ''
+  };
+  saveBuiltinTemplates();
+  render();
+  renderSettingsBuiltinEditor();
+  showToast('已還原預設');
+}
+
+function addCustomTemplate() {
+  var section = (document.getElementById('bt-new-section') || {}).value || 'main';
+  var title = (document.getElementById('bt-new-title') || {}).value.trim();
+  var desc = (document.getElementById('bt-new-desc') || {}).value.trim();
+  var subject = (document.getElementById('bt-new-subject') || {}).value.trim();
+  var body = (document.getElementById('bt-new-body') || {}).value.trim();
+  if (!title) { showToast('請填入公版標題'); return; }
+  if (!subject) { showToast('請填入件名'); return; }
+  if (!body) { showToast('請填入內文'); return; }
+  customTemplates.push({
+    id: genTemplateId(),
+    section: section === 'workshop' ? 'workshop' : 'main',
+    title: title,
+    desc: desc,
+    subject: subject,
+    body: body
+  });
+  saveCustomTemplates();
+  renderSettingsBuiltinEditor();
+  refreshTemplateTabs();
+  showToast('✓ 已新增公版');
+}
+
+function saveCustomTemplate(id) {
+  var item = customTemplates.find(function(template){ return template.id === id; });
+  if (!item) return;
+  var section = (document.getElementById('ct-section-'+id) || {}).value || 'main';
+  var title = (document.getElementById('ct-title-'+id) || {}).value.trim();
+  var desc = (document.getElementById('ct-desc-'+id) || {}).value.trim();
+  var subject = (document.getElementById('ct-subject-'+id) || {}).value.trim();
+  var body = (document.getElementById('ct-body-'+id) || {}).value.trim();
+  if (!title) { showToast('公版標題不能空白'); return; }
+  if (!subject) { showToast('件名不能空白'); return; }
+  if (!body) { showToast('內文不能空白'); return; }
+  item.section = section === 'workshop' ? 'workshop' : 'main';
+  item.title = title;
+  item.desc = desc;
+  item.subject = subject;
+  item.body = body;
+  saveCustomTemplates();
+  renderSettingsBuiltinEditor();
+  refreshTemplateTabs();
+  render();
+  showToast('✓ 已儲存公版');
+}
+
+function deleteCustomTemplate(id) {
+  var key = templateKeyFor(id);
+  customTemplates = customTemplates.filter(function(item){ return item.id !== id; });
+  if (mainKey === key) mainKey = null;
+  saveCustomTemplates();
+  renderSettingsBuiltinEditor();
+  refreshTemplateTabs();
+  updateFields();
+  render();
+  showToast('已刪除公版');
+}
+
+// ════════════════════════════════════════
+// CUSTOM TAB – refresh in left panel
+// ════════════════════════════════════════
+function refreshCustomTab() {
+  var tab   = document.getElementById('tab-custom');
+  var count = document.getElementById('custom-count');
+  var tb3   = document.getElementById('tb3');
+  count.textContent = customBlocks.length;
+  tab.style.display = customBlocks.length > 0 ? '' : 'none';
+
+  var html = '<div class="sec">自訂格式</div>';
+  customBlocks.forEach(function(cb) {
+    html += '<div class="ccard" data-k="custom_'+cb.id+'" onclick="toggleC(this)">'
+      + '<div class="ccard-hd">'
+      + '<div class="cbox">✓</div>'
+      + '<div><div class="ccard-title">'+esc(cb.title)+'</div>'
+      + (cb.desc ? '<div class="ccard-desc">'+esc(cb.desc)+'</div>' : '')
+      + '</div></div></div>';
+  });
+  tb3.innerHTML = html;
+}
+
+function refreshTemplateTabs() {
+  var mainBox = document.getElementById('tb0-user');
+  var workshopBox = document.getElementById('tb2-user');
+  function renderTemplateCards(items) {
+    if (!items.length) return '';
+    var html = '<hr class="div"><div class="sec">自訂公版</div>';
+    items.forEach(function(item) {
+      var key = templateKeyFor(item.id);
+      html += '<div class="mcard" data-k="'+esc(key)+'" onclick="pickMain(this)">'
+        + '<div class="mcard-hd">'
+        + '<div class="rdot"><div class="rinner"></div></div>'
+        + '<div><div class="mcard-title">'+esc(item.title)+'</div>'
+        + (item.desc ? '<div class="mcard-desc">'+esc(item.desc)+'</div>' : '')
+        + '</div></div></div>';
+    });
+    return html;
+  }
+  if (mainBox) mainBox.innerHTML = renderTemplateCards(customTemplates.filter(function(item){ return item.section === 'main'; }));
+  if (workshopBox) workshopBox.innerHTML = renderTemplateCards(customTemplates.filter(function(item){ return item.section === 'workshop'; }));
+  if (mainKey && mainKey.indexOf('tpl_') === 0) {
+    var active = document.querySelector('.mcard[data-k="'+mainKey+'"]');
+    if (active) active.classList.add('on');
+  }
+}
+
+// ════════════════════════════════════════
+// UTIL
+// ════════════════════════════════════════
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+refreshCustomTab();
+refreshTemplateTabs();
+</script>
+</body>
+</html>

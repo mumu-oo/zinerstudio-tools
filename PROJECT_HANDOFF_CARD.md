@@ -19,7 +19,7 @@
 
 如果你要我把現在這版當正式節點：
 
-`把現在這版記成 v1.0。`
+`把現在這版記成 v1.8.1。`
 
 ## 這個專案現在是什麼
 
@@ -27,6 +27,7 @@
 - 類型：macOS 桌面 app
 - 主工作資料夾：`/Users/mumu/Documents/zinerstudio_makesomething`
 - 主要畫面檔案：`/Users/mumu/Documents/zinerstudio_makesomething/app/index.html`
+- 目前正式版本：`v1.8.1｜2026.05.19`
 
 ## 目前已有功能
 
@@ -37,6 +38,9 @@
 - 防油墨背印襯紙只計 220g 紙材
 - 訂單內容區的印刷件數固定在上方
 - 線裝本加工已加入
+- 便條紙模式與追加紙材
+- 紙材管理介面
+- 信件工具：`/Users/mumu/Documents/zinerstudio_makesomething/app/letter.html`
 
 ## 如果換一個模型 / 換新對話
 
