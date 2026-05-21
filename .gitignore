@@ -2,3 +2,7 @@
 node_modules
 dist
 build
+
+# 土法快照（Codex 舊備份）—— 檔案留著當參考，但 git 不追，由 git 本身當版控
+ziner-invoice/backup/
+ziner-invoice/recovery/
