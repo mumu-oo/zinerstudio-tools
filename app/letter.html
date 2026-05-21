@@ -181,13 +181,14 @@ hr.div{border:none;border-top:1px solid var(--bdr);margin:12px 0;}
 }
 .fld{display:flex;flex-direction:column;min-width:0;}
 .fld label{font-size:.65em;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
-.fld input{
+.fld input, .fld textarea{
   padding:8px 10px;border:1.5px solid var(--bdr);
   border-radius:7px;font-size:.84em;font-family:inherit;
   color:var(--text);background:white;transition:border-color .2s;
 }
-.fld input:focus{outline:none;border-color:var(--accent);}
-.fld input.has{border-color:var(--acc-md);background:var(--acc-lt);}
+.fld textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.fld input:focus, .fld textarea:focus{outline:none;border-color:var(--accent);}
+.fld input.has, .fld textarea.has{border-color:var(--acc-md);background:var(--acc-lt);}
 
 .preview-area{flex:1;overflow-y:auto;padding:16px 20px;}
 .preview-area::-webkit-scrollbar{width:3px;}
@@ -683,23 +684,46 @@ hr.div{border:none;border-top:1px solid var(--bdr);margin:12px 0;}
 
   <!-- BOO-POS -->
   <div class="tab-body" id="tb-boopos">
-    <div class="sec">私訊回信 <em>（選一個）</em></div>
+    <div class="sec">建議類 <em>（選一個）</em></div>
 
-    <div class="mcard" data-k="boo_general" onclick="pickMain(this)">
+    <div class="mcard" data-k="boo_decline" onclick="pickMain(this)">
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">通用回饋</div>
-          <div class="mcard-desc">先收下回饋的萬用版</div>
+          <div class="mcard-title">婉拒｜超出定位</div>
+          <div class="mcard-desc">多人協作這種、單機定位</div>
         </div>
       </div>
     </div>
+
+    <div class="mcard" data-k="boo_plan" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">在規劃</div>
+          <div class="mcard-desc">高頻合理、列入評估</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="boo_later" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">排後面</div>
+          <div class="mcard-desc">認同但短期做不到</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="div">
+    <div class="sec">Bug 類</div>
 
     <div class="mcard" data-k="boo_bug" onclick="pickMain(this)">
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">Bug 確認</div>
+          <div class="mcard-title">確認會修</div>
           <div class="mcard-desc">已重現、下版修</div>
         </div>
       </div>
@@ -709,7 +733,7 @@ hr.div{border:none;border-top:1px solid var(--bdr);margin:12px 0;}
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">Bug 追問</div>
+          <div class="mcard-title">追問細節</div>
           <div class="mcard-desc">要截圖／步驟／裝置／版本</div>
         </div>
       </div>
@@ -719,51 +743,54 @@ hr.div{border:none;border-top:1px solid var(--bdr);margin:12px 0;}
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">Bug 無法重現</div>
-          <div class="mcard-desc">試過沒重現、要更多線索</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mcard" data-k="boo_suggest" onclick="pickMain(this)">
-      <div class="mcard-hd">
-        <div class="rdot"><div class="rinner"></div></div>
-        <div>
-          <div class="mcard-title">建議收件</div>
-          <div class="mcard-desc">使用者提的建議</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mcard" data-k="boo_fixed" onclick="pickMain(this)">
-      <div class="mcard-hd">
-        <div class="rdot"><div class="rinner"></div></div>
-        <div>
-          <div class="mcard-title">已修復通知</div>
-          <div class="mcard-desc">主動發、告知修好了</div>
+          <div class="mcard-title">無法重現</div>
+          <div class="mcard-desc">試過沒重現、要線索</div>
         </div>
       </div>
     </div>
 
     <hr class="div">
-    <div class="sec">App Store 公開評論回覆 <em>（無件名）</em></div>
+    <div class="sec">付款類</div>
 
-    <div class="mcard" data-k="boo_review_critique" onclick="pickMain(this)">
+    <div class="mcard" data-k="boo_unlock" onclick="pickMain(this)">
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">評論回覆｜批評</div>
-          <div class="mcard-desc">引導到 App 內意見回饋</div>
+          <div class="mcard-title">付款沒解鎖</div>
+          <div class="mcard-desc">恢復購買＋轉介 Apple</div>
         </div>
       </div>
     </div>
 
-    <div class="mcard" data-k="boo_review_bug" onclick="pickMain(this)">
+    <div class="mcard" data-k="boo_overcharge" onclick="pickMain(this)">
       <div class="mcard-hd">
         <div class="rdot"><div class="rinner"></div></div>
         <div>
-          <div class="mcard-title">評論回覆｜bug</div>
-          <div class="mcard-desc">引導補裝置／版本／步驟</div>
+          <div class="mcard-title">多扣或買貴</div>
+          <div class="mcard-desc">不是我們＋查來源退款</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="div">
+    <div class="sec">其他</div>
+
+    <div class="mcard" data-k="boo_thanks" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">純感謝</div>
+          <div class="mcard-desc">只稱讚、沒訴求</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcard" data-k="boo_custom" onclick="pickMain(this)">
+      <div class="mcard-hd">
+        <div class="rdot"><div class="rinner"></div></div>
+        <div>
+          <div class="mcard-title">自由填</div>
+          <div class="mcard-desc">沒對應情境、自己打回應</div>
         </div>
       </div>
     </div>
@@ -993,8 +1020,8 @@ var FDEFS = {
   f_fee:    { label:'報名費用',           ph:'例：1200' },
   f_venue:  { label:'場送地點',           ph:'例：5/25 布穀町 A02' },
   f_pickup: { label:'來店時間',           ph:'例：10/03 pm15' },
-  f_subject:  { label:'回報主旨', ph:'一句話摘要對方回報的事，例：iPad 裁切頁按鈕被切掉' },
-  f_original: { label:'使用者原文（選填）', ph:'需要完整引用對方來信時才填' },
+  f_submission: { label:'使用者投稿', ph:'直接把對方的回饋原文整段貼進來', multiline:true },
+  f_response:   { label:'我們的回應（自由填）', ph:'自己打這封要回的內容', multiline:true },
 };
 var KFIELDS = {
   checkout:   ['f_client','f_days','f_link'],
@@ -1010,14 +1037,16 @@ var KFIELDS = {
   ws_spring_ready:[],
   ws_pay_info:['f_client','f_course','f_plan','f_fee','f_slot'],
   ws_pay_success:['f_client','f_course','f_plan','f_fee','f_slot'],
-  boo_general:         ['f_subject'],
-  boo_bug:             ['f_subject'],
-  boo_bug_info:        ['f_subject'],
-  boo_bug_unrepro:     ['f_subject'],
-  boo_suggest:         ['f_subject'],
-  boo_fixed:           ['f_subject'],
-  boo_review_critique: ['f_subject'],
-  boo_review_bug:      ['f_subject'],
+  boo_decline:     ['f_submission'],
+  boo_plan:        ['f_submission'],
+  boo_later:       ['f_submission'],
+  boo_bug:         ['f_submission'],
+  boo_bug_info:    ['f_submission'],
+  boo_bug_unrepro: ['f_submission'],
+  boo_unlock:      ['f_submission'],
+  boo_overcharge:  ['f_submission'],
+  boo_thanks:      ['f_submission'],
+  boo_custom:      ['f_submission','f_response'],
   d_venue:    ['f_venue'],
   d_pickup:   ['f_pickup'],
 };
@@ -1032,8 +1061,8 @@ var PLACEHOLDER_FIELD_MAP = {
   f_fee:    ['{{報名費用}}','（報名費用）'],
   f_venue:  ['{{場送地點}}','（場送地點）'],
   f_pickup: ['{{來店時間}}','（來店時間）'],
-  f_subject:  ['{{回報主旨}}','（回報主旨）'],
-  f_original: ['{{使用者原文}}','（使用者原文）']
+  f_submission: ['{{使用者投稿}}','（使用者投稿）'],
+  f_response:   ['{{自由回應}}','（自由回應）']
 };
 function inferFieldKeysFromTemplate(text) {
   var found = {};
@@ -1061,15 +1090,16 @@ function updateFields() {
   row.innerHTML = '';
   var hint = document.getElementById('fhint');
   if (!mainKey && Object.keys(comboSet).length===0) { hint.textContent='← 先選左側格式'; return; }
-  var keys = ['f_client','f_amount','f_days','f_link','f_course','f_slot','f_plan','f_fee','f_venue','f_pickup','f_subject','f_original'];
+  var keys = ['f_client','f_amount','f_days','f_link','f_course','f_slot','f_plan','f_fee','f_venue','f_pickup','f_submission','f_response'];
   var shown = 0;
   keys.forEach(function(fk) {
     if (!needed[fk]) return; shown++;
     var def = FDEFS[fk];
     var wrap = document.createElement('div'); wrap.className='fld';
     var lbl = document.createElement('label'); lbl.textContent=def.label; lbl.htmlFor=fk;
-    var inp = document.createElement('input');
-    inp.type='text'; inp.id=fk; inp.placeholder=def.ph; inp.value=savedVals[fk]||'';
+    var inp = document.createElement(def.multiline ? 'textarea' : 'input');
+    if (def.multiline) { inp.rows = 4; } else { inp.type='text'; }
+    inp.id=fk; inp.placeholder=def.ph; inp.value=savedVals[fk]||'';
     if (inp.value) inp.classList.add('has');
     inp.addEventListener('input', function(){ inp.classList.toggle('has',!!inp.value); savedVals[fk]=inp.value; render(); });
     wrap.appendChild(lbl); wrap.appendChild(inp); row.appendChild(wrap);
@@ -1092,8 +1122,8 @@ function getV() {
     f_fee:    (document.getElementById('f_fee')   ||{value:''}).value.trim()||'1200',
     f_venue:  (document.getElementById('f_venue') ||{value:''}).value.trim()||'___',
     f_pickup: (document.getElementById('f_pickup')||{value:''}).value.trim()||'___',
-    f_subject:  (document.getElementById('f_subject') ||{value:''}).value.trim()||'',
-    f_original: (document.getElementById('f_original')||{value:''}).value.trim()||'',
+    f_submission: (document.getElementById('f_submission')||{value:''}).value.trim()||'',
+    f_response:   (document.getElementById('f_response')||{value:''}).value.trim()||'',
   };
 }
 
@@ -1134,10 +1164,10 @@ function applyFieldPlaceholders(text, v) {
     .replaceAll('{{報名費用}}', v.f_fee || '（報名費用）')
     .replaceAll('（開放入場時間）', getWorkshopEntryTime(v.f_slot))
     .replaceAll('{{開放入場時間}}', getWorkshopEntryTime(v.f_slot))
-    .replaceAll('（回報主旨）', v.f_subject || '（回報主旨）')
-    .replaceAll('{{回報主旨}}', v.f_subject || '（回報主旨）')
-    .replaceAll('（使用者原文）', v.f_original || '（使用者原文）')
-    .replaceAll('{{使用者原文}}', v.f_original || '（使用者原文）');
+    .replaceAll('（使用者投稿）', v.f_submission || '（使用者投稿）')
+    .replaceAll('{{使用者投稿}}', v.f_submission || '（使用者投稿）')
+    .replaceAll('（自由回應）', v.f_response || '（自由回應）')
+    .replaceAll('{{自由回應}}', v.f_response || '（自由回應）');
 }
 
 // ════════════════════════════════════════
@@ -1163,14 +1193,16 @@ var DEFAULT_SUBJECTS = {
   ws_spring_ready: '【誌造所】春聯WS：2025孔版春聯印刷工作坊',
   ws_pay_info: '【誌造所】工作坊報名繳費𓊱相關資訊通知信｜{{客戶姓名}}',
   ws_pay_success: '【誌造所】工作坊報名繳費成功𓊱相關資訊通知信｜{{客戶姓名}}',
-  boo_general:         '【BOO-POS】關於你的回饋',
-  boo_bug:             '【BOO-POS】你回報的問題我們確認了',
-  boo_bug_info:        '【BOO-POS】想再跟你確認一下回報內容',
-  boo_bug_unrepro:     '【BOO-POS】你回報的問題我們先試過了',
-  boo_suggest:         '【BOO-POS】收到你的使用建議',
-  boo_fixed:           '【BOO-POS】你之前回報的問題已經修好了',
-  boo_review_critique: '',
-  boo_review_bug:      '',
+  boo_decline:     '【BOO-POS開發】Feedback 回饋信',
+  boo_plan:        '【BOO-POS開發】Feedback 回饋信',
+  boo_later:       '【BOO-POS開發】Feedback 回饋信',
+  boo_bug:         '【BOO-POS開發】Feedback 回饋信',
+  boo_bug_info:    '【BOO-POS開發】Feedback 回饋信',
+  boo_bug_unrepro: '【BOO-POS開發】Feedback 回饋信',
+  boo_unlock:      '【BOO-POS開發】Feedback 回饋信',
+  boo_overcharge:  '【BOO-POS開發】Feedback 回饋信',
+  boo_thanks:      '【BOO-POS開發】Feedback 回饋信',
+  boo_custom:      '【BOO-POS開發】Feedback 回饋信',
 };
 var DEFAULT_BODY_TEMPLATES = {
   checkout:   greet_order()+'\n\n選取收件方式為「7-11取件」\n確認金額無誤後，可於以下連結賣場付款：\n（賣場連結）\n\n確認訂單下訂完成後，\n預計約〔{{出貨天數}}日〕後左右出貨。（不包含週末二日）\n謝謝。',
@@ -1186,14 +1218,16 @@ var DEFAULT_BODY_TEMPLATES = {
   ws_spring_ready: 'HI，\n這裡是誌造所，\n感謝您訂購本次的孔版春聯印刷工作坊訂單。\n檔案已檢查完畢，可受理印刷。\n\n製作時間需3-4日，不含寄送物流天數。\n（遇六日休息不算製作日）\n若有狀況會額外寄信通知，\n沒有消息就是沒問題：）做好直接出貨。',
   ws_pay_info: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n以下為您的報名資訊及繳費資訊：\n\n--------------------------------------\n報名方案：（報名方案） $（報名費用）\n報名時段：（工作坊時段）\n-\n繳費資訊：\n國泰世華商業銀行 013\n699505198208\n--------------------------------------\n\n確認付款完成後，\n請回信告知後五碼對帳。\n確認到款項後會寄送繳費成功通知信，\n並告知工作坊的細節資訊。',
   ws_pay_success: 'HI，這裡是誌造所。\n感謝您報名參加誌造所的孔版印刷工作坊\n【（課程名稱）】\n\n已確認到您的報名費用：（報名方案） $（報名費用）\n報名時段為【（工作坊時段）】\n以下為關於工作坊當日資訊，來場前請詳閱：\n\n𓊱 可帶回：\n- 孔版印刷工作坊講義\n- 明信片尺寸 × 20張\n或 名片尺寸 × 50張\n或 A3 × 5張\n或 A4 × 10張\n（可依照喜好挑選製作尺寸）\n\n𓊱 工作坊行程\n- 印刷說明：約15分鐘\n- 繪製時間：約75分鐘\n- 先畫完先印刷，體驗印刷操作，裁切完即可下課。\n- 工作室位置點我看\n★ https://goo.gl/maps/K6uum7gTFfW9LTtZ9\n→ 從2號出口上來直直走\n（要過一個紅綠燈）\n→ 看到遠東銀行不過去，進入旁邊的大門\n→ 坐電梯到2F（被詢問時請說去二樓工作室）\n→ 電梯出來往右手邊走\n→ 看到誌造所LOGO請按鈴♫\n\n𓊱 工作坊材料\n- 使用墨色：任選使用（金墨需加價$100）\n- 使用紙材：工作室紙架上的紙都可使用\n- 設計款式：建議一款\n- 製作方式：\n現場自行手繪剪貼製作，現場速印。\n現場會備畫筆、剪刀等文具用品借用，也可自行攜帶。（請帶黑色）\n也可直接攜帶電子檔案或自備筆電、平板繪製，屆時檔案可上傳至雲端提供這裡下載。\n（檔案製作格式請參考 https://www.zinerstudio.com/files-setup ，請注意要以黑白格式入稿）\n- 若是使用procreate繪製的話：\n請先設定好檔案為含出血的尺寸（長+0.6cm/寬+0.6cm）\n並確定色彩模式為CMYK，\n以K值百分比來設定顏色是最快黑白稿的製作方式。\n一色一版＝一色一個圖層\n\n𓊱 相關規範\n- 若有購買過誌造所印樣（任一版）可折$100，請帶來現場示出後退現金。\n- 參加者都必需付費，無付費者不可前來不可攜伴。\n- 不可攜帶寵物。\n- 我不會用英文解說印刷業務 NO Engilsh。全日文完全可以。\n- 親子可參加，大人可陪伴小孩（7歲以下）體驗不收兩人費用。\n- 若親子兩人皆要參加體驗的話，請付兩人份的報名費。\n- 請盡量於時間內繪製完成，因為下午需要去接我女鵝下課，無法提供過多時間延長，請見諒。\n- 臨時無法來的話，最晚請在參加日前晚九點前告知，可全額退費或另選它日上課。\n- 當日取消者退回60%的費用，除非遇天災才全額退。\n- 請不要遲到，因為我無法延長上課時間。\n- 有問題都歡迎來IG私訊或回信問問☀\n- 現場有冷熱飲水機，歡迎自帶水瓶。',
-  boo_general:         '嗨，謝謝你回報。\n\n你提到的「{{回報主旨}}」，我們收到了。\n這部分會先記下來，後續版本規劃時一起評估。\n\n— BOO-POS 開發｜誌造所',
-  boo_bug:             '嗨，謝謝你回報。\n\n你提到的「{{回報主旨}}」，我們重現出來了，確認是 bug。\n這個問題會在下一版修正。\n\n新版本上架 App Store 後，更新 App 就會套用修正。\n修好後我們再跟你說一聲。\n\n— BOO-POS 開發｜誌造所',
-  boo_bug_info:        '嗨，謝謝你回報。\n\n你提到的「{{回報主旨}}」，我們想再確認一下發生時的畫面和操作步驟，這樣比較能準確找到問題。\n\n方便的話，再麻煩你回覆以下資訊：\n\n1. 發生問題時的截圖或螢幕錄影\n2. 操作到哪一步時出現問題\n3. 使用的裝置與 iOS 版本\n4. BOO-POS 的 App 版本\n\n收到後我們會再接著確認。\n\n— BOO-POS 開發｜誌造所',
-  boo_bug_unrepro:     '嗨，謝謝你回報。\n\n你提到的「{{回報主旨}}」，我們這邊照著試了幾次，目前還沒重現出來。想請你多給一些線索，幫我們定位：\n\n1. 出問題前的操作步驟（越細越好）\n2. 當下的截圖或螢幕錄影\n3. 使用的裝置、iOS 版本、BOO-POS 版本\n\n收到後，我們會再依照你提供的資訊繼續確認。\n\n— BOO-POS 開發｜誌造所',
-  boo_suggest:         '嗨，謝謝你的建議。\n\n你提到的「{{回報主旨}}」，我們收到了。\n這個方向我們會先記下來，後續功能規劃時一起評估。\n\n— BOO-POS 開發｜誌造所',
-  boo_fixed:           '嗨，想跟你說一聲：\n\n你之前回報的「{{回報主旨}}」，這一版我們修好了。\n\n新版本上架 App Store 後，更新 App 就會套用修正。\n更新後如果還有狀況，也可以再跟我們說。\n\n— BOO-POS 開發｜誌造所',
-  boo_review_critique: '謝謝你的回饋。你提到的「{{回報主旨}}」我們收到了。\n\n想更準確地處理，方便的話再麻煩你到 App 內的「意見回饋」寫信給我們、補一些細節。每一封我們都會看。\n\n— BOO-POS 開發｜誌造所',
-  boo_review_bug:      '謝謝你回報。你提到的「{{回報主旨}}」我們會去確認。\n\n為了更快找到問題，方便的話再麻煩你到 App 內的「意見回饋」寫信給我們、附上裝置型號、iOS 版本和操作步驟。修好後我們會在那邊回你。\n\n— BOO-POS 開發｜誌造所'
+  boo_decline:         '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n關於多人、多裝置共同管理：BOO-POS 目前是專屬個人攤主的單機版，多人協作只能靠匯出、匯入資料來做。未來要是能進化成更大的系統當然很好，可惜現在還沒長大。如果單機這個模式真的不夠你用，那現階段可能就比較沒辦法了。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_plan:            '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n你提到的這個，也有不少使用者反映過，我們記下來了、列入接下來的規劃評估，版本更新時會一起看怎麼做進去。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_later:           '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n這個方向我們認同，不過短期會先集中在穩定性和現有功能的修正，這項會排在後面的版本。排到的話會在更新說明裡讓你知道。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_bug:             '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n你說的這個狀況我們重現出來了，確認是 bug，會在下一版修正。新版本上架 App Store 後，更新 App 就會套用修正。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_bug_info:        '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n這個狀況我們想再確認一下。方便的話再麻煩你提供：\n\n1. 發生問題時的截圖或螢幕錄影\n2. 操作到哪一步時出現問題\n3. 使用的裝置與 iOS 版本\n4. BOO-POS 的 App 版本\n\n收到後我們會接著確認。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_bug_unrepro:     '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n這個狀況我們這邊試了幾次、目前還沒重現出來。想請你多給一些線索：\n\n1. 出問題前的操作步驟（越細越好）\n2. 當下的截圖或螢幕錄影\n3. 使用的裝置、iOS 版本、BOO-POS 版本\n\n收到後，我們會依你提供的資訊繼續確認。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_unlock:          '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n「付了卻沒解鎖」最常見是購買還沒同步到這台裝置：打開 BOO-POS →（完整版購買頁）→ 點「恢復購買」，通常就會解鎖。如果還是沒有，因為付款和解鎖都是 App Store（Apple）處理、我們無法直接幫你查帳，要麻煩你到 reportaproblem.apple.com 找這筆購買回報，Apple 會協助。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_overcharge:      '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n先幫你釐清：BOO-POS 完整版只有 $150 這個品項，我們沒有其他金額的收費——多扣那筆不是 BOO-POS 扣的。付款都是透過 App Store 由 Apple 處理，你可以到 reportaproblem.apple.com 用 Apple ID 登入，查到那筆是哪個 App 或訂閱扣的；如果是誤扣或重複，也能在那邊向 Apple 申請退款。\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_thanks:      '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n謝謝你這麼說，知道 BOO-POS 有幫上忙、我們很開心。出攤順利！\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所',
+  boo_custom:      '嗨，這裡是 BOO-POS 開發。\n謝謝你回報。\n\n▍你的回饋\n{{使用者投稿}}\n\n──────────────────\n\n▍我們的回應\n{{自由回應}}\n\n如果還有其他問題或建議，歡迎再回饋給我們，謝謝支持。\n\n— BOO-POS 開發｜誌造所'
 };
 var BUILTIN_TEMPLATE_META = {
   checkout:{title:'報價單＆結帳資訊', desc:'超商結帳與賣場連結'},
@@ -1209,16 +1243,18 @@ var BUILTIN_TEMPLATE_META = {
   ws_spring_ready:{title:'春聯 WS 受理通知', desc:'檔案檢查完成'},
   ws_pay_info:{title:'工作坊報名繳費通知', desc:'報名資訊與匯款資訊'},
   ws_pay_success:{title:'工作坊繳費成功通知', desc:'完整課前資訊與規範'},
-  boo_general:         {title:'BOO-POS 通用回饋', desc:'萬用版、先收下回饋'},
-  boo_bug:             {title:'BOO-POS Bug 確認', desc:'已重現、下版修'},
-  boo_bug_info:        {title:'BOO-POS Bug 追問', desc:'要截圖／步驟／裝置／版本'},
-  boo_bug_unrepro:     {title:'BOO-POS Bug 無法重現', desc:'試過沒重現、要更多線索'},
-  boo_suggest:         {title:'BOO-POS 建議收件', desc:'使用者提的建議'},
-  boo_fixed:           {title:'BOO-POS 已修復通知', desc:'主動發、告知修好了'},
-  boo_review_critique: {title:'BOO-POS 評論回覆｜批評', desc:'App Store 公開評論、無件名'},
-  boo_review_bug:      {title:'BOO-POS 評論回覆｜bug', desc:'App Store 公開評論、無件名'}
+  boo_decline:         {title:'婉拒｜超出定位', desc:'多人協作這種、單機定位'},
+  boo_plan:            {title:'建議｜在規劃', desc:'高頻合理、列入評估'},
+  boo_later:           {title:'建議｜排後面', desc:'認同但短期做不到'},
+  boo_bug:             {title:'Bug｜確認會修', desc:'已重現、下版修'},
+  boo_bug_info:        {title:'Bug｜追問細節', desc:'要截圖／步驟／裝置／版本'},
+  boo_bug_unrepro:     {title:'Bug｜無法重現', desc:'試過沒重現、要線索'},
+  boo_unlock:          {title:'付款｜沒解鎖', desc:'恢復購買＋轉介 Apple'},
+  boo_overcharge:  {title:'付款｜多扣或買貴', desc:'不是我們＋查來源退款'},
+  boo_thanks:      {title:'純感謝', desc:'只稱讚、沒訴求'},
+  boo_custom:      {title:'自由填', desc:'沒對應情境、自己打回應'}
 };
-var BUILTIN_EDITOR_ORDER = ['checkout','transfer','invoice','revision','filesubmit','permission','ws_revision_notice','ws_offer_progress','ws_class_cancel','ws_pre_class','ws_spring_ready','ws_pay_info','ws_pay_success','boo_general','boo_bug','boo_bug_info','boo_bug_unrepro','boo_suggest','boo_fixed','boo_review_critique','boo_review_bug'];
+var BUILTIN_EDITOR_ORDER = ['checkout','transfer','invoice','revision','filesubmit','permission','ws_revision_notice','ws_offer_progress','ws_class_cancel','ws_pre_class','ws_spring_ready','ws_pay_info','ws_pay_success','boo_decline','boo_plan','boo_later','boo_bug','boo_bug_info','boo_bug_unrepro','boo_unlock','boo_overcharge','boo_thanks','boo_custom'];
 function getDefaultBuiltinTemplates() {
   var out = {};
   BUILTIN_EDITOR_ORDER.forEach(function(k) {

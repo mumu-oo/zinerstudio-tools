@@ -27,7 +27,7 @@
 - 類型：macOS 桌面 app
 - 主工作資料夾：`/Users/mumu/Documents/zinerstudio_makesomething`
 - 主要畫面檔案：`/Users/mumu/Documents/zinerstudio_makesomething/app/index.html`
-- 目前正式版本：`v1.9｜2026.05.21`
+- 目前正式版本：`v1.9｜2026.05.22`
 
 ## 目前已有功能
 
