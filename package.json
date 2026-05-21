@@ -2,7 +2,7 @@
   "name": "ziner-invoice-app",
   "version": "1.9.0",
   "description": "Ziner Studio invoice generator desktop app",
-  "main": "main.js",
+  "main": "ziner-invoice/main.js",
   "author": "Ziner Studio",
   "license": "UNLICENSED",
   "private": true,
@@ -18,22 +18,23 @@
     "appId": "com.zinerstudio.invoice",
     "productName": "Ziner Invoice",
     "files": [
-      "app/**/*",
-      "assets/**/*",
-      "main.js",
-      "preload.js",
+      "ziner-invoice/index.html",
+      "ziner-invoice/letter.html",
+      "ziner-invoice/main.js",
+      "ziner-invoice/preload.js",
+      "ziner-invoice/icon/**/*",
       "package.json"
     ],
     "directories": {
-      "output": "dist",
-      "buildResources": "assets"
+      "output": "ziner-invoice/dist",
+      "buildResources": "ziner-invoice/icon"
     },
     "mac": {
       "category": "public.app-category.business",
       "target": [
         "dmg"
       ],
-      "icon": "assets/app-icon-build.png"
+      "icon": "ziner-invoice/icon/app-icon-build.png"
     }
   }
 }

@@ -28,10 +28,10 @@ function createWindow() {
       sandbox: true,
       spellcheck: false
     },
-    icon: path.join(__dirname, 'assets', 'app-icon-build.png')
+    icon: path.join(__dirname, 'icon', 'app-icon-build.png')
   });
 
-  win.loadFile(path.join(__dirname, 'app', 'index.html'));
+  win.loadFile(path.join(__dirname, 'index.html'));
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
