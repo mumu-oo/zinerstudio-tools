@@ -1,0 +1,25 @@
+{
+  "appId": "com.zinerstudio.risoledger",
+  "productName": "工作室帳本",
+  "files": [
+    "studio-ledger/**/*",
+    "!studio-ledger/dist/**/*",
+    "package.json"
+  ],
+  "directories": {
+    "output": "studio-ledger/dist",
+    "buildResources": "studio-ledger/icon"
+  },
+  "mac": {
+    "category": "public.app-category.finance",
+    "target": [
+      "dmg"
+    ],
+    "icon": "studio-ledger/icon/coin-logo-app-80.png"
+  },
+  "extraMetadata": {
+    "name": "studio-ledger-app",
+    "description": "Studio ledger desktop app",
+    "main": "studio-ledger/main.js"
+  }
+}

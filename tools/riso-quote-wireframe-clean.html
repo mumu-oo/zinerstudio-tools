@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孔版印刷估價計算機 Clean Wireframe — Ziner Studio</title>
+<style>
+:root {
+  --bg: #f6f2e9;
+  --paper: #fffdf8;
+  --panel: #f1ebdf;
+  --line: #33334d;
+  --text: #33334d;
+  --muted: #716d80;
+  --accent: #c96843;
+  --accent-soft: #f3ddd4;
+  --blue-soft: #e3edf6;
+  --shadow: 3px 3px 0 var(--line);
+  --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(51,51,77,0.05) 0.7px, transparent 0.7px);
+  background-size: 10px 10px;
+}
+a { color: inherit; }
+button, input, select { font: inherit; }
+
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-bottom: 2px solid var(--line);
+  background: rgba(255,253,248,0.94);
+  backdrop-filter: blur(8px);
+}
+.title-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.brand-name,
+.brand-meta,
+.tool-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.brand-name,
+.brand-meta { font-size: 15px; }
+.brand-meta {
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.tool-name { font-size: 13px; }
+.title-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 38px 20px 80px;
+}
+
+.hero {
+  margin-bottom: 20px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  box-shadow: 5px 5px 0 var(--line);
+  padding: 26px 28px;
+}
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.68fr) minmax(260px, 0.32fr);
+  gap: 22px;
+  align-items: start;
+}
+.hero h1 {
+  font-size: 34px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.hero-copy {
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+.hero-note {
+  margin-top: 14px;
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.hero-side {
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 16px;
+}
+.hero-side h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.hero-side p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 22px;
+  align-items: start;
+}
+
+.card {
+  margin-bottom: 18px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+.card-inner {
+  padding: 22px;
+}
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.section-head h2 {
+  font-size: 20px;
+}
+.section-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.step-grid.one {
+  grid-template-columns: 1fr;
+}
+.field {
+  border: 1.5px solid rgba(51,51,77,0.28);
+  background: #fff;
+  padding: 14px;
+}
+.field.wide {
+  grid-column: 1 / -1;
+}
+.field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.field-label strong {
+  font-size: 13px;
+}
+.field-label span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  font-size: 13px;
+  font-weight: 700;
+}
+.choice.active {
+  background: var(--blue-soft);
+}
+.size-grid,
+.ink-grid {
+  display: grid;
+  gap: 8px;
+}
+.size-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ink-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ink {
+  min-height: 60px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+}
+.ink.active {
+  background: var(--blue-soft);
+}
+.ink-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+}
+.ink small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.field input[type="number"],
+.field select {
+  width: 100%;
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  padding: 10px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  outline: none;
+}
+
+.tips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.tip {
+  border: 1.5px solid rgba(51,51,77,0.24);
+  background: #fff;
+  padding: 14px;
+}
+.tip strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.tip p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.summary {
+  position: sticky;
+  top: 76px;
+}
+.summary-card {
+  border: 2px solid var(--line);
+  background: var(--paper);
+  box-shadow: 5px 5px 0 var(--line);
+  overflow: hidden;
+}
+.summary-head {
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--line);
+  background: var(--panel);
+}
+.summary-head h2 {
+  font-size: 15px;
+}
+.summary-body {
+  padding: 18px 16px;
+}
+.price-tag {
+  border: 2px solid var(--line);
+  background: #fff;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.price-tag small {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.price-value {
+  font-size: 34px;
+  line-height: 1;
+  color: var(--accent);
+  font-weight: 900;
+}
+.summary-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.summary-item {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(51,51,77,0.14);
+  padding-bottom: 8px;
+}
+.summary-item span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.summary-item strong {
+  font-size: 12px;
+  text-align: right;
+}
+.notice-box {
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.notice-box strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.notice-box p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.cta-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.footer-note {
+  margin-top: 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+@media (max-width: 1024px) {
+  .layout,
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .summary {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .step-grid,
+  .size-grid,
+  .ink-grid,
+  .tips {
+    grid-template-columns: 1fr;
+  }
+  .hero h1 {
+    font-size: 28px;
+  }
+}
+</style>
+</head>
+<body>
+<header class="app-bar">
+  <div class="title-cluster" aria-label="Ziner Studio Tools">
+    <a class="brand-link" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
+      <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
+      <span class="brand-name">Ziner Studio</span>
+    </a>
+    <span class="brand-meta">Tools</span>
+    <span class="title-dot" aria-hidden="true"></span>
+    <span class="tool-name">孔版印刷估價計算機</span>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Quote Calculator</span>
+        <h1>快速整理規格，抓到一個可溝通的預算範圍。</h1>
+        <p class="hero-copy">
+          這裡是估價工具，不是正式報價單。你可以先試單雙面、尺寸、張數、紙材與油墨組合，再帶著整理好的規格去詢價。
+        </p>
+        <div class="hero-note">
+          正式金額仍會依檔案內容、紙材實際供應、換墨與加工條件調整。
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <h2>適合什麼時候用？</h2>
+        <p>你已經大概知道要印什麼，但還不確定預算落在哪裡。先用這裡抓方向，再決定要不要正式詢價。</p>
+      </aside>
+    </div>
+  </section>
+
+  <div class="layout">
+    <section>
+      <article class="card">
+        <div class="card-inner">
+          <div class="section-head">
+            <h2>基本規格</h2>
+            <div class="section-sub">先定面數、尺寸與張數。</div>
+          </div>
+          <div class="step-grid">
+            <div class="field">
+              <div class="field-label">
+                <strong>印刷方式</strong>
+                <span>先決定單面或雙面</span>
+              </div>
+              <div class="choice-row">
+                <div class="choice active">單面印刷</div>
+                <div class="choice">雙面印刷</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <strong>預計購買張數</strong>
+                <span>單張可訂購</span>
+              </div>
+              <input type="number" value="200">
+            </div>
+
+            <div class="field wide">
+              <div class="field-label">
+                <strong>印刷尺寸</strong>
+                <span>常用品項</span>
+              </div>
+              <div class="size-grid">
+                <div class="choice active">A4<br><small>297×210 mm</small></div>
+                <div class="choice">A3<br><small>420×297 mm</small></div>
+                <div class="choice">明信片<br><small>86×121–120×190 mm</small></div>
+                <div class="choice">名片<br><small>30×55–85×120 mm</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-inner">
+          <div class="section-head">
+            <h2>紙材與加工</h2>
+            <div class="section-sub">紙材與襯紙通常比尺寸更明顯地影響價格。</div>
+          </div>
+          <div class="step-grid">
+            <div class="field">
+              <div class="field-label">
+                <strong>印刷紙材</strong>
+                <span>可連到紙材說明頁</span>
+              </div>
+              <select>
+                <option>【厚】白凡紙（峻揚CP象牙）220g｜$6</option>
+                <option>【中】米道林紙 120g｜$4</option>
+                <option>【薄】模造紙 80g｜$2</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <strong>印刷加工</strong>
+                <span>厚紙建議追加襯紙</span>
+              </div>
+              <div class="choice-row">
+                <div class="choice active">不需追加襯紙</div>
+                <div class="choice">追加襯紙</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-inner">
+          <div class="section-head">
+            <h2>油墨設定</h2>
+            <div class="section-sub">保留色票，但整體收斂成規格單感。</div>
+          </div>
+          <div class="step-grid one">
+            <div class="field">
+              <div class="field-label">
+                <strong>正面油墨</strong>
+                <span>標示不同級距價格</span>
+              </div>
+              <div class="ink-grid">
+                <div class="ink active"><span class="ink-dot" style="background:#000"></span>黑<small>$110</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#0078BF"></span>青藍<small>$110</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#00A95C"></span>綠<small>$110</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#FFE800"></span>黃<small>$110</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#E82020"></span>赤紅<small>$110</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#9D7AD2"></span>紫堇<small>$110</small></div>
+                <div class="ink active"><span class="ink-dot" style="background:#FF5F00"></span>螢橘<small>$130</small></div>
+                <div class="ink"><span class="ink-dot" style="background:#62A8E5"></span>天空<small>$170</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-inner">
+          <div class="section-head">
+            <h2>預算提示</h2>
+            <div class="section-sub">這裡不再是裝飾，而是幫助客戶做選擇。</div>
+          </div>
+          <div class="tips">
+            <div class="tip">
+              <strong>如果想壓低預算</strong>
+              <p>優先從特殊色與紙材下手。這兩項通常比尺寸本身更容易讓價格有明顯差距。</p>
+            </div>
+            <div class="tip">
+              <strong>如果是第一次試印</strong>
+              <p>先抓小量張數做測試，比直接上大批量更容易確認顏色與紙感是否符合預期。</p>
+            </div>
+            <div class="tip">
+              <strong>如果想保留效果</strong>
+              <p>可以保留特殊色，但調整面數或張數。這樣通常比直接砍紙材更容易保住畫面效果。</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <aside class="summary">
+      <div class="summary-card">
+        <div class="summary-head">
+          <h2>目前估價摘要</h2>
+        </div>
+        <div class="summary-body">
+          <div class="price-tag">
+            <small>預估金額區間</small>
+            <div class="price-value">$2,400 – $2,900</div>
+          </div>
+
+          <div class="summary-list">
+            <div class="summary-item">
+              <span>印刷方式</span>
+              <strong>單面印刷</strong>
+            </div>
+            <div class="summary-item">
+              <span>尺寸</span>
+              <strong>A4 297×210 mm</strong>
+            </div>
+            <div class="summary-item">
+              <span>張數</span>
+              <strong>200 張</strong>
+            </div>
+            <div class="summary-item">
+              <span>紙材</span>
+              <strong>白凡紙 220g</strong>
+            </div>
+            <div class="summary-item">
+              <span>油墨</span>
+              <strong>黑 + 螢橘</strong>
+            </div>
+          </div>
+
+          <div class="notice-box">
+            <strong>價格提醒</strong>
+            <p>這次價格較高的原因主要來自厚紙與特殊色。如果要壓低預算，優先改紙材或油墨會比較有效。</p>
+          </div>
+
+          <div class="notice-box" style="background:var(--accent-soft);">
+            <strong>下一步</strong>
+            <p>帶著這份規格去 LINE 或 email 詢價，會比口頭描述更快進入正式報價。</p>
+          </div>
+
+          <div class="cta-stack">
+            <button class="btn primary" type="button">複製規格摘要</button>
+            <a class="btn ghost" href="#" onclick="return false;">LINE 詢價</a>
+            <a class="btn ghost" href="#" onclick="return false;">Email 詢價</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="footer-note">
+    <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> from Taiwan<br>
+    Clean wireframe for quote calculator redesign
+  </div>
+</main>
+</body>
+</html>

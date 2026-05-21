@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RISO 新手村 — Ziner Studio</title>
+<style>
+:root {
+  --bg: #f6efe1;
+  --surf: #fffaf0;
+  --panel: #f3ddcf;
+  --ink: #1f1b1a;
+  --muted: #6f625b;
+  --accent: #ff5f00;
+  --accent-soft: #ffe4d3;
+  --line: #1f1b1a;
+  --shadow: 4px 4px 0 #1f1b1a;
+  --r: 2px;
+  --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(255,95,0,0.10), transparent 220px),
+    radial-gradient(circle, rgba(31,27,26,0.08) 0.75px, transparent 0.75px);
+  background-size: auto, 8px 8px;
+}
+a { color: inherit; }
+
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 58px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid var(--line);
+  background: rgba(255,250,240,0.94);
+  backdrop-filter: blur(8px);
+}
+.title-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.brand-name,
+.brand-meta,
+.tool-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.brand-name,
+.brand-meta { font-size: 15px; }
+.brand-meta {
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.tool-name { font-size: 13px; }
+.title-divider {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 20px 72px;
+}
+
+.hero {
+  border: 2px solid var(--line);
+  background: var(--surf);
+  box-shadow: 6px 6px 0 var(--line);
+  padding: 0;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.window-bar {
+  height: 46px;
+  padding: 0 18px;
+  border-bottom: 2px solid var(--line);
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.window-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.window-dots span {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: var(--surf);
+}
+.window-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.window-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.hero-shell {
+  padding: 28px;
+  background:
+    radial-gradient(circle at 82% 24%, rgba(255,95,0,0.12) 0, rgba(255,95,0,0.12) 90px, transparent 90px),
+    radial-gradient(circle, rgba(31,27,26,0.12) 1px, transparent 1px);
+  background-size: auto, 12px 12px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.58fr) minmax(0, 0.42fr);
+  gap: 26px;
+  align-items: start;
+}
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.hero h1 {
+  font-size: 38px;
+  line-height: 1.06;
+  margin-bottom: 14px;
+}
+.hero-copy {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.hero-note {
+  margin-top: 16px;
+  display: inline-block;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.unlock-card {
+  border: 2px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,95,0,0.08), transparent 40%),
+    linear-gradient(180deg, var(--surf) 0%, #f8f3e8 100%);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.unlock-card h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.unlock-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.unlock-row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  border: 2px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.unlock-row input {
+  min-width: 0;
+  border: 0;
+  padding: 13px 14px;
+  background: var(--surf);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  outline: none;
+}
+.unlock-row button {
+  border: 0;
+  border-left: 2px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.unlock-row button:hover { background: #c6653f; }
+.unlock-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+.msg {
+  margin-top: 10px;
+  min-height: 18px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.msg.ok { color: #24714d; }
+.msg.err { color: #9b3f34; }
+
+.section-card {
+  border: 2px solid var(--line);
+  background: var(--surf);
+  box-shadow: var(--shadow);
+  padding: 0;
+  margin-bottom: 20px;
+}
+.section-inner {
+  padding: 24px;
+}
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.section-head h2 {
+  font-size: 24px;
+}
+.section-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.level-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.level-card {
+  position: relative;
+  border: 2px solid var(--line);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 3px 3px 0 var(--line);
+}
+.level-card::before {
+  content: "";
+  display: block;
+  height: 10px;
+  border-bottom: 2px solid var(--line);
+}
+.level-card.lv1::before,
+.level-card.lv2::before,
+.level-card.lv3::before { background: var(--accent); }
+.level-body {
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(255,95,0,0.08), transparent 46%),
+    #fff;
+}
+.badge-stage {
+  position: relative;
+  height: 190px;
+  margin-bottom: 14px;
+  border: 2px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,95,0,0.16), transparent 45%),
+    linear-gradient(180deg, #fffdfa 0%, #f7f0e2 100%);
+  overflow: hidden;
+}
+.badge-stage::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed rgba(31,27,26,0.32);
+}
+.badge-emblem {
+  position: absolute;
+  inset: 22px 30px 30px;
+  display: grid;
+  place-items: center;
+  border: 4px solid var(--line);
+  background:
+    radial-gradient(circle, rgba(255,95,0,0.18) 1px, transparent 1px),
+    #fff;
+  background-size: 10px 10px, auto;
+  color: var(--ink);
+  text-align: center;
+  padding: 18px;
+}
+.badge-emblem span {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+}
+.badge-emblem small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.badge-emblem.pentagon {
+  clip-path: polygon(50% 0, 95% 23%, 83% 100%, 17% 100%, 5% 23%);
+}
+.badge-emblem.shield {
+  clip-path: polygon(50% 0, 94% 15%, 84% 78%, 50% 100%, 16% 78%, 6% 15%);
+}
+.badge-emblem.arc {
+  clip-path: polygon(50% 0, 84% 8%, 100% 34%, 92% 70%, 70% 100%, 30% 100%, 8% 70%, 0 34%, 16% 8%);
+}
+.badge-note {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.level-num {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.level-title {
+  margin-top: 6px;
+  margin-bottom: 10px;
+  font-size: 28px;
+  line-height: 1.05;
+}
+.level-topic {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  min-height: 66px;
+}
+.role-card {
+  border: 2px solid var(--line);
+  background:
+    radial-gradient(circle, rgba(255,95,0,0.16) 1px, transparent 1px),
+    var(--accent-soft);
+  background-size: 10px 10px, auto;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.role-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.reward-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.reward-chip {
+  display: inline-flex;
+  padding: 4px 8px;
+  border: 2px solid var(--line);
+  background: var(--surf);
+  font-size: 11px;
+  font-weight: 700;
+}
+.level-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border: 2px solid var(--line);
+  background: var(--surf);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--line);
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--line);
+}
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: 2px 2px 0 var(--line);
+}
+.level-card.locked {
+  opacity: 0.72;
+}
+.level-card.locked .level-body {
+  filter: grayscale(0.08);
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.58fr) minmax(0, 0.42fr);
+  gap: 18px;
+}
+.passport {
+  border: 2px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,95,0,0.14), transparent 42%),
+    linear-gradient(180deg, #fffdfa 0%, #efe7d2 100%);
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 18px;
+}
+.passport-title {
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 800;
+}
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stamp {
+  min-height: 88px;
+  border: 2px dashed var(--line);
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.stamp.done {
+  border-style: solid;
+  background:
+    radial-gradient(circle, rgba(255,95,0,0.22) 1px, transparent 1px),
+    var(--mint);
+  background-size: 10px 10px, auto;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.rewards-board {
+  border: 2px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,95,0,0.08), transparent 40%),
+    #fff;
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 18px;
+}
+.stat-sheet {
+  border: 2px solid var(--line);
+  background:
+    radial-gradient(circle, rgba(255,95,0,0.16) 1px, transparent 1px),
+    linear-gradient(180deg, #fffdfa 0%, #f3e7d5 100%);
+  background-size: 12px 12px, auto;
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 18px;
+}
+.stat-sheet h3 {
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.stat-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.rank-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  padding: 6px 10px;
+  border: 2px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+.stat-name {
+  font-size: 22px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.stat-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+.meter-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.meter-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.meter {
+  height: 14px;
+  border: 2px solid var(--line);
+  background: #fff;
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  background:
+    linear-gradient(90deg, rgba(31,27,26,0.18), rgba(31,27,26,0.18)),
+    linear-gradient(90deg, var(--accent), #ff8a42);
+}
+.badge-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mini-badge {
+  min-height: 78px;
+  border: 2px solid var(--line);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.mini-badge.locked {
+  color: var(--muted);
+  background: #f3eee7;
+}
+.sheet-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rewards-board h3 {
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.reward-grid {
+  display: grid;
+  gap: 10px;
+}
+.reward-item {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 12px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.reward-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--line);
+  background: var(--surf);
+  font-size: 20px;
+}
+.reward-item h4 {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+.reward-item p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.reward-item.locked {
+  opacity: 0.5;
+}
+
+.memorial {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 18px;
+  align-items: center;
+}
+.memorial-card {
+  border: 2px solid var(--line);
+  background:
+    radial-gradient(circle, rgba(255,95,0,0.14) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(255,95,0,0.10), transparent 40%),
+    linear-gradient(180deg, #fffefa 0%, #f4ecdb 100%);
+  background-size: 12px 12px, auto, auto;
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 18px;
+}
+.memorial-card h3 {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.memorial-rank {
+  font-size: 29px;
+  line-height: 1.08;
+  margin-bottom: 8px;
+}
+.memorial-copy {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.memorial-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.faq-item {
+  border: 2px solid var(--line);
+  background: var(--surf);
+  padding: 14px;
+  box-shadow: 3px 3px 0 var(--line);
+}
+.faq-item strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.faq-item p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.footnote {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+@media (max-width: 960px) {
+  .hero-grid,
+  .progress-grid,
+  .memorial {
+    grid-template-columns: 1fr;
+  }
+  .level-track,
+  .faq {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<header class="app-bar">
+  <div class="title-cluster" aria-label="Ziner Studio Tools">
+    <a class="brand-link" href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer">
+      <img class="logo-mark" src="zinerstudio_webicon.png" alt="">
+      <span class="brand-name">Ziner Studio</span>
+    </a>
+    <span class="brand-meta">Tools</span>
+    <span class="title-divider" aria-hidden="true"></span>
+    <span class="tool-name">RISO 新手村</span>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="window-bar">
+      <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="window-title">RISO Rookie Village.exe</div>
+      <div class="window-tools">save · map · clear</div>
+    </div>
+    <div class="hero-shell">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Welcome to RISO Rookie Village</span>
+        <h1>用 3 個關卡，把第一次做 zine 的慌張變成成就感。</h1>
+        <p class="hero-copy">
+          每一關都是一個實際印刷主題。看完教學、拿到通關密語、解鎖下一階，順手帶走模板、徽章與一張可以打卡的紀念圖。
+        </p>
+        <div class="hero-note">不用登入，進度只存在這台裝置。</div>
+      </div>
+
+      <div class="unlock-card">
+        <h2>輸入通關密語</h2>
+        <p>看完每一關教學後，會拿到一組通關密語。輸入成功就能解鎖下一關，也會把進度記在這台裝置裡。</p>
+        <div class="unlock-row">
+          <input id="passphraseInput" type="text" placeholder="例如 BLEED3">
+          <button type="button" onclick="unlockLevel()">解鎖</button>
+        </div>
+        <div class="unlock-hint">完成各關教學後，會在頁尾拿到通關密語。首頁不公開提示。</div>
+        <div id="unlockMsg" class="msg"></div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="window-bar">
+      <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="window-title">Quest Map</div>
+      <div class="window-tools">lv.01 - lv.03</div>
+    </div>
+    <div class="section-inner">
+    <div class="section-head">
+      <h2>關卡地圖</h2>
+      <div class="section-sub">先完成 Lv.1，後面的關卡會逐步亮起來。</div>
+    </div>
+
+    <div class="level-track">
+      <article class="level-card lv1" id="card-1">
+        <div class="level-body">
+          <div class="status-badge" id="status-1">可開始</div>
+          <div class="badge-stage">
+            <div class="badge-emblem pentagon">
+              <div>
+                <span>FILE-PREP<br>RECRUIT</span>
+                <small>badge art slot</small>
+              </div>
+            </div>
+          </div>
+          <div class="level-num">Lv.1</div>
+          <h3 class="level-title">備檔勇者</h3>
+          <p class="level-topic">尺寸、出血、解析度與安全邊界。把送印前最容易踩雷的四件事一次搞懂。</p>
+          <div class="role-card">
+            <strong>獲得稱號</strong>
+            備檔勇者
+          </div>
+          <div class="badge-note">
+            <span>剪刀 / 檢查板</span>
+            <span>低階職</span>
+          </div>
+          <div class="reward-list">
+            <span class="reward-chip">送印前檢查卡</span>
+            <span class="reward-chip">Lv.1 徽章</span>
+          </div>
+          <div class="level-actions">
+            <a class="btn primary" href="#" onclick="return false;">開始教學</a>
+            <button class="btn" type="button" onclick="showPassphrase(1)">看通關密語</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="level-card lv2 locked" id="card-2">
+        <div class="level-body">
+          <div class="status-badge" id="status-2">未解鎖</div>
+          <div class="badge-stage">
+            <div class="badge-emblem shield">
+              <div>
+                <span>OVERPRINT<br>CARD KNIGHT</span>
+                <small>badge art slot</small>
+              </div>
+            </div>
+          </div>
+          <div class="level-num">Lv.2</div>
+          <h3 class="level-title">套色騎士</h3>
+          <p class="level-topic">用最簡單的雙色案例理解套色、疊印與孔版印刷的視覺節奏。</p>
+          <div class="role-card">
+            <strong>獲得稱號</strong>
+            套色騎士
+          </div>
+          <div class="badge-note">
+            <span>盾牌 / 幾何套色</span>
+            <span>中階職</span>
+          </div>
+          <div class="reward-list">
+            <span class="reward-chip">雙色名片模板</span>
+            <span class="reward-chip">Lv.2 徽章</span>
+          </div>
+          <div class="level-actions">
+            <button class="btn primary" type="button" disabled>尚未解鎖</button>
+            <button class="btn" type="button" onclick="showPassphrase(2)">看通關密語</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="level-card lv3 locked" id="card-3">
+        <div class="level-body">
+          <div class="status-badge" id="status-3">未解鎖</div>
+          <div class="badge-stage">
+            <div class="badge-emblem arc">
+              <div>
+                <span>ZINE<br>WIZARD</span>
+                <small>badge art slot</small>
+              </div>
+            </div>
+          </div>
+          <div class="level-num">Lv.3</div>
+          <h3 class="level-title">小誌巫師</h3>
+          <p class="level-topic">理解騎馬釘頁序、4 的倍數規則，做出第一本可以送印的 8 頁小誌。</p>
+          <div class="role-card">
+            <strong>獲得稱號</strong>
+            小誌巫師
+          </div>
+          <div class="badge-note">
+            <span>書頁 / 法杖 / 頁序</span>
+            <span>高階職</span>
+          </div>
+          <div class="reward-list">
+            <span class="reward-chip">8P 小報模板</span>
+            <span class="reward-chip">完成證明圖</span>
+          </div>
+          <div class="level-actions">
+            <button class="btn primary" type="button" disabled>尚未解鎖</button>
+            <button class="btn" type="button" onclick="showPassphrase(3)">看通關密語</button>
+          </div>
+        </div>
+      </article>
+    </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="window-bar">
+      <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="window-title">Status Sheet</div>
+      <div class="window-tools">hp / mp / exp</div>
+    </div>
+    <div class="section-inner">
+    <div class="section-head">
+      <h2>角色狀態卡</h2>
+      <div class="section-sub">把進度和分享卡收進同一個 RPG 狀態畫面。</div>
+    </div>
+
+    <div class="progress-grid">
+      <div class="stat-sheet">
+        <h3>村民角色資訊</h3>
+        <div class="stat-top">
+          <div>
+            <div class="stat-name" id="rankTitle">村口觀察員</div>
+            <div class="stat-sub" id="rankCopy">完成第一關後，這裡會升級成正式職階。</div>
+          </div>
+          <div class="rank-pill" id="rankLevel">LV.0</div>
+        </div>
+        <div class="meter-list">
+          <div class="meter-row">
+            <span>HP</span>
+            <div class="meter"><div class="meter-fill" id="hpFill" style="width:20%"></div></div>
+            <span id="hpText">20</span>
+          </div>
+          <div class="meter-row">
+            <span>MP</span>
+            <div class="meter"><div class="meter-fill" id="mpFill" style="width:10%"></div></div>
+            <span id="mpText">10</span>
+          </div>
+          <div class="meter-row">
+            <span>EXP</span>
+            <div class="meter"><div class="meter-fill" id="expFill" style="width:0%"></div></div>
+            <span id="expText">0</span>
+          </div>
+        </div>
+        <div class="badge-row">
+          <div class="mini-badge locked" id="stamp-1">Lv.1<br>待解鎖</div>
+          <div class="mini-badge locked" id="stamp-2">Lv.2<br>待解鎖</div>
+          <div class="mini-badge locked" id="stamp-3">Lv.3<br>待解鎖</div>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn primary" type="button" onclick="downloadCard()">截圖分享</button>
+          <button class="btn" type="button" onclick="resetVillage()">清除進度</button>
+        </div>
+      </div>
+
+      <div class="rewards-board">
+        <h3>已解鎖獎勵</h3>
+        <div class="reward-grid">
+          <div class="reward-item" id="reward-1">
+            <div class="reward-icon">⚑</div>
+            <div>
+              <h4>Lv.1 備檔勇者</h4>
+              <p>送印前檢查卡 + 徽章圖。適合搭在檔案教學的最末端。</p>
+            </div>
+          </div>
+          <div class="reward-item locked" id="reward-2">
+            <div class="reward-icon">✦</div>
+            <div>
+              <h4>Lv.2 套色騎士</h4>
+              <p>雙色名片模板 + 疊色紀念圖。可搭配分色模擬器一起看。</p>
+            </div>
+          </div>
+          <div class="reward-item locked" id="reward-3">
+            <div class="reward-icon">☞</div>
+            <div>
+              <h4>Lv.3 小誌巫師</h4>
+              <p>8P 小報模板 + 通關證明圖。完成後可下載留念打卡。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="window-bar">
+      <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="window-title">Share Card</div>
+      <div class="window-tools">capture / export</div>
+    </div>
+    <div class="section-inner">
+    <div class="section-head">
+      <h2>截圖留念</h2>
+      <div class="section-sub">分享卡只保留稱號、等級與一句通關感文字。</div>
+    </div>
+
+    <div class="memorial">
+      <div class="memorial-card" id="memorialCard">
+        <h3>目前稱號</h3>
+        <div class="memorial-rank" id="shareRankTitle">村口觀察員</div>
+        <div class="memorial-copy" id="shareRankCopy">完成第一關後，這裡會變成可以直接貼限動的通關卡。</div>
+      </div>
+      <div class="memorial-actions"></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="window-bar">
+      <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="window-title">System Notes</div>
+      <div class="window-tools">faq / rules / scope</div>
+    </div>
+    <div class="section-inner">
+      <section class="faq">
+        <article class="faq-item">
+          <strong>密語藏在哪裡？</strong>
+          <p>每一關教學最下面都會出現一句通關密語。你也可以把它埋在圖卡、按鈕或下載檔名裡，增加一點尋寶感。</p>
+        </article>
+        <article class="faq-item">
+          <strong>不登入可以嗎？</strong>
+          <p>可以。第一版用瀏覽器本地儲存就夠了，沒有資料庫，也不用客戶留 email。</p>
+        </article>
+        <article class="faq-item">
+          <strong>獎勵送什麼最省力？</strong>
+          <p>模板、檢查卡、配色小卡、徽章圖都很適合。重點是有成就感，不是要做完整會員商城。</p>
+        </article>
+      </section>
+    </div>
+  </section>
+
+  <div class="footnote">
+    <a href="https://www.zinerstudio.com/" target="_blank" rel="noreferrer"><strong>Ziner Studio</strong></a> from Taiwan<br>
+    RISO Rookie Village demo concept by Claude Code &amp; Codex
+  </div>
+</main>
+
+<script>
+const PASSCODES = {
+  BLEED3: 2,
+  OVERPRINT: 3,
+  BOOKLET8: 4
+};
+
+const RANKS = {
+  0: {
+    title: "村口觀察員",
+    copy: "完成第一關後，這裡會升級成正式職階，並顯示你的村民狀態。"
+  },
+  1: {
+    title: "備檔勇者",
+    copy: "你已經掌握送印前最基本的尺寸、出血與解析度規則，可以前往套色關卡。"
+  },
+  2: {
+    title: "套色騎士",
+    copy: "你已經能理解雙色疊印與套色的節奏，開始有自己的孔版印刷判斷。"
+  },
+  3: {
+    title: "小誌巫師",
+    copy: "你完成了新手村三個核心關卡，已經具備做出第一本小誌的基本戰力。"
+  }
+};
+
+function getProgress() {
+  return parseInt(localStorage.getItem("riso_rookie_level") || "1", 10);
+}
+
+function setProgress(level) {
+  localStorage.setItem("riso_rookie_level", String(level));
+}
+
+function renderVillage() {
+  const progress = getProgress();
+
+  for (let i = 1; i <= 3; i++) {
+    const card = document.getElementById(`card-${i}`);
+    const status = document.getElementById(`status-${i}`);
+    const stamp = document.getElementById(`stamp-${i}`);
+    const reward = document.getElementById(`reward-${i}`);
+    const locked = progress < i;
+    const done = progress > i;
+
+    card.classList.toggle("locked", locked);
+    if (done) {
+      status.textContent = "已完成";
+      stamp.className = "mini-badge";
+      stamp.innerHTML = `Lv.${i}<br>已解鎖`;
+      reward.classList.remove("locked");
+    } else if (locked) {
+      status.textContent = "未解鎖";
+      stamp.className = "mini-badge locked";
+      stamp.innerHTML = `Lv.${i}<br>待解鎖`;
+      reward.classList.add("locked");
+    } else {
+      status.textContent = "可開始";
+      stamp.className = "mini-badge";
+      stamp.innerHTML = `Lv.${i}<br>進行中`;
+      reward.classList.toggle("locked", i !== 1 && progress <= i - 1);
+    }
+  }
+
+  const rank = RANKS[Math.max(0, Math.min(progress - 1, 3))];
+  document.getElementById("rankTitle").textContent = rank.title;
+  document.getElementById("rankCopy").textContent = rank.copy;
+  document.getElementById("shareRankTitle").textContent = rank.title;
+  document.getElementById("shareRankCopy").textContent = rank.copy;
+  document.getElementById("rankLevel").textContent = `LV.${Math.max(progress - 1, 0)}`;
+
+  const hp = Math.min(100, 20 + (progress - 1) * 28);
+  const mp = Math.min(100, 10 + (progress - 1) * 32);
+  const exp = Math.min(100, (progress - 1) * 34);
+  document.getElementById("hpFill").style.width = `${hp}%`;
+  document.getElementById("mpFill").style.width = `${mp}%`;
+  document.getElementById("expFill").style.width = `${exp}%`;
+  document.getElementById("hpText").textContent = hp;
+  document.getElementById("mpText").textContent = mp;
+  document.getElementById("expText").textContent = exp;
+}
+
+function unlockLevel() {
+  const input = document.getElementById("passphraseInput");
+  const msg = document.getElementById("unlockMsg");
+  const code = input.value.trim().toUpperCase();
+  const current = getProgress();
+
+  if (!code) {
+    msg.className = "msg err";
+    msg.textContent = "先輸入一組通關密語。";
+    return;
+  }
+
+  const nextLevel = PASSCODES[code];
+  if (!nextLevel) {
+    msg.className = "msg err";
+    msg.textContent = "這組密語好像不對，或還沒拿到。";
+    return;
+  }
+
+  if (nextLevel <= current) {
+    msg.className = "msg ok";
+    msg.textContent = "這組密語已經用過了，進度還在。";
+    return;
+  }
+
+  setProgress(nextLevel);
+  renderVillage();
+  msg.className = "msg ok";
+  msg.textContent = `解鎖成功，已開啟 Lv.${Math.min(nextLevel, 3)} 的下一步。`;
+  input.value = "";
+}
+
+function showPassphrase(level) {
+  const msg = document.getElementById("unlockMsg");
+  msg.className = "msg err";
+  msg.textContent = `正式版不會在首頁公開 Lv.${level} 的通關密語，這裡之後會改成前往教學頁。`;
+}
+
+function resetVillage() {
+  localStorage.removeItem("riso_rookie_level");
+  document.getElementById("unlockMsg").textContent = "";
+  renderVillage();
+}
+
+function downloadCard() {
+  const rank = document.getElementById("rankTitle").textContent;
+  const copy = document.getElementById("rankCopy").textContent;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="628" viewBox="0 0 1200 628">
+      <rect width="1200" height="628" fill="#f5f0e4"/>
+      <rect x="56" y="56" width="1088" height="516" fill="#fffaf0" stroke="#33334d" stroke-width="6"/>
+      <text x="110" y="150" font-size="28" font-family="Arial, sans-serif" fill="#d4714a" font-weight="700" letter-spacing="4">RISO ROOKIE VILLAGE</text>
+      <text x="110" y="250" font-size="72" font-family="Arial, sans-serif" fill="#33334d" font-weight="800">${rank}</text>
+      <text x="110" y="322" font-size="28" font-family="Arial, sans-serif" fill="#6b6878">${copy}</text>
+      <text x="110" y="500" font-size="32" font-family="Arial, sans-serif" fill="#33334d" font-weight="700">Ziner Studio from Taiwan</text>
+    </svg>
+  `;
+  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "riso-rookie-village-card.svg";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+renderVillage();
+</script>
+</body>
+</html>

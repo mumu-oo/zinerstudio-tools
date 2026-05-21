@@ -1,0 +1,36 @@
+{
+  "appId": "com.zinerstudio.coinledgergbstyle",
+  "productName": "COIN LEDGER GB-style",
+  "files": [
+    "coin-ledger-gb/**/*",
+    "!coin-ledger-gb/dist/**/*",
+    "package.json"
+  ],
+  "directories": {
+    "output": "coin-ledger-gb/dist",
+    "buildResources": "coin-ledger-gb/icon"
+  },
+  "mac": {
+    "category": "public.app-category.finance",
+    "target": [
+      "dmg"
+    ],
+    "icon": "coin-ledger-gb/icon/coin-logo-app-80.png"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "icon": "coin-ledger-gb/icon/coin-logo-app.ico"
+  },
+  "extraMetadata": {
+    "name": "coin-ledger-gb-style-app",
+    "description": "COIN LEDGER GB-style desktop app",
+    "main": "coin-ledger-gb/main.js"
+  }
+}

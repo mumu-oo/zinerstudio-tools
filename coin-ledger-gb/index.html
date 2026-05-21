@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COIN LEDGER GB-style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gb-darkest:  #1c1e10;
+    --gb-dark:     #484c30;
+    --gb-medium:   #747858;
+    --gb-light:    #a8ae7a;
+    --gb-lightest: #c8cc8c;
+    --gb-input:    #b8bc7c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--gb-darkest);
+    font-family: 'Press Start 2P', monospace;
+    color: var(--gb-darkest);
+    min-height: 100vh;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .gb-screen {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--gb-light);
+    border: 4px solid var(--gb-darkest);
+    box-shadow: inset 2px 2px 8px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(255,255,255,0.05), 0 0 0 2px var(--gb-dark), 6px 6px 0 var(--gb-darkest);
+    padding: 0;
+  }
+
+  .gb-header {
+    background: var(--gb-darkest);
+    padding: 20px 24px 16px;
+    text-align: center;
+    border-bottom: 3px solid var(--gb-dark);
+    position: relative;
+  }
+
+  .gb-header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: var(--gb-light);
+    letter-spacing: 2px;
+    line-height: 1.8;
+  }
+
+  .gb-header .subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--gb-medium);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  .cfg-btn {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    background: transparent;
+    color: var(--gb-medium);
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: color 0.1s;
+  }
+  .cfg-btn:hover { color: var(--gb-lightest); }
+  .cfg-btn.active { color: var(--gb-light); }
+
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .gb-toggle {
+    display: flex;
+    background: var(--gb-darkest);
+    gap: 4px;
+    padding: 10px 10px 0;
+    align-items: flex-end;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 10px 8px;
+    cursor: pointer;
+    background: var(--gb-dark);
+    color: var(--gb-medium);
+    border: 2px solid var(--gb-medium);
+    border-bottom: none;
+    letter-spacing: 1px;
+    position: relative;
+    transition: background 0.05s, color 0.05s;
+    margin-bottom: -2px;
+  }
+
+  .toggle-btn:hover:not(.active) { background: var(--gb-medium); color: var(--gb-lightest); }
+
+  .toggle-btn.active {
+    background: var(--gb-light);
+    color: var(--gb-darkest);
+    border-color: var(--gb-darkest);
+    border-bottom: 2px solid var(--gb-light);
+    padding: 12px 8px;
+    z-index: 2;
+  }
+
+  .gb-content {
+    background: var(--gb-light);
+    padding: 20px;
+    min-height: 500px;
+    border-top: 2px solid var(--gb-darkest);
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--gb-darkest);
+    background: var(--gb-medium);
+    padding: 6px 10px;
+    margin-bottom: 14px;
+    border: 2px solid var(--gb-darkest);
+    box-shadow: 2px 2px 0 var(--gb-darkest);
+    letter-spacing: 1px;
+    display: inline-block;
+  }
+
+  .gb-card {
+    background: var(--gb-medium);
+    border: 2px solid var(--gb-darkest);
+    box-shadow: 3px 3px 0 var(--gb-darkest);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .gb-header h1 { font-size: 9px; }
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full-width { grid-column: 1 / -1; }
+
+  label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--gb-darkest);
+    letter-spacing: 1px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    line-height: 1.4;
+    background: var(--gb-input);
+    border: 2px solid var(--gb-darkest);
+    color: var(--gb-darkest);
+    padding: 5px 8px;
+    height: 36px;
+    outline: none;
+    width: 100%;
+    border-radius: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    background: var(--gb-lightest);
+    box-shadow: inset 2px 2px 0 var(--gb-dark);
+  }
+
+  select {
+    cursor: pointer;
+    background-image: var(--select-arrow-url, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%231c1e10'/%3E%3C/svg%3E"));
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-color: var(--gb-input);
+    padding-right: 28px;
+  }
+
+  .gb-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    background: var(--gb-dark);
+    color: var(--gb-lightest);
+    border: 2px solid var(--gb-darkest);
+    padding: 10px 16px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--gb-darkest);
+    letter-spacing: 1px;
+    transition: transform 0.05s, box-shadow 0.05s;
+    white-space: nowrap;
+  }
+
+  .gb-btn:hover { background: var(--gb-medium); color: var(--gb-darkest); }
+  .gb-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--gb-darkest); }
+
+  .gb-btn-danger { background: var(--gb-darkest); color: var(--gb-light); }
+  .gb-btn-danger:hover { background: var(--gb-dark); color: var(--gb-lightest); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    align-items: center;
+  }
+
+  #toast {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gb-darkest);
+    color: var(--gb-light);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 12px 20px;
+    border: 2px solid var(--gb-light);
+    box-shadow: 4px 4px 0 var(--gb-dark);
+    z-index: 10000;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .gb-table-wrap {
+    overflow-x: auto;
+    border: 2px solid var(--gb-darkest);
+    box-shadow: 3px 3px 0 var(--gb-darkest);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-family: 'VT323', monospace; font-size: 17px; }
+
+  thead tr { background: var(--gb-darkest); }
+
+  thead th {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: var(--gb-light);
+    padding: 7px 8px;
+    text-align: left;
+    border-right: 1px solid var(--gb-dark);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  tbody tr:nth-child(odd)  { background: var(--gb-light); }
+  tbody tr:nth-child(even) { background: var(--gb-medium); }
+
+  tbody td {
+    padding: 5px 8px;
+    color: var(--gb-darkest);
+    border-right: 1px solid rgba(15,56,15,0.2);
+    vertical-align: middle;
+  }
+
+  tbody tr:hover { background: var(--gb-lightest); }
+
+  .del-btn {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    line-height: 1;
+    background: none;
+    border: 2px solid var(--gb-darkest);
+    color: var(--gb-darkest);
+    padding: 1px 10px 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 2px 2px 0 var(--gb-darkest);
+    transition: transform 0.05s, box-shadow 0.05s;
+  }
+  .del-btn:hover { background: var(--gb-darkest); color: var(--gb-light); }
+  .del-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-bar label { font-size: 7px; }
+  .filter-bar select { font-size: 15px; padding: 3px 28px 3px 6px; width: auto; }
+
+  .ascii-box {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    background: var(--gb-darkest);
+    color: var(--gb-light);
+    padding: 12px 16px;
+    border: 2px solid var(--gb-dark);
+    box-shadow: 3px 3px 0 var(--gb-dark);
+    margin-bottom: 16px;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+
+  .bar-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .bar-label { font-family: 'VT323', monospace; font-size: 16px; color: var(--gb-darkest); width: 140px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { flex: 1; height: 14px; background: var(--gb-dark); border: 1px solid var(--gb-darkest); position: relative; min-width: 60px; }
+  .bar-fill { height: 100%; background: var(--gb-darkest); }
+  .bar-count { font-family: 'VT323', monospace; font-size: 16px; color: var(--gb-darkest); width: 80px; text-align: right; flex-shrink: 0; }
+
+  .config-option { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--gb-dark); flex-wrap: wrap; }
+
+  .color-tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+
+  .color-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    background: var(--gb-darkest);
+    color: var(--gb-light);
+    padding: 6px 10px;
+    border: 2px solid var(--gb-dark);
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .remove-x { cursor: pointer; color: var(--gb-medium); font-size: 9px; line-height: 1; }
+  .remove-x:hover { color: var(--gb-lightest); }
+
+  .confirm-input {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    background: var(--gb-input);
+    border: 2px solid var(--gb-darkest);
+    color: var(--gb-darkest);
+    padding: 5px 8px;
+    width: 180px;
+    outline: none;
+    border-radius: 0;
+  }
+
+  .recent-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    background: var(--gb-medium);
+    border-bottom: 1px solid var(--gb-dark);
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    color: var(--gb-darkest);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .recent-entry:nth-child(even) { background: var(--gb-light); }
+  .recent-entry:hover { background: var(--gb-lightest); }
+  .re-date { font-size: 14px; flex-shrink: 0; color: var(--gb-dark); }
+  .re-main { flex: 1; min-width: 80px; }
+  .re-cost { font-size: 17px; flex-shrink: 0; }
+
+  .recent-list-wrap { border: 2px solid var(--gb-darkest); box-shadow: 3px 3px 0 var(--gb-darkest); overflow: hidden; }
+
+  .empty-msg { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--gb-dark); text-align: center; padding: 24px; letter-spacing: 1px; }
+
+  .add-color-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .add-color-row input { width: 220px; font-size: 16px; }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+
+  .stepper { display: flex; align-items: center; gap: 0; }
+  .stepper input { text-align: center; width: 60px; border-left: none; border-right: none; }
+  .stepper-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    width: 34px;
+    height: 100%;
+    min-height: 36px;
+    background: var(--gb-dark);
+    color: var(--gb-lightest);
+    border: 2px solid var(--gb-darkest);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.05s, box-shadow 0.05s;
+    box-shadow: 2px 2px 0 var(--gb-darkest);
+    user-select: none;
+  }
+  .stepper-btn:hover  { background: var(--gb-medium); color: var(--gb-darkest); }
+  .stepper-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--gb-darkest); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--gb-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--gb-darkest); }
+
+  .gb-footer {
+    background: var(--gb-darkest);
+    text-align: center;
+    padding: 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: var(--gb-dark);
+    border-top: 2px solid var(--gb-dark);
+    letter-spacing: 1px;
+  }
+
+  #importFile { display: none; }
+
+  .tax-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+
+  .tax-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-family: 'VT323', monospace;
+    font-size: 19px;
+    color: var(--gb-darkest);
+  }
+
+  .tax-toggle input[type="checkbox"] { display: none; }
+
+  .tax-box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--gb-darkest);
+    background: var(--gb-input);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--gb-darkest);
+  }
+
+  .tax-toggle input:checked ~ .tax-box::after { content: '✓'; }
+
+  .tax-preview { font-family: 'VT323', monospace; font-size: 17px; color: var(--gb-dark); letter-spacing: 0.5px; }
+
+  .monthly-current td {
+    background: var(--gb-darkest) !important;
+    color: var(--gb-light) !important;
+    font-weight: bold;
+  }
+
+  .theme-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .theme-card {
+    background: var(--gb-light);
+    border: 2px solid var(--gb-darkest);
+    box-shadow: 3px 3px 0 var(--gb-darkest);
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
+  }
+
+  .theme-card:hover { background: var(--gb-lightest); }
+
+  .theme-card.active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--gb-darkest);
+    background: var(--gb-lightest);
+  }
+
+  .theme-card-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--gb-darkest);
+    letter-spacing: 1px;
+  }
+
+  .theme-card-sub {
+    font-family: 'VT323', monospace;
+    font-size: 19px;
+    color: var(--gb-dark);
+    line-height: 1;
+  }
+
+  .theme-swatches {
+    display: flex;
+    gap: 6px;
+  }
+
+  .theme-swatch {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gb-darkest);
+    box-shadow: 2px 2px 0 var(--gb-darkest);
+    flex-shrink: 0;
+  }
+
+  .data-management-note {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: var(--gb-darkest);
+    margin-bottom: 10px;
+    line-height: 1.8;
+  }
+
+  .storage-utility-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 8px 0 4px;
+  }
+
+  .storage-utility-row .gb-btn {
+    font-size: 7px;
+    padding: 9px 14px;
+  }
+
+  .storage-meta {
+    padding: 8px 0 12px;
+    border-bottom: 1px dashed var(--gb-dark);
+  }
+
+  .storage-primary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    padding-top: 14px;
+  }
+
+  .data-action-btn {
+    min-height: 62px;
+    padding: 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .data-action-main {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .data-action-sub {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .storage-snapshot-row { padding-top: 12px; }
+
+  #file-sync-status {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: var(--gb-darkest);
+    line-height: 1.2;
+  }
+
+  #file-sync-hint,
+  #snapshot-ts {
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    color: var(--gb-dark);
+    line-height: 1.3;
+  }
+
+  body[data-theme="blue"] { background: #02060f; }
+
+  body[data-theme="blue"] .gb-screen {
+    border-color: var(--gb-dark);
+    box-shadow:
+      inset 2px 2px 8px rgba(0,0,0,0.95),
+      0 0 0 2px var(--gb-dark),
+      6px 6px 0 #02060f,
+      0 0 40px rgba(26,80,160,0.35);
+  }
+
+  body[data-theme="blue"] .gb-header,
+  body[data-theme="blue"] .gb-toggle,
+  body[data-theme="blue"] .gb-footer {
+    background: #02060f;
+  }
+
+  body[data-theme="blue"] .gb-header { border-bottom-color: var(--gb-medium); }
+  body[data-theme="blue"] .gb-footer { border-top-color: var(--gb-medium); }
+  body[data-theme="blue"] .gb-header h1,
+  body[data-theme="blue"] .gb-btn,
+  body[data-theme="blue"] .stepper-btn,
+  body[data-theme="blue"] label,
+  body[data-theme="blue"] thead th,
+  body[data-theme="blue"] .section-title,
+  body[data-theme="blue"] .cfg-btn:hover,
+  body[data-theme="blue"] .cfg-btn.active {
+    color: var(--gb-darkest);
+  }
+
+  body[data-theme="blue"] .cfg-btn,
+  body[data-theme="blue"] .gb-header .subtitle,
+  body[data-theme="blue"] .re-date,
+  body[data-theme="blue"] .empty-msg {
+    color: var(--gb-dark);
+  }
+
+  body[data-theme="blue"] .toggle-btn {
+    color: var(--gb-darkest);
+    opacity: 0.5;
+    border-color: var(--gb-medium);
+  }
+
+  body[data-theme="blue"] .toggle-btn:hover:not(.active) {
+    background: var(--gb-medium);
+    color: var(--gb-darkest);
+    opacity: 1;
+  }
+
+  body[data-theme="blue"] .toggle-btn.active {
+    opacity: 1;
+    color: var(--gb-darkest);
+  }
+
+  body[data-theme="blue"] thead tr { background: var(--gb-medium); }
+  body[data-theme="blue"] tbody tr:nth-child(odd)  { background: var(--gb-light); }
+  body[data-theme="blue"] tbody tr:nth-child(even) { background: var(--gb-lightest); }
+  body[data-theme="blue"] tbody tr:hover,
+  body[data-theme="blue"] .recent-entry:hover {
+    background: var(--gb-medium);
+  }
+
+  body[data-theme="blue"] .recent-entry { background: var(--gb-light); }
+  body[data-theme="blue"] .recent-entry:nth-child(even) { background: var(--gb-lightest); }
+  body[data-theme="blue"] .bar-track { background: var(--gb-medium); border-color: var(--gb-dark); }
+  body[data-theme="blue"] .bar-fill { background: var(--gb-darkest); }
+  body[data-theme="blue"] .monthly-current td {
+    background: var(--gb-dark) !important;
+    color: var(--gb-darkest) !important;
+  }
+
+  body[data-theme="blue"] .bar-label,
+  body[data-theme="blue"] .bar-count,
+  body[data-theme="blue"] tbody td,
+  body[data-theme="blue"] .theme-card-name,
+  body[data-theme="blue"] .theme-card-sub { color: var(--gb-darkest); }
+
+  body[data-theme="blue"] .section-title,
+  body[data-theme="blue"] .gb-card,
+  body[data-theme="blue"] .gb-table-wrap,
+  body[data-theme="blue"] .recent-list-wrap,
+  body[data-theme="blue"] .gb-btn,
+  body[data-theme="blue"] .del-btn,
+  body[data-theme="blue"] .stepper-btn,
+  body[data-theme="blue"] .theme-card,
+  body[data-theme="blue"] .theme-swatch { border-color: var(--gb-darkest); }
+
+  body[data-theme="blue"] .section-title {
+    box-shadow: 2px 2px 0 var(--gb-darkest), 0 0 10px rgba(192,220,255,0.25);
+  }
+
+  body[data-theme="blue"] .gb-card,
+  body[data-theme="blue"] .gb-table-wrap,
+  body[data-theme="blue"] .recent-list-wrap {
+    box-shadow: 3px 3px 0 var(--gb-darkest), 0 0 8px rgba(192,220,255,0.1);
+  }
+
+  body[data-theme="blue"] .gb-btn,
+  body[data-theme="blue"] .del-btn,
+  body[data-theme="blue"] .stepper-btn,
+  body[data-theme="blue"] .theme-card,
+  body[data-theme="blue"] .theme-swatch { box-shadow: 2px 2px 0 var(--gb-dark); }
+
+  body[data-theme="blue"] input[type="text"],
+  body[data-theme="blue"] input[type="number"],
+  body[data-theme="blue"] input[type="date"],
+  body[data-theme="blue"] select,
+  body[data-theme="blue"] textarea,
+  body[data-theme="blue"] .tax-box {
+    color: var(--gb-darkest);
+    border-color: var(--gb-darkest);
+  }
+
+  body[data-theme="blue"] input[type="text"]:focus,
+  body[data-theme="blue"] input[type="number"]:focus,
+  body[data-theme="blue"] input[type="date"]:focus,
+  body[data-theme="blue"] select:focus,
+  body[data-theme="blue"] textarea:focus {
+    background: var(--gb-lightest);
+    box-shadow: inset 2px 2px 0 var(--gb-medium), 0 0 8px rgba(192,220,255,0.2);
+  }
+
+  body[data-theme="blue"] #toast {
+    background: var(--gb-medium);
+    color: var(--gb-darkest);
+    border-color: var(--gb-darkest);
+  }
+
+  @media (max-width: 900px) {
+    .storage-primary-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .theme-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .storage-primary-grid { grid-template-columns: 1fr; }
+    .data-action-btn {
+      justify-content: flex-start;
+      min-height: 56px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="gb-screen">
+
+  <div class="gb-header">
+    <h1><span class="blink">&#9658;</span> STUDIO LEDGER 創作者記帳本</h1>
+    <div class="subtitle">COIN LEDGER GB-STYLE &nbsp;&middot;&nbsp; VER 1.0</div>
+    <button class="cfg-btn" id="cfg-btn" onclick="toggleConfig()"><span class="blink">&#9658;</span> SET</button>
+  </div>
+
+  <div class="gb-toggle">
+    <button class="toggle-btn active" id="btn-panel-costs" onclick="switchPanel('costs')">&#9668; COSTS 費用</button>
+    <button class="toggle-btn" id="btn-panel-stats" onclick="switchPanel('stats')">STATS 統計 &#9658;</button>
+  </div>
+
+  <div class="gb-content">
+
+    <!-- PANEL: COSTS -->
+    <div id="panel-costs" class="panel active">
+      <div class="section-title">// COSTS 費用登記 //</div>
+      <div class="gb-card">
+        <div class="form-group full-width" style="border-bottom:2px dashed var(--gb-dark);padding-bottom:12px;margin-bottom:12px;">
+          <label>PRESET 常用項目快速套用</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:5px;flex-wrap:wrap;">
+            <select id="cost-preset-select" style="flex:1;min-width:180px;font-family:'VT323',monospace;font-size:18px;background:var(--gb-input);border:2px solid var(--gb-darkest);color:var(--gb-darkest);padding:5px 28px 5px 8px;outline:none;border-radius:0;appearance:none;-webkit-appearance:none;cursor:pointer;">
+              <option value="">── 選擇常用項目 PRESET ──</option>
+            </select>
+            <button class="gb-btn" onclick="applyPreset()" type="button">&#9658; 套用 APPLY</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>DATE 日期</label>
+            <input type="date" id="cost-date">
+          </div>
+          <div class="form-group">
+            <label>CATEGORY 費用類別</label>
+            <select id="cost-category" onchange="onCategoryChange()">
+              <option value="材料費">材料費</option>
+              <option value="品項追蹤">品項追蹤</option>
+              <option value="包裝材料">包裝材料</option>
+              <option value="攤位費">攤位費</option>
+              <option value="運費">運費</option>
+              <option value="房租管理費">房租管理費</option>
+              <option value="水電網路">水電網路</option>
+              <option value="設備維護">設備維護</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full-width" id="ink-color-row" style="display:none;">
+            <label>ITEM 品項名稱</label>
+            <select id="ink-color-sub" onchange="onInkColorSubChange()"></select>
+          </div>
+          <div class="form-group">
+            <label>VENDOR 供應商</label>
+            <input type="text" id="cost-vendor" placeholder="選填 optional">
+          </div>
+          <div class="form-group">
+            <label>AMOUNT 金額 (NT$)</label>
+            <input type="number" id="cost-amount" min="0" placeholder="0" oninput="updateTaxPreview('cost')">
+            <div class="tax-row">
+              <label class="tax-toggle">
+                <input type="checkbox" id="cost-tax" onchange="updateTaxPreview('cost')">
+                <span class="tax-box"></span>
+                含稅 +5% TAX
+              </label>
+              <span class="tax-preview" id="cost-tax-preview"></span>
+            </div>
+          </div>
+          <div class="form-group" id="cost-desc-row">
+            <label>DESC 說明</label>
+            <input type="text" id="cost-desc" placeholder="選填 optional">
+          </div>
+          <div class="form-group">
+            <label>NOTE 備註</label>
+            <input type="text" id="cost-note" placeholder="選填 optional">
+          </div>
+        </div>
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="gb-btn" onclick="saveCostRecord()">&#9658; RECORD 登記</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="filter-year-sel" onchange="renderCostTable()" style="width:auto;"></select>
+        <button class="stepper-btn" onclick="changeFilterMonth(-1)" type="button">◀</button>
+        <span id="filter-month-display" style="font-family:'VT323',monospace;font-size:22px;color:var(--gb-darkest);min-width:40px;text-align:center;letter-spacing:1px;"></span>
+        <button class="stepper-btn" onclick="changeFilterMonth(1)" type="button">▶</button>
+        <select id="cost-filter" onchange="renderCostTable()" style="margin-left:6px;width:auto;">
+          <option value="">ALL 全部</option>
+          <option value="材料費">材料費</option>
+          <option value="品項追蹤">品項追蹤</option>
+          <option value="包裝材料">包裝材料</option>
+          <option value="攤位費">攤位費</option>
+          <option value="運費">運費</option>
+          <option value="房租管理費">房租管理費</option>
+          <option value="水電網路">水電網路</option>
+          <option value="設備維護">設備維護</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="gb-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>DATE 日期</th>
+              <th>CATEGORY 類別</th>
+              <th>VENDOR 供應商</th>
+              <th>DESC 說明</th>
+              <th>AMOUNT 金額</th>
+              <th>NOTE 備註</th>
+              <th>DEL 刪除</th>
+            </tr>
+          </thead>
+          <tbody id="cost-table-body"></tbody>
+        </table>
+      </div>
+      <div id="cost-month-total" style="font-family:'VT323',monospace;font-size:20px;color:var(--gb-darkest);text-align:right;margin-top:8px;letter-spacing:1px;"></div>
+    </div>
+
+    <!-- PANEL: STATS -->
+    <div id="panel-stats" class="panel">
+      <div class="section-title" id="stats-title">// STATS 統計 //</div>
+
+      <div class="section-title">// ITEM RANKING 品項追蹤排行 //</div>
+      <div class="gb-card" id="ink-rank-bars"></div>
+
+      <div class="section-title">// VARIABLE COSTS 變動費用排行 //</div>
+      <div class="gb-card" id="cat-rank-variable"></div>
+
+      <div class="section-title">// FIXED COSTS 固定費用 //</div>
+      <div class="gb-card" id="cat-rank-fixed"></div>
+
+      <div class="section-title">// MONTHLY TOTALS 月度合計 //</div>
+      <div class="gb-table-wrap" style="margin-bottom:20px;">
+        <table>
+          <thead>
+            <tr>
+              <th>MONTH 月份</th>
+              <th>ITEM 品項</th>
+              <th>OTHER 其他</th>
+              <th>TOTAL 合計</th>
+            </tr>
+          </thead>
+          <tbody id="monthly-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title">// ITEM RECENT 品項近期紀錄 //</div>
+      <div class="recent-list-wrap" id="ink-recent-stats"></div>
+    </div>
+
+    <!-- PANEL: CONFIG -->
+    <div id="panel-config" class="panel">
+      <div class="section-title">// ITEM TRACKING 品項追蹤設定 //</div>
+      <div class="gb-card">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-darkest);margin-bottom:12px;line-height:1.8;">
+          在費用類別選「品項追蹤」時，可從這裡的清單選取品項，並設定單筆預設金額。
+        </div>
+        <div class="add-color-row">
+          <input type="text" id="new-color-name" placeholder="new item name">
+          <button class="gb-btn" onclick="addColor()">&#9658; ADD</button>
+        </div>
+        <div class="color-tag-list" id="color-tag-list"></div>
+      </div>
+
+      <div class="section-title">// PRESETS 常用費用項目 //</div>
+      <div class="gb-card">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-darkest);margin-bottom:10px;line-height:1.8;">
+          設定後在費用表單可一鍵套用，支援金額自動帶入
+        </div>
+        <div id="preset-list"></div>
+        <div class="btn-row">
+          <button class="gb-btn" onclick="addPreset()">&#9658; ADD 新增項目</button>
+        </div>
+      </div>
+
+      <div class="section-title">// COLOR THEMES 主題顏色 //</div>
+      <div class="gb-card">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-darkest);margin-bottom:12px;line-height:1.8;">
+          公開版整合七色主題，切換後會記住你上次使用的顏色。
+        </div>
+        <div class="theme-picker" id="theme-picker"></div>
+      </div>
+
+      <div class="section-title">// DATA MANAGEMENT 資料管理 //</div>
+      <div class="gb-card">
+        <div class="data-management-note" id="data-management-note">
+          瀏覽器版會先存在 localStorage；桌面版則會自動存到本機資料檔。
+        </div>
+
+        <div class="storage-utility-row">
+          <button class="gb-btn" id="open-data-folder-btn" onclick="openNativeDataFolder()" style="display:none;">&#9658; FOLDER</button>
+          <div class="storage-meta">
+            <div id="file-sync-status">瀏覽器版目前存在這台裝置的 localStorage</div>
+            <div id="file-sync-hint">FOLDER 只會打開資料位置，LOAD 才會讀取你選的備份檔。</div>
+          </div>
+        </div>
+
+        <div class="storage-primary-grid">
+          <button class="gb-btn data-action-btn" onclick="exportData()">
+            <span class="data-action-main">SAVE</span>
+            <span class="data-action-sub">匯出備份</span>
+          </button>
+          <button class="gb-btn data-action-btn" onclick="triggerImportData()">
+            <span class="data-action-main">LOAD</span>
+            <span class="data-action-sub">讀取備份</span>
+          </button>
+          <button class="gb-btn data-action-btn" onclick="restoreSnapshot()">
+            <span class="data-action-main">RESTORE</span>
+            <span class="data-action-sub">復原快取</span>
+          </button>
+          <button class="gb-btn gb-btn-danger data-action-btn" onclick="clearAllData()">
+            <span class="data-action-main">CLEAN</span>
+            <span class="data-action-sub">清除全部</span>
+          </button>
+        </div>
+
+        <div class="storage-snapshot-row">
+          <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display:none;">
+          <span id="snapshot-ts"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gb-footer">STUDIO LEDGER &nbsp;|&nbsp; ZINERSTUDIO.COM &nbsp;|&nbsp; 2026</div>
+</div>
+
+<script>
+// ═══════════════════════════
+// DATA LAYER
+// ═══════════════════════════
+
+const KEYS = {
+  expenses: 'riso_expenses',
+  inkUses:  'riso_ink_uses',
+  colors:   'riso_ink_colors',
+  presets:  'riso_presets'
+};
+
+const DEFAULT_COLORS = [
+  { name: '商品 A', price: 0 },
+  { name: '商品 B', price: 0 },
+  { name: '商品 C', price: 0 }
+];
+
+const DEFAULT_PRESETS = [
+  { id: 1, label: '月租金',   category: '房租管理費', amount: 0, vendor: '', desc: '月租金'   },
+  { id: 2, label: '月結運費', category: '運費',       amount: 0, vendor: '', desc: '月結運費' },
+  { id: 3, label: '攤位費',   category: '攤位費',     amount: 0, vendor: '', desc: '攤位費'   }
+];
+
+const THEME_KEY = 'coin_ledger_theme_id';
+const DEFAULT_THEME_ID = 'green';
+const THEMES = [
+  {
+    id: 'green',
+    label: 'GREEN',
+    sub: 'green',
+    colors: {
+      darkest: '#1c1e10',
+      dark: '#484c30',
+      medium: '#747858',
+      light: '#a8ae7a',
+      lightest: '#c8cc8c',
+      input: '#b8bc7c'
+    }
+  },
+  {
+    id: 'blue',
+    label: 'BLUE',
+    sub: 'blue',
+    colors: {
+      darkest: '#c0dcff',
+      dark: '#1a50a0',
+      medium: '#0a2050',
+      light: '#050e20',
+      lightest: '#0a1c3c',
+      input: '#0d2244'
+    }
+  },
+  {
+    id: 'pink',
+    label: 'PINK',
+    sub: 'pink',
+    colors: {
+      darkest: '#201018',
+      dark: '#5c2a42',
+      medium: '#8a4e68',
+      light: '#be8898',
+      lightest: '#d4a8b4',
+      input: '#c898a6'
+    }
+  },
+  {
+    id: 'mono',
+    label: 'MONO',
+    sub: 'mono',
+    colors: {
+      darkest: '#111111',
+      dark: '#363636',
+      medium: '#686868',
+      light: '#a8a8a8',
+      lightest: '#c8c8c8',
+      input: '#bababa'
+    }
+  },
+  {
+    id: 'lavender',
+    label: 'LAVENDER',
+    sub: 'lavender',
+    colors: {
+      darkest: '#16101e',
+      dark: '#3c2a52',
+      medium: '#685080',
+      light: '#a890c4',
+      lightest: '#c4acd8',
+      input: '#b89ccc'
+    }
+  },
+  {
+    id: 'yellow',
+    label: 'YELLOW',
+    sub: 'yellow',
+    colors: {
+      darkest: '#1c1800',
+      dark: '#4a3c00',
+      medium: '#887000',
+      light: '#eac100',
+      lightest: '#f5d840',
+      input: '#e0b800'
+    }
+  },
+  {
+    id: 'orange',
+    label: 'ORANGE',
+    sub: 'orange',
+    colors: {
+      darkest: '#1e1008',
+      dark: '#503020',
+      medium: '#805040',
+      light: '#c09070',
+      lightest: '#d4a888',
+      input: '#c89a7a'
+    }
+  }
+];
+
+const NATIVE_STORAGE = {
+  lastSyncKey: 'coin_ledger_native_last_sync'
+};
+
+let currentThemeId = DEFAULT_THEME_ID;
+let nativeStorageEnabled = false;
+let nativeDataFilePath = '';
+let nativeSyncTimer = null;
+let nativeSyncWarningShown = false;
+
+function load(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch(e) { return []; }
+}
+
+function cloneJson(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function save(key, data, options = {}) {
+  localStorage.setItem(key, JSON.stringify(data));
+  if (options.sync !== false) {
+    scheduleNativeDataSync();
+  }
+}
+
+function buildDataPackage() {
+  return {
+    riso_expenses: cloneJson(load(KEYS.expenses)),
+    riso_ink_uses: cloneJson(load(KEYS.inkUses)),
+    riso_ink_colors: cloneJson(getColors()),
+    riso_presets: cloneJson(getPresets()),
+    exported: new Date().toISOString()
+  };
+}
+
+function buildDefaultDataPackage() {
+  return {
+    riso_expenses: [],
+    riso_ink_uses: [],
+    riso_ink_colors: cloneJson(DEFAULT_COLORS),
+    riso_presets: cloneJson(DEFAULT_PRESETS),
+    exported: new Date().toISOString()
+  };
+}
+
+function normalizeDataPackage(data) {
+  return {
+    riso_expenses: Array.isArray(data?.riso_expenses) ? cloneJson(data.riso_expenses) : [],
+    riso_ink_uses: Array.isArray(data?.riso_ink_uses) ? cloneJson(data.riso_ink_uses) : [],
+    riso_ink_colors: Array.isArray(data?.riso_ink_colors) && data.riso_ink_colors.length
+      ? cloneJson(data.riso_ink_colors)
+      : cloneJson(DEFAULT_COLORS),
+    riso_presets: Array.isArray(data?.riso_presets) && data.riso_presets.length
+      ? cloneJson(data.riso_presets)
+      : cloneJson(DEFAULT_PRESETS)
+  };
+}
+
+function isLedgerData(data) {
+  if (!data || typeof data !== 'object') return false;
+  const normalized = normalizeDataPackage(data);
+  return Object.values(normalized).some(arr => Array.isArray(arr) && arr.length > 0) ||
+    ['riso_expenses', 'riso_ink_uses', 'riso_ink_colors', 'riso_presets'].some(key => Array.isArray(data[key]));
+}
+
+function hasLedgerData(data = buildDataPackage()) {
+  const normalized = normalizeDataPackage(data);
+  return Object.values(normalized).some(arr => Array.isArray(arr) && arr.length > 0);
+}
+
+function hasNativeCoinLedgerApp() {
+  return !!(window.coinLedgerApp &&
+    typeof window.coinLedgerApp.loadData === 'function' &&
+    typeof window.coinLedgerApp.saveData === 'function');
+}
+
+function getNativeDataFileName() {
+  if (!nativeDataFilePath) return 'coin-ledger-data.json';
+  const parts = nativeDataFilePath.split(/[\\/]/);
+  return parts[parts.length - 1] || nativeDataFilePath;
+}
+
+function formatSyncTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function updateSnapshotMeta() {
+  const tsEl = document.getElementById('snapshot-ts');
+  if (!tsEl) return;
+
+  const raw = localStorage.getItem('riso_snapshot');
+  if (!raw) {
+    tsEl.textContent = '';
+    return;
+  }
+
+  try {
+    const ts = JSON.parse(raw).ts || '';
+    tsEl.textContent = ts ? `快取時間：${ts.replace('T', ' ').slice(0, 16)}` : '';
+  } catch (e) {
+    tsEl.textContent = '';
+  }
+}
+
+function getThemeById(themeId) {
+  return THEMES.find(theme => theme.id === themeId) || THEMES[0];
+}
+
+function buildSelectArrowUrl(hex) {
+  const fill = encodeURIComponent(hex);
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='${fill}'/%3E%3C/svg%3E")`;
+}
+
+function renderThemePicker() {
+  const picker = document.getElementById('theme-picker');
+  if (!picker) return;
+
+  picker.innerHTML = THEMES.map(theme => `
+    <button type="button" class="theme-card${theme.id === currentThemeId ? ' active' : ''}" onclick="setTheme('${theme.id}')">
+      <div class="theme-card-name">${theme.label}</div>
+      <div class="theme-card-sub">${theme.sub}</div>
+      <div class="theme-swatches">
+        <span class="theme-swatch" style="background:${theme.colors.darkest};"></span>
+        <span class="theme-swatch" style="background:${theme.colors.medium};"></span>
+        <span class="theme-swatch" style="background:${theme.colors.lightest};"></span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function applyTheme(themeId, options = {}) {
+  const { persist = true, silent = true } = options;
+  const theme = getThemeById(themeId);
+  const root = document.documentElement;
+
+  currentThemeId = theme.id;
+  root.style.setProperty('--gb-darkest', theme.colors.darkest);
+  root.style.setProperty('--gb-dark', theme.colors.dark);
+  root.style.setProperty('--gb-medium', theme.colors.medium);
+  root.style.setProperty('--gb-light', theme.colors.light);
+  root.style.setProperty('--gb-lightest', theme.colors.lightest);
+  root.style.setProperty('--gb-input', theme.colors.input);
+  root.style.setProperty('--select-arrow-url', buildSelectArrowUrl(theme.colors.darkest));
+  document.body.dataset.theme = theme.id;
+  renderThemePicker();
+
+  if (persist) localStorage.setItem(THEME_KEY, theme.id);
+  if (!silent) showToast(`✓ THEME ${theme.label}`);
+}
+
+function setTheme(themeId) {
+  applyTheme(themeId, { persist: true, silent: false });
+}
+
+function refreshDataViews() {
+  renderColorTags();
+  renderPresets();
+  populatePresetSelect();
+  populateInkColorSub();
+  renderCostTable();
+  if (document.getElementById('panel-stats').classList.contains('active')) renderStats();
+}
+
+function updateStorageStatus(note = '') {
+  const statusEl = document.getElementById('file-sync-status');
+  const hintEl = document.getElementById('file-sync-hint');
+  const noteEl = document.getElementById('data-management-note');
+  const folderBtn = document.getElementById('open-data-folder-btn');
+  if (!statusEl || !hintEl) return;
+
+  if (hasNativeCoinLedgerApp()) {
+    if (folderBtn) folderBtn.style.display = '';
+    if (noteEl) noteEl.textContent = '桌面版會自動存到本機資料檔；FOLDER 只會打開資料位置，LOAD 才會讀取你選的備份檔。';
+    const lastSync = formatSyncTime(localStorage.getItem(NATIVE_STORAGE.lastSyncKey));
+    statusEl.textContent = `桌面版自動存檔：${getNativeDataFileName()}`;
+    hintEl.textContent = note || (
+      nativeDataFilePath
+        ? `${lastSync ? `上次寫入：${lastSync} ｜ ` : ''}${nativeDataFilePath}`
+        : '資料會自動存到這台電腦的 App 資料夾。'
+    );
+    return;
+  }
+
+  if (folderBtn) folderBtn.style.display = 'none';
+  if (noteEl) noteEl.textContent = '瀏覽器版會先存在 localStorage；SAVE 可匯出 JSON，LOAD 可讀回備份 JSON。';
+  statusEl.textContent = '瀏覽器版目前存在這台裝置的 localStorage';
+  hintEl.textContent = note || 'FOLDER 只在桌面版出現；RESTORE 則會復原上次快取。';
+}
+
+function applyDataPackage(data, options = {}) {
+  const {
+    snapshot = true,
+    nativeSync = true
+  } = options;
+  const normalized = normalizeDataPackage(data);
+  save(KEYS.expenses, normalized.riso_expenses, { sync: false });
+  save(KEYS.inkUses, normalized.riso_ink_uses, { sync: false });
+  save(KEYS.colors, normalized.riso_ink_colors, { sync: false });
+  save(KEYS.presets, normalized.riso_presets, { sync: false });
+  refreshDataViews();
+  if (snapshot) saveSessionSnapshot();
+  else updateSnapshotMeta();
+  if (nativeSync) scheduleNativeDataSync();
+  updateStorageStatus();
+}
+
+function getColors() {
+  let c = load(KEYS.colors);
+  if (!c.length) {
+    const defaults = cloneJson(DEFAULT_COLORS);
+    save(KEYS.colors, defaults, { sync: false });
+    return defaults;
+  }
+  if (typeof c[0] === 'string') {
+    c = c.map(name => ({ name, price: 0 }));
+    save(KEYS.colors, c, { sync: false });
+  }
+  return c;
+}
+
+function getPresets() {
+  const p = load(KEYS.presets);
+  if (!p.length) {
+    const defaults = cloneJson(DEFAULT_PRESETS);
+    save(KEYS.presets, defaults, { sync: false });
+    return defaults;
+  }
+  return p;
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function fmtDate(str) {
+  if (!str) return '-';
+  return str.replace(/-/g, '/');
+}
+
+function fmtNT(n) {
+  return 'NT$ ' + Number(n || 0).toLocaleString('zh-TW');
+}
+
+// ═══════════════════════════
+// AUDIO
+// ═══════════════════════════
+
+function playBip() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
+  } catch(e) {}
+}
+
+function playDelete() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  } catch(e) {}
+}
+
+// ═══════════════════════════
+// TOAST
+// ═══════════════════════════
+
+let toastTimer = null;
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 1800);
+}
+
+// ═══════════════════════════
+// PANELS
+// ═══════════════════════════
+
+function switchPanel(name) {
+  ['costs','stats','config'].forEach(p => {
+    document.getElementById('panel-' + p).classList.remove('active');
+  });
+  document.getElementById('panel-' + name).classList.add('active');
+
+  ['costs','stats'].forEach(p => {
+    const btn = document.getElementById('btn-panel-' + p);
+    if (btn) btn.classList.toggle('active', p === name);
+  });
+
+  document.getElementById('cfg-btn').classList.toggle('active', name === 'config');
+
+  if (name === 'stats')  renderStats();
+  if (name === 'costs')  { renderCostTable(); populatePresetSelect(); }
+  if (name === 'config') {
+    renderThemePicker();
+    renderColorTags();
+    renderPresets();
+    updateStorageStatus();
+    updateSnapshotMeta();
+  }
+}
+
+function toggleConfig() {
+  const isConfig = document.getElementById('panel-config').classList.contains('active');
+  switchPanel(isConfig ? 'costs' : 'config');
+}
+
+// ═══════════════════════════
+// ITEM (TRACKED CATEGORY)
+// ═══════════════════════════
+
+function populateInkColorSub() {
+  const sel  = document.getElementById('ink-color-sub');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">── 選擇品項 ──</option>';
+  getColors().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value       = c.name;
+    opt.textContent = c.name + (c.price > 0 ? '  \u25b8 NT$' + c.price.toLocaleString('zh-TW') : '');
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function onInkColorSubChange() {
+  const colorName = document.getElementById('ink-color-sub').value;
+  if (!colorName) return;
+  const colorObj  = getColors().find(c => c.name === colorName);
+  if (colorObj && colorObj.price > 0) {
+    document.getElementById('cost-amount').value = colorObj.price;
+    updateTaxPreview('cost');
+  }
+  document.getElementById('cost-desc').value = colorName;
+}
+
+function onCategoryChange() {
+  const cat     = document.getElementById('cost-category').value;
+  const inkRow  = document.getElementById('ink-color-row');
+  const descRow = document.getElementById('cost-desc-row');
+  if (cat === '品項追蹤') {
+    inkRow.style.display  = '';
+    descRow.style.display = 'none';
+    populateInkColorSub();
+    onInkColorSubChange();
+  } else {
+    inkRow.style.display  = 'none';
+    descRow.style.display = '';
+    document.getElementById('cost-amount').value = '';
+    document.getElementById('cost-desc').value   = '';
+  }
+}
+
+function populatePresetSelect() {
+  const sel = document.getElementById('cost-preset-select');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">── 選擇常用項目 PRESET ──</option>';
+  getPresets().forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.label + (p.amount > 0 ? '  NT$' + Number(p.amount).toLocaleString('zh-TW') : '');
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function applyPreset() {
+  const id  = parseInt(document.getElementById('cost-preset-select').value);
+  if (!id) { showToast('! 請先選擇常用項目'); return; }
+  const p = getPresets().find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('cost-category').value = p.category;
+  onCategoryChange();
+  document.getElementById('cost-vendor').value = p.vendor || '';
+  if (p.amount) document.getElementById('cost-amount').value = p.amount;
+  if (p.category !== '品項追蹤' && p.desc) document.getElementById('cost-desc').value = p.desc;
+  updateTaxPreview('cost');
+  playBip();
+  showToast('✓ 已套用 PRESET APPLIED');
+}
+
+// ═══════════════════════════
+// TAX PREVIEW
+// ═══════════════════════════
+
+function updateTaxPreview(type) {
+  if (type === 'cost') {
+    const amount = parseFloat(document.getElementById('cost-amount').value) || 0;
+    const taxOn  = document.getElementById('cost-tax').checked;
+    const preview = document.getElementById('cost-tax-preview');
+    if (amount > 0 && taxOn) {
+      const taxed = Math.round(amount * 1.05);
+      preview.textContent = `NT$${amount.toLocaleString('zh-TW')} × 1.05 = NT$${taxed.toLocaleString('zh-TW')}`;
+    } else {
+      preview.textContent = '';
+    }
+  }
+}
+
+// ═══════════════════════════
+// COSTS
+// ═══════════════════════════
+
+function saveCostRecord() {
+  const date      = document.getElementById('cost-date').value;
+  const category  = document.getElementById('cost-category').value;
+  const vendor    = document.getElementById('cost-vendor').value.trim();
+  const rawAmount = parseFloat(document.getElementById('cost-amount').value) || 0;
+  const taxOn     = document.getElementById('cost-tax').checked;
+  const amount    = taxOn ? Math.round(rawAmount * 1.05) : rawAmount;
+  const desc      = document.getElementById('cost-desc').value.trim();
+  const note      = document.getElementById('cost-note').value.trim();
+
+  if (!date)      { showToast('! 請輸入日期 DATE');   return; }
+  if (!rawAmount) { showToast('! 請輸入金額 AMOUNT'); return; }
+
+  const expenses = load(KEYS.expenses);
+  expenses.unshift({ id: Date.now(), date, category, vendor, amount, desc, note });
+  save(KEYS.expenses, expenses);
+
+  document.getElementById('cost-vendor').value = '';
+  document.getElementById('cost-amount').value = '';
+  document.getElementById('cost-desc').value   = '';
+  document.getElementById('cost-note').value   = '';
+  document.getElementById('cost-tax').checked  = false;
+  document.getElementById('cost-tax-preview').textContent = '';
+
+  const cat = document.getElementById('cost-category').value;
+  if (cat === '品項追蹤') {
+    document.getElementById('ink-color-sub').value = '';
+  }
+
+  playBip();
+  showToast('✓ DATA SAVED');
+  renderCostTable();
+}
+
+let filterYear  = new Date().getFullYear();
+let filterMonth = new Date().getMonth() + 1;
+
+function initYearSelect() {
+  const sel = document.getElementById('filter-year-sel');
+  if (!sel) return;
+  const currentYear = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (let y = currentYear; y >= 2019; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    if (y === filterYear) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function changeFilterMonth(delta) {
+  filterMonth += delta;
+  if (filterMonth > 12) { filterMonth = 1;  filterYear++; }
+  if (filterMonth < 1)  { filterMonth = 12; filterYear--; }
+  const sel = document.getElementById('filter-year-sel');
+  if (sel) sel.value = filterYear;
+  renderCostTable();
+}
+
+function renderCostTable() {
+  const yearSel = document.getElementById('filter-year-sel');
+  if (yearSel && yearSel.value) filterYear = parseInt(yearSel.value);
+
+  const catFilter = document.getElementById('cost-filter').value;
+  const monthStr  = String(filterMonth).padStart(2, '0');
+
+  const displayEl = document.getElementById('filter-month-display');
+  if (displayEl) displayEl.textContent = `/${monthStr}`;
+
+  const months = [];
+  for (let i = 2; i >= 0; i--) {
+    let m = filterMonth - i;
+    let y = filterYear;
+    if (m < 1) { m += 12; y--; }
+    months.push({ y, m, prefix: `${y}-${String(m).padStart(2,'0')}` });
+  }
+
+  const allExpenses = load(KEYS.expenses);
+  const tbody = document.getElementById('cost-table-body');
+  let rows = '';
+  let hasAny = false;
+
+  months.forEach(({ y, m, prefix }) => {
+    let data = allExpenses.filter(r => r.date && r.date.startsWith(prefix));
+    if (catFilter) data = data.filter(r => r.category === catFilter);
+    data.sort((a, b) => (b.date||'').localeCompare(a.date||''));
+    if (!data.length) return;
+    hasAny = true;
+    const monthTotal = data.reduce((s, r) => s + (r.amount || 0), 0);
+
+    rows += `<tr>
+      <td colspan="7" style="background:var(--gb-darkest);color:var(--gb-light);font-family:'Press Start 2P',monospace;font-size:7px;padding:6px 8px;letter-spacing:1px;">
+        &#9658; ${y}/${String(m).padStart(2,'0')} &nbsp;&mdash;&nbsp; ${fmtNT(monthTotal)}
+      </td></tr>`;
+
+    rows += data.map(r => `
+      <tr>
+        <td>${fmtDate(r.date)}</td>
+        <td>${escHtml(r.category || '-')}</td>
+        <td>${escHtml(r.vendor || '-')}</td>
+        <td>${escHtml(r.desc || '-')}</td>
+        <td>${fmtNT(r.amount)}</td>
+        <td>${escHtml(r.note || '-')}</td>
+        <td><button class="del-btn" onclick="deleteCost(${r.id})">✗</button></td>
+      </tr>`).join('');
+  });
+
+  if (!hasAny) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:16px;font-family:\'Press Start 2P\',monospace;font-size:7px;color:var(--gb-dark);">NO DATA 此區間無紀錄</td></tr>';
+    document.getElementById('cost-month-total').textContent = '';
+    return;
+  }
+  tbody.innerHTML = rows;
+  document.getElementById('cost-month-total').textContent = '';
+}
+
+function deleteCost(id) {
+  const data = load(KEYS.expenses).filter(r => r.id !== id);
+  save(KEYS.expenses, data);
+  playDelete();
+  showToast('✗ RECORD DELETED');
+  renderCostTable();
+}
+
+// ═══════════════════════════
+// STATS
+// ═══════════════════════════
+
+function renderStats() {
+  const now = new Date();
+  const thisYear  = now.getFullYear();
+  const thisMonth = now.getMonth() + 1;
+  const monthStr  = String(thisMonth).padStart(2, '0');
+
+  document.getElementById('stats-title').textContent = `// STATS 統計  \u25b8  ${thisYear}/${monthStr} //`;
+
+  const expenses = load(KEYS.expenses);
+
+  // Item tracking ranking
+  const inkMap = {};
+  expenses
+    .filter(r => r.category === '品項追蹤')
+    .forEach(r => {
+      const key = r.desc || r.note || '未知品項';
+      inkMap[key] = (inkMap[key] || 0) + 1;
+    });
+  const inkRanked = Object.entries(inkMap).sort((a, b) => b[1] - a[1]);
+  const inkMax = inkRanked.length ? inkRanked[0][1] : 1;
+  const inkBarsEl = document.getElementById('ink-rank-bars');
+  inkBarsEl.innerHTML = inkRanked.length
+    ? inkRanked.map(([item, count]) => `
+      <div class="bar-row">
+        <span class="bar-label">${escHtml(item)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/inkMax*100)}%"></div></div>
+        <span class="bar-count">${count} 筆</span>
+      </div>`).join('')
+    : '<div class="empty-msg">NO ITEM DATA</div>';
+
+  // Category split
+  const FIXED_CATS = new Set(['房租管理費', '水電網路']);
+  const catMap = {};
+  expenses.forEach(r => { catMap[r.category] = (catMap[r.category] || 0) + (r.amount || 0); });
+  const allRanked   = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+  const varRanked   = allRanked.filter(([c]) => !FIXED_CATS.has(c));
+  const fixedRanked = allRanked.filter(([c]) =>  FIXED_CATS.has(c));
+
+  function makeBars(ranked, emptyMsg) {
+    if (!ranked.length) return `<div class="empty-msg">${emptyMsg}</div>`;
+    const max = ranked[0][1] || 1;
+    return ranked.map(([cat, total]) => `
+      <div class="bar-row">
+        <span class="bar-label">${escHtml(cat)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(total/max*100)}%"></div></div>
+        <span class="bar-count">${fmtNT(total)}</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('cat-rank-variable').innerHTML = makeBars(varRanked,   'NO VARIABLE COST DATA');
+  document.getElementById('cat-rank-fixed').innerHTML    = makeBars(fixedRanked, 'NO FIXED COST DATA');
+
+  // Monthly table
+  const tbody = document.getElementById('monthly-table-body');
+  tbody.innerHTML = Array.from({ length: 12 }, (_, i) => {
+    const m  = i + 1;
+    const mp = `${thisYear}-${String(m).padStart(2,'0')}`;
+    const exp = expenses.filter(r => r.date && r.date.startsWith(mp));
+    const itemCost = exp.filter(r => r.category === '品項追蹤').reduce((s,r) => s+(r.amount||0), 0);
+    const other    = exp.filter(r => r.category !== '品項追蹤').reduce((s,r) => s+(r.amount||0), 0);
+    const total    = itemCost + other;
+    const isCurrent = (m === thisMonth);
+    const rowClass  = isCurrent ? ' class="monthly-current"' : '';
+    return `<tr${rowClass}>
+      <td>${thisYear}/${String(m).padStart(2,'0')}</td>
+      <td>${itemCost > 0 ? fmtNT(itemCost) : '-'}</td>
+      <td>${other    > 0 ? fmtNT(other)    : '-'}</td>
+      <td>${total    > 0 ? fmtNT(total)    : '-'}</td>
+    </tr>`;
+  }).join('');
+
+  // Item recent records
+  const itemRecords = expenses
+    .filter(r => r.category === '品項追蹤')
+    .sort((a, b) => (b.date||'').localeCompare(a.date||''))
+    .slice(0, 10);
+
+  const inkRecentEl = document.getElementById('ink-recent-stats');
+  if (!itemRecords.length) {
+    inkRecentEl.innerHTML = '<div class="empty-msg">尚無品項紀錄</div>';
+  } else {
+    inkRecentEl.innerHTML = itemRecords.map(r => `
+      <div class="recent-entry">
+        <span class="re-date">${fmtDate(r.date)}</span>
+        <span class="re-main">${escHtml(r.desc || '-')}</span>
+        <span class="re-cost">${fmtNT(r.amount)}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ═══════════════════════════
+// CONFIG
+// ═══════════════════════════
+
+function renderColorTags() {
+  const colors = getColors();
+  document.getElementById('color-tag-list').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-family:'VT323',monospace;font-size:17px;">
+      <thead><tr>
+        <th style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-lightest);background:var(--gb-darkest);padding:6px 8px;text-align:left;border-right:1px solid var(--gb-dark);width:40%;">ITEM 品項</th>
+        <th style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-lightest);background:var(--gb-darkest);padding:6px 8px;text-align:left;border-right:1px solid var(--gb-dark);">單筆預設價 NT$</th>
+        <th style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gb-lightest);background:var(--gb-darkest);padding:6px 8px;text-align:left;width:70px;">✓ ✗</th>
+      </tr></thead>
+      <tbody>
+        ${colors.map((c, i) => `
+          <tr style="background:${i % 2 === 0 ? 'var(--gb-light)' : 'var(--gb-medium)'}">
+            <td style="padding:4px 8px;">
+              <input type="text" id="color-name-${i}" value="${escHtml(c.name)}"
+                style="font-family:'VT323',monospace;font-size:17px;background:transparent;border:none;border-bottom:2px solid var(--gb-dark);color:var(--gb-darkest);padding:2px 4px;width:100%;outline:none;border-radius:0;">
+            </td>
+            <td style="padding:4px 8px;">
+              <input type="number" min="0" id="color-price-${i}" value="${c.price || ''}" placeholder="未設定"
+                style="font-family:'VT323',monospace;font-size:17px;background:var(--gb-input);border:2px solid var(--gb-darkest);color:var(--gb-darkest);padding:2px 6px;width:110px;outline:none;border-radius:0;">
+            </td>
+            <td style="padding:4px 8px;white-space:nowrap;">
+              <button class="del-btn" style="margin-right:4px;" onclick="updateColorEntry(${i})">✓</button>
+              <button class="del-btn" onclick="removeColor(${i})">✗</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function updateColorEntry(idx) {
+  const colors   = getColors();
+  if (!colors[idx]) return;
+  const oldName  = colors[idx].name;
+  const nameEl   = document.getElementById('color-name-'  + idx);
+  const priceEl  = document.getElementById('color-price-' + idx);
+  const newName  = nameEl  ? nameEl.value.trim()          : oldName;
+  const newPrice = priceEl ? (parseFloat(priceEl.value) || 0) : colors[idx].price;
+
+  if (!newName) { showToast('! 名稱不能空白'); return; }
+
+  colors[idx].name  = newName;
+  colors[idx].price = newPrice;
+  save(KEYS.colors, colors);
+
+  if (newName !== oldName) {
+    const expenses = load(KEYS.expenses);
+    let count = 0;
+    expenses.forEach(r => {
+      if (r.category === '品項追蹤' && r.desc === oldName) {
+        r.desc = newName;
+        count++;
+      }
+    });
+    if (count > 0) {
+      save(KEYS.expenses, expenses);
+      showToast(`✓ 已更新 ${count} 筆紀錄`);
+    } else {
+      showToast('✓ 已儲存 SAVED');
+    }
+    populateInkColorSub();
+  } else {
+    showToast('✓ 已儲存 SAVED');
+  }
+}
+
+function addColor() {
+  const input = document.getElementById('new-color-name');
+  const name  = input.value.trim();
+  if (!name) { showToast('! 請輸入品項名稱'); return; }
+  const colors = getColors();
+  if (colors.some(c => c.name === name)) { showToast('! 已存在 EXISTS'); return; }
+  colors.push({ name, price: 0 });
+  save(KEYS.colors, colors);
+  input.value = '';
+  playBip();
+  showToast('✓ ITEM ADDED');
+  renderColorTags();
+}
+
+function removeColor(idx) {
+  if (!confirm('確定刪除這個品項？')) return;
+  const colors = getColors();
+  colors.splice(idx, 1);
+  save(KEYS.colors, colors);
+  playDelete();
+  showToast('✗ ITEM REMOVED');
+  renderColorTags();
+}
+
+function renderPresets() {
+  const presets = getPresets();
+  const cats = ['材料費','品項追蹤','包裝材料','攤位費','運費','房租管理費','水電網路','設備維護','其他'];
+  const iStyle = "font-family:'VT323',monospace;font-size:17px;background:var(--gb-input);border:2px solid var(--gb-darkest);color:var(--gb-darkest);padding:4px 8px;outline:none;border-radius:0;";
+  document.getElementById('preset-list').innerHTML = presets.length ? presets.map((p, i) => `
+    <div class="config-option" style="gap:8px;align-items:flex-start;flex-direction:column;padding:10px 0;">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;width:100%;">
+        <input type="text" value="${escHtml(p.label)}" placeholder="項目名稱"
+          style="${iStyle}width:110px;" onchange="updatePresetField(${i},'label',this.value)">
+        <select style="${iStyle}width:120px;padding-right:8px;cursor:pointer;appearance:none;-webkit-appearance:none;"
+          onchange="updatePresetField(${i},'category',this.value)">
+          ${cats.map(c => `<option value="${c}"${c === p.category ? ' selected' : ''}>${c}</option>`).join('')}
+        </select>
+        <input type="number" min="0" value="${p.amount || ''}" placeholder="金額 NT$"
+          style="${iStyle}width:120px;" onchange="updatePresetField(${i},'amount',this.value)">
+        <input type="text" value="${escHtml(p.vendor || '')}" placeholder="供應商（選填）"
+          style="${iStyle}width:130px;" onchange="updatePresetField(${i},'vendor',this.value)">
+        <input type="text" value="${escHtml(p.desc || '')}" placeholder="說明（選填）"
+          style="${iStyle}width:130px;" onchange="updatePresetField(${i},'desc',this.value)">
+        <button class="del-btn" onclick="removePreset(${i})">✗</button>
+      </div>
+    </div>`).join('')
+  : '<div class="empty-msg" style="padding:12px;">尚無常用項目 — 點下方新增</div>';
+}
+
+function updatePresetField(idx, field, val) {
+  const presets = getPresets();
+  if (!presets[idx]) return;
+  presets[idx][field] = field === 'amount' ? (parseFloat(val) || 0) : val;
+  save(KEYS.presets, presets);
+  populatePresetSelect();
+  showToast('✓ 已儲存 SAVED');
+}
+
+function addPreset() {
+  const presets = getPresets();
+  presets.push({ id: Date.now(), label: '新項目', category: '其他', amount: 0, vendor: '', desc: '' });
+  save(KEYS.presets, presets);
+  playBip();
+  renderPresets();
+  populatePresetSelect();
+}
+
+function removePreset(idx) {
+  if (!confirm('確定刪除這個常用項目？')) return;
+  const presets = getPresets();
+  presets.splice(idx, 1);
+  save(KEYS.presets, presets);
+  playDelete();
+  showToast('✗ 已刪除 DELETED');
+  renderPresets();
+  populatePresetSelect();
+}
+
+async function persistNativeData(options = {}) {
+  const { silent = false } = options;
+  if (!nativeStorageEnabled || !hasNativeCoinLedgerApp()) return false;
+
+  try {
+    const result = await window.coinLedgerApp.saveData(buildDataPackage());
+    if (!result?.ok) throw new Error(result?.error || 'NATIVE_SAVE_FAILED');
+
+    nativeDataFilePath = result.filePath || nativeDataFilePath;
+    localStorage.setItem(NATIVE_STORAGE.lastSyncKey, new Date().toISOString());
+    nativeSyncWarningShown = false;
+    updateStorageStatus();
+    if (!silent) showToast('✓ 已存到本機資料檔');
+    return true;
+  } catch (e) {
+    console.error(e);
+    updateStorageStatus('本機自動存檔失敗。');
+    if (!silent) showToast('! 本機存檔失敗');
+    return false;
+  }
+}
+
+function scheduleNativeDataSync() {
+  if (!nativeStorageEnabled || !hasNativeCoinLedgerApp()) return;
+  clearTimeout(nativeSyncTimer);
+  nativeSyncTimer = setTimeout(async () => {
+    const saved = await persistNativeData({ silent: true });
+    if (!saved && !nativeSyncWarningShown) {
+      nativeSyncWarningShown = true;
+      showToast('! 桌面版本機存檔失敗');
+    }
+  }, 250);
+}
+
+async function initializeNativeStorage() {
+  if (!hasNativeCoinLedgerApp()) {
+    updateStorageStatus();
+    return;
+  }
+
+  nativeStorageEnabled = true;
+
+  try {
+    const result = await window.coinLedgerApp.loadData();
+    nativeDataFilePath = result?.filePath || nativeDataFilePath;
+
+    if (!result?.ok) {
+      updateStorageStatus('本機資料檔讀取失敗，請先用 SAVE / LOAD 整理資料。');
+      showToast('! 本機資料檔讀取失敗');
+      return;
+    }
+
+    const localData = buildDataPackage();
+    const nativeHasData = isLedgerData(result.payload);
+    const localHasData = hasLedgerData(localData);
+
+    if (nativeHasData) {
+      applyDataPackage(result.payload, { snapshot: false, nativeSync: false });
+      localStorage.setItem(NATIVE_STORAGE.lastSyncKey, new Date().toISOString());
+    } else if (localHasData) {
+      await persistNativeData({ silent: true });
+    }
+
+    updateStorageStatus(
+      nativeHasData || localHasData
+        ? ''
+        : '桌面版會在你第一次輸入資料後，自動建立本機資料檔。'
+    );
+  } catch (e) {
+    console.error(e);
+    updateStorageStatus('桌面版本機儲存初始化失敗。');
+    showToast('! 桌面版儲存初始化失敗');
+  }
+}
+
+async function openNativeDataFolder() {
+  if (!hasNativeCoinLedgerApp() || typeof window.coinLedgerApp.revealDataFile !== 'function') return;
+  try {
+    const result = await window.coinLedgerApp.revealDataFile();
+    if (result?.filePath) nativeDataFilePath = result.filePath;
+    updateStorageStatus();
+  } catch (e) {
+    console.error(e);
+    showToast('! 打不開資料位置');
+  }
+}
+
+function setupNativeMenuBindings() {
+  if (!hasNativeCoinLedgerApp()) return;
+
+  if (typeof window.coinLedgerApp.onMenuExportBackup === 'function') {
+    window.coinLedgerApp.onMenuExportBackup(() => { exportData(); });
+  }
+  if (typeof window.coinLedgerApp.onMenuImportBackup === 'function') {
+    window.coinLedgerApp.onMenuImportBackup(() => { importData(); });
+  }
+  if (typeof window.coinLedgerApp.onMenuRevealDataFile === 'function') {
+    window.coinLedgerApp.onMenuRevealDataFile(() => { openNativeDataFolder(); });
+  }
+}
+
+function saveSessionSnapshot() {
+  const snapshot = { ...buildDataPackage(), ts: new Date().toISOString() };
+  localStorage.setItem('riso_snapshot', JSON.stringify(snapshot));
+  updateSnapshotMeta();
+}
+
+function restoreSnapshot() {
+  const raw = localStorage.getItem('riso_snapshot');
+  if (!raw) { showToast('! 沒有找到快照'); return; }
+  try {
+    const snap = JSON.parse(raw);
+    const ts   = snap.ts ? snap.ts.replace('T',' ').slice(0,16) : '未知時間';
+    if (!confirm(`還原至快照？\n時間：${ts}\n\n目前資料將被覆蓋`)) return;
+    applyDataPackage(snap);
+    playBip();
+    showToast('✓ 快照已還原');
+  } catch(e) {
+    showToast('! 快照讀取失敗');
+  }
+}
+
+function downloadJsonFile(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function exportData() {
+  const data = buildDataPackage();
+  const filename = `COIN_LEDGER_GB-style_backup_${todayStr()}.json`;
+
+  if (hasNativeCoinLedgerApp() && typeof window.coinLedgerApp.exportBackup === 'function') {
+    const result = await window.coinLedgerApp.exportBackup({ filename, payload: data });
+    if (!result?.ok || result.canceled) return;
+  } else {
+    downloadJsonFile(data, filename);
+  }
+
+  playBip();
+  showToast('✓ EXPORT COMPLETE');
+}
+
+function triggerImportData() {
+  if (hasNativeCoinLedgerApp()) {
+    importData();
+    return;
+  }
+  document.getElementById('importFile').click();
+}
+
+async function importData(e) {
+  saveSessionSnapshot();
+
+  if (hasNativeCoinLedgerApp() && (!e || !e.target) && typeof window.coinLedgerApp.importBackup === 'function') {
+    const result = await window.coinLedgerApp.importBackup();
+    if (!result?.ok || result.canceled) return;
+
+    try {
+      applyDataPackage(result.payload);
+      playBip();
+      showToast('✓ IMPORT COMPLETE');
+    } catch (err) {
+      showToast('! INVALID FILE');
+    }
+    return;
+  }
+
+  const file = e?.target?.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      applyDataPackage(data);
+      playBip();
+      showToast('✓ IMPORT COMPLETE');
+    } catch(err) {
+      showToast('! INVALID FILE');
+    }
+  };
+  reader.readAsText(file);
+  if (e?.target) e.target.value = '';
+}
+
+function clearAllData() {
+  if (!confirm('這會清除所有紀錄、常用項目、品項設定與快取。\n\n要繼續嗎？')) return;
+  if (!confirm('請再確認一次：真的要全部刪除嗎？\n\n這個動作無法復原。')) return;
+
+  localStorage.removeItem('riso_snapshot');
+  applyDataPackage(buildDefaultDataPackage(), { snapshot: false });
+  updateSnapshotMeta();
+  playDelete();
+  showToast('✗ 已清除全部資料');
+}
+
+// ═══════════════════════════
+// UTIL
+// ═══════════════════════════
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════
+// INIT
+// ═══════════════════════════
+
+async function init() {
+  const today = todayStr();
+  document.getElementById('cost-date').value = today;
+  initYearSelect();
+  applyTheme(localStorage.getItem(THEME_KEY) || DEFAULT_THEME_ID, { persist: false });
+  setupNativeMenuBindings();
+  await initializeNativeStorage();
+  populatePresetSelect();
+  renderCostTable();
+  switchPanel('costs');
+  updateStorageStatus();
+  if (load(KEYS.expenses).length > 0) saveSessionSnapshot();
+  else updateSnapshotMeta();
+}
+
+init();
+</script>
+</body>
+</html>
