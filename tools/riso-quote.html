@@ -571,6 +571,23 @@ body {
           <option value="10">元素紙-鴨綠（采憶元素）116g</option>
         </select>
       </div>
+      <div style="margin-top:12px;">
+        <div class="field-label">底紙紙材</div>
+        <select class="select memo-select" id="memo-backing-material" onchange="recalc()">
+          <option value="6">【厚】白尺紙（峻揚CP象牙）220g</option>
+          <option value="6">【厚】米牙紙（峻揚CP象牙）220g</option>
+          <option value="3">白尺紙（峻揚CP象牙）100g</option>
+          <option value="3">米牙紙（峻揚CP象牙）100g</option>
+          <option value="7">灰鐵紙（峻揚日本古月）105g</option>
+          <option value="7">枯土紙（峻揚日本古月）105g</option>
+          <option value="7">寶藍紙（聯美馬卡龍）89g</option>
+          <option value="7">柳橙紙（聯美馬卡龍）89g</option>
+          <option value="8">[量少] 黃沙紙（峻揚棉絮紙）150g</option>
+          <option value="10">元素紙-可可（采憶元素）116g</option>
+          <option value="10">元素紙-蓮紫（采憶元素）116g</option>
+          <option value="10">元素紙-鴨綠（采憶元素）116g</option>
+        </select>
+      </div>
     </div>
 
     <div class="ink-cols">
@@ -843,25 +860,46 @@ function calcRiso() {
   ]];
 }
 
+function getNotepadActualBooks(jobCount) {
+  const ratio = jobCount <= 50 ? 1.5 : jobCount <= 100 ? 1.3 : 1.2;
+  return Math.ceil((jobCount * ratio) / 10) * 10;
+}
+function getNotepadPrintUnitPrice(jobCount) {
+  if (jobCount >= 200) return 3;
+  if (jobCount >= 110) return 4;
+  return 5;
+}
+function getNotepadProcessUnitPrice(jobCount) {
+  if (jobCount <= 30) return 15;
+  if (jobCount <= 50) return 13;
+  if (jobCount <= 100) return 12;
+  return 10;
+}
+
 function calcMemo() {
   const jobCount   = Math.max(10, Math.round((parseInt(document.getElementById('memo-pads').value)||30)/10)*10);
   const sheetsPerPad = Math.max(30, Math.round((parseInt(document.getElementById('memo-sheets').value)||30)/5)*5);
-  const actualBooks = Math.ceil((jobCount*1.5)/10)*10;
+  const actualBooks = getNotepadActualBooks(jobCount);
   const paperSheets = Math.ceil((actualBooks*sheetsPerPad)/10);
-  const unitPrice = jobCount<=30?15 : jobCount<=50?13 : jobCount<=100?12 : 10;
-  const processFee = unitPrice * jobCount;
-  const color  = inkFee(S.memoFront) + inkFee(S.memoBack);
-  const paper  = paperSheets * paperPrice('memo-material');
-  const print  = paperSheets * 5;
-  const total  = Math.round(color + paper + print + processFee);
+  const backingSheets = Math.ceil(actualBooks/10);
+  const printUnitPrice = getNotepadPrintUnitPrice(jobCount);
+  const processUnitPrice = getNotepadProcessUnitPrice(jobCount);
+  const processFee = processUnitPrice * jobCount;
+  const color   = inkFee(S.memoFront) + inkFee(S.memoBack);
+  const paper   = paperSheets * paperPrice('memo-material');
+  const backing = backingSheets * paperPrice('memo-backing-material');
+  const print   = paperSheets * printUnitPrice;
+  const total   = Math.round(color + paper + backing + print + processFee);
   // update hints
   const unitHintEl = document.getElementById('memo-unit-price-hint');
-  if (unitHintEl) unitHintEl.textContent = `加工費 $${unitPrice}/本，含耗損共 ${actualBooks} 本`;
+  if (unitHintEl) unitHintEl.textContent = `加工費 $${processUnitPrice}/本，含耗損共 ${actualBooks} 本`;
   const a3HintEl = document.getElementById('memo-a3-hint');
-  if (a3HintEl) a3HintEl.textContent = `預計用紙 ${paperSheets} 張 A3`;
+  if (a3HintEl) a3HintEl.textContent = `便條 ${paperSheets}＋底紙 ${backingSheets} 張 A3`;
   return [total,[
-    ['油墨費', color], ['紙材費', paper],
-    ['印刷費', print], [`加工費（$${unitPrice}×${jobCount}本）`, processFee],
+    ['油墨費', color], ['便條紙材費', paper],
+    ['底紙紙材費', backing],
+    [`印刷費（$${printUnitPrice}×${paperSheets}張）`, print],
+    [`加工費（$${processUnitPrice}×${jobCount}本）`, processFee],
   ]];
 }
 
@@ -1041,7 +1079,8 @@ function buildQuoteCard(total, rows) {
       ['印刷方式', S.memoSides === 'single' ? '單面印刷' : '雙面印刷'],
       ['訂購本數', document.getElementById('memo-pads').value + ' 本'],
       ['每本張數', document.getElementById('memo-sheets').value + ' 張'],
-      ['印刷紙材', document.getElementById('memo-material').selectedOptions[0]?.text || ''],
+      ['便條紙材', document.getElementById('memo-material').selectedOptions[0]?.text || ''],
+      ['底紙紙材', document.getElementById('memo-backing-material').selectedOptions[0]?.text || ''],
     ];
     inkRows = [
       ['正面油墨', S.memoFront],
