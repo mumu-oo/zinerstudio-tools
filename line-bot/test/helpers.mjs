@@ -27,8 +27,14 @@ export function stubFetch({ llmAnswer = '這是小精靈的回答' } = {}) {
   const original = globalThis.fetch;
   globalThis.fetch = async (url, init = {}) => {
     const u = String(url);
-    const body = init.body ? JSON.parse(init.body) : null;
+    let body = null;
+    if (init.body) {
+      try { body = JSON.parse(init.body); } catch { body = String(init.body); } // oauth 是表單格式
+    }
     calls.push({ url: u, body });
+    if (u.includes('oauth2/v3/token')) {
+      return Response.json({ token_type: 'Bearer', access_token: 'stateless-token', expires_in: 900 });
+    }
     if (u.includes('/message/reply')) return new Response('{}', { status: 200 });
     if (u.includes('/chat/loading')) return new Response('{}', { status: 200 });
     if (u.includes('/profile/')) return Response.json({ displayName: '測試客人' });

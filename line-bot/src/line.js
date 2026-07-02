@@ -3,6 +3,30 @@
 
 const API = 'https://api.line.me/v2/bot';
 
+// 通行證:優先用「無狀態 token」(拿 Channel ID + secret 現場換,效期 15 分鐘,
+// 沒有長期金鑰可外洩);若設了 LINE_CHANNEL_ACCESS_TOKEN 則直接沿用。
+// 參考:https://developers.line.biz/en/reference/messaging-api/#issue-stateless-channel-access-token
+async function getToken(env) {
+  if (env.LINE_CHANNEL_ACCESS_TOKEN) return env.LINE_CHANNEL_ACCESS_TOKEN;
+  const cached = await env.STATE.get('line_token');
+  if (cached) return cached;
+  const res = await fetch('https://api.line.me/oauth2/v3/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: env.LINE_CHANNEL_ID,
+      client_secret: env.LINE_CHANNEL_SECRET,
+    }),
+  });
+  if (!res.ok) throw new Error(`LINE token ${res.status}: ${await res.text().catch(() => '')}`);
+  const data = await res.json();
+  // 提前 2 分鐘視為過期,KV TTL 下限 60 秒
+  const ttl = Math.max(60, (data.expires_in || 900) - 120);
+  await env.STATE.put('line_token', data.access_token, { expirationTtl: ttl });
+  return data.access_token;
+}
+
 // x-line-signature 驗證:HMAC-SHA256(channel secret, raw body) 的 base64
 export async function verifySignature(secret, rawBody, signature) {
   if (!signature) return false;
@@ -24,7 +48,7 @@ async function call(env, path, body) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${await getToken(env)}`,
     },
     body: JSON.stringify(body),
   });
@@ -56,7 +80,7 @@ export async function showLoading(env, chatId, seconds = 20) {
 export async function getDisplayName(env, uid) {
   try {
     const res = await fetch(`${API}/profile/${uid}`, {
-      headers: { Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}` },
+      headers: { Authorization: `Bearer ${await getToken(env)}` },
     });
     if (!res.ok) return null;
     const p = await res.json();
