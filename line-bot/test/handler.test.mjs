@@ -40,7 +40,7 @@ test('小精靈值班 + 知識庫命中 → 首次回覆帶問候語與結尾', 
   } finally { f.restore(); }
 });
 
-test('第二輪對話 → 不再重複問候語', async () => {
+test('第二輪對話 → 模板照掛(每一則都要有身分標示,穆穆的規矩)', async () => {
   const env = mockEnv();
   const f = stubFetch({ llmAnswer: '出血留 3mm 喔' });
   try {
@@ -49,10 +49,25 @@ test('第二輪對話 → 不再重複問候語', async () => {
     await state.pushHistory(env, 'U1', 'assistant', '前一答');
     await handleEvent(env, msg('U1', '出血要留多少'));
     const r = f.replies();
-    assert.ok(!r[0].startsWith(GREETING), '第二輪不該再問候');
+    assert.ok(r[0].startsWith(GREETING), '第二輪也要有問候模板');
+    assert.ok(r[0].includes('MUMU 本人將於上班時段回覆'), '第二輪也要有結尾模板');
     // 對話記憶要進到模型
     const sent = f.llmCalls()[0].body.messages;
     assert.ok(sent.some((m) => m.content === '前一題'), '要帶上下文');
+  } finally { f.restore(); }
+});
+
+test('退休詞「上班/下班」→ 教新詞,不動任何設定', async () => {
+  const env = mockEnv();
+  const f = stubFetch();
+  try {
+    await state.setAdminId(env, 'U-mumu');
+    await state.setMode(env, 'force_off_duty');
+    await handleEvent(env, msg('U-mumu', '下班'));
+    assert.ok(f.replies().at(-1).includes('退休'), '要回覆教學訊息');
+    assert.equal(await state.getMode(env), 'force_off_duty', '模式不可被改動');
+    await handleEvent(env, msg('U-mumu', '上班'));
+    assert.equal(await state.getMode(env), 'force_off_duty', '模式不可被改動');
   } finally { f.restore(); }
 });
 
@@ -111,8 +126,8 @@ test('認主 → 指令通道啟用,錯密語則當一般客人', async () => {
     assert.equal(await state.getAdminId(env), 'U-mumu');
     assert.ok(f.replies().at(-1).includes('認主成功'));
 
-    // 下指令:上班 → 靜默
-    await handleEvent(env, msg('U-mumu', '上班'));
+    // 下指令:收工 → 靜默
+    await handleEvent(env, msg('U-mumu', '收工'));
     assert.equal(await state.getMode(env), 'force_on_duty');
 
     // 客人訊息 → 沉默;穆穆的「狀態」→ 有回應

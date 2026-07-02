@@ -62,7 +62,6 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   }
 
   const hist = await state.getHistory(env, uid);
-  const isSessionStart = hist.length === 0;
 
   // 5) 明確範圍外的業務 → 罐頭婉拒(免費)
   if (guard.isOffScope(text)) {
@@ -120,7 +119,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
 
   // 11) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
   await state.logExchange(env, uid, 'answered', text, answer);
-  await reply(env, replyToken, composeReply(answer, { isSessionStart }));
+  await reply(env, replyToken, composeReply(answer));
   await state.pushHistory(env, uid, 'user', text);
   await state.pushHistory(env, uid, 'assistant', answer);
 }

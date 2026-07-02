@@ -62,8 +62,8 @@ export function buildSystemPrompt(kbEntries) {
 ${kbText}`;
 }
 
-// 組裝最終回覆:會話的第一則加開頭問候與結尾說明,之後的輪次只給內容
-export function composeReply(body, { isSessionStart }) {
-  if (isSessionStart) return `${GREETING}\n\n${body}\n\n${FOOTER}`;
-  return body;
+// 組裝最終回覆:每一則都掛開頭問候與結尾說明(穆穆的規矩——
+// 身分標示不能省,客人永遠要能一眼看出這是小精靈不是本人)
+export function composeReply(body) {
+  return `${GREETING}\n\n${body}\n\n${FOOTER}`;
 }

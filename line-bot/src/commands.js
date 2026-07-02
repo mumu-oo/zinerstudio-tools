@@ -5,13 +5,13 @@ import * as state from './state.js';
 import { LIMITS } from './config.js';
 
 const HELP = [
-  '🧚 這裡是主人指令頻道,小精靈聽得懂的話:',
+  '🧚 這裡是主人指令頻道,小精靈聽得懂的話(主詞都是小精靈):',
   '・「測試 你的問題」→ 用客人視角試小精靈(例:測試 可以印A3嗎)',
-  '・「下班」→ 小精靈接手回覆',
-  '・「上班」→ 小精靈完全靜默',
-  '・「交給排程」→ 依時間表自動切(週一~五 10:00-19:00 你值班)',
+  '・「上工」→ 小精靈接手回覆客人',
+  '・「收工」→ 小精靈靜默,妳親自回',
+  '・「交給排程」→ 平日 10:00-19:00 自動收工、其餘時間自動上工',
   '・「狀態」→ 看目前模式與今日用量',
-  '・「接手 #代號」→ 那間聊天室你自己回,小精靈閉嘴',
+  '・「接手 #代號」→ 那間聊天室妳自己回,小精靈閉嘴',
   '・「放行 #代號」→ 解除該聊天室靜音',
 ].join('\n');
 
@@ -38,26 +38,36 @@ export async function handleAdminMessage(env, uid, text) {
   const sim = t.match(/^測試\s+([\s\S]+)$/);
   if (sim) return { simulate: sim[1].trim() };
 
-  if (t === '下班') {
+  if (t === '上工' || t === '小精靈上工') {
     await state.setMode(env, 'force_off_duty');
-    return '收到,小精靈值班中 🧚 客人訊息由我接手,答不了的會留言給你。';
+    return '收到,小精靈上工!🧚 客人訊息由我接手,答不了的會留言請妳回。';
   }
-  if (t === '上班') {
+  if (t === '收工' || t === '小精靈收工') {
     await state.setMode(env, 'force_on_duty');
-    return '收到,小精靈靜默 🤐 所有訊息都留給你親自回。';
+    return '收到,小精靈收工 🤐 接下來的訊息都靜靜留給妳親自回。';
+  }
+  // 「上班/下班」語意模糊(是妳上班還是小精靈上班?),已退休 → 教新詞,不猜意思
+  if (t === '上班' || t === '下班') {
+    return [
+      '「上班/下班」容易搞混(是妳還是我?),這組詞退休囉。請改用:',
+      '・「上工」= 小精靈開始值班',
+      '・「收工」= 小精靈靜默,妳來回',
+      '・「交給排程」= 平日 10:00-19:00 自動換手',
+      '(這次我沒有更動任何設定)',
+    ].join('\n');
   }
   if (t === '交給排程') {
     await state.setMode(env, 'schedule');
-    return '收到,改依時間表:週一~五 10:00-19:00 你值班,其餘時間我值班。';
+    return '收到,改依時間表:平日 10:00-19:00 小精靈收工換妳,其餘時間小精靈自動上工。';
   }
   if (t === '狀態') {
     const mode = await state.getMode(env);
     const active = await state.isBotActive(env);
     const { globalDaily } = await state.getCounters(env);
-    const modeName = { schedule: '排程自動切', force_on_duty: '強制你值班', force_off_duty: '強制小精靈值班' }[mode];
+    const modeName = { schedule: '排程自動換手', force_on_duty: '小精靈收工(妳值班)', force_off_duty: '小精靈上工' }[mode];
     return [
       `模式:${modeName}`,
-      `此刻:${active ? '小精靈值班中 🧚' : '你值班中(小精靈靜默)'}`,
+      `此刻:${active ? '小精靈上工中 🧚' : '小精靈收工中(妳值班)'}`,
       `今日 AI 回覆:${globalDaily} / ${LIMITS.globalDaily}`,
     ].join('\n');
   }
