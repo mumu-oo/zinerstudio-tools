@@ -39,19 +39,27 @@ export async function chatComplete(env, { system, messages }) {
     const data = await res.json();
     return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
   }
-  // OpenAI 相容
+  // OpenAI 相容。gpt-5 / o 系列是推理模型:改用 max_completion_tokens 與
+  // reasoning_effort,且不吃自訂 temperature(實測見 tools/live-eval.mjs)
+  const isReasoning = /^(gpt-5|o\d)/.test(c.model) && !c.model.includes('-chat');
+  const body = {
+    model: c.model,
+    messages: [{ role: 'system', content: system }, ...messages],
+  };
+  if (isReasoning) {
+    body.max_completion_tokens = 800;
+    body.reasoning_effort = 'minimal';
+  } else {
+    body.max_tokens = c.maxTokens;
+    body.temperature = c.temperature;
+  }
   const res = await fetch(`${c.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${c.apiKey}`,
     },
-    body: JSON.stringify({
-      model: c.model,
-      max_tokens: c.maxTokens,
-      temperature: c.temperature,
-      messages: [{ role: 'system', content: system }, ...messages],
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`LLM ${res.status}: ${await res.text().catch(() => '')}`);
   const data = await res.json();

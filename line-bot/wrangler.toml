@@ -22,4 +22,4 @@ LINE_CHANNEL_ID = "2007766255"
 # 模型可插拔:openai 相容端點(OpenAI / DeepSeek / …)或 anthropic
 LLM_PROVIDER = "openai"
 LLM_BASE_URL = "https://api.openai.com/v1"
-LLM_MODEL = "gpt-4o-mini"
+LLM_MODEL = "gpt-5-mini"

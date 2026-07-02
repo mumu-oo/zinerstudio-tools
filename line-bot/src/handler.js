@@ -100,18 +100,19 @@ export async function handleEvent(env, event) {
     return;
   }
 
-  // 11) 回覆客人 + 記住這輪對話
+  // 11) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
+  await state.logExchange(env, uid, 'answered', text, answer);
   await reply(env, replyToken, composeReply(answer, { isSessionStart }));
   await state.pushHistory(env, uid, 'user', text);
   await state.pushHistory(env, uid, 'assistant', answer);
-  await state.logExchange(env, uid, 'answered', text, answer);
 }
 
-// 轉人工:回罐頭留言、該聊天室靜音、通知穆穆
+// 轉人工:靜音、記錄、通知穆穆都先做,最後才回罐頭留言
+// (順序保證:就算 LINE 回覆失敗,穆穆也一定會知道有客人在等)
 async function escalate(env, { uid, sid, replyToken, text, kind }) {
-  await reply(env, replyToken, ESCALATE_REPLY);
   await state.muteRoom(env, uid);
   await state.logExchange(env, uid, `escalated_${kind}`, text, ESCALATE_REPLY);
   const name = await getDisplayName(env, uid);
   await notify(env, escalationCard({ sid, name, question: text, kind }));
+  await reply(env, replyToken, ESCALATE_REPLY);
 }
