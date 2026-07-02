@@ -1,0 +1,12 @@
+{
+  "name": "zinerstudio-line-bot",
+  "private": true,
+  "type": "module",
+  "description": "誌造所 LINE 官方帳號客服小精靈 — 上下班雙模式,零幻覺設計",
+  "scripts": {
+    "test": "node --test test/",
+    "kb": "node tools/convert-kb.mjs",
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy"
+  }
+}

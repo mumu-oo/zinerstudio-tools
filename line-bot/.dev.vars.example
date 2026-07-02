@@ -1,0 +1,6 @@
+# 本機測試用:複製成 .dev.vars 再填值(.dev.vars 不進 git)
+LINE_CHANNEL_SECRET=xxx
+LINE_CHANNEL_ACCESS_TOKEN=xxx
+LLM_API_KEY=sk-xxx
+ADMIN_SECRET=請穆穆自己想一句通關密語
+DISCORD_WEBHOOK_URL=
