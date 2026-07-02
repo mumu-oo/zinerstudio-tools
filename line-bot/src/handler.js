@@ -24,23 +24,41 @@ export async function handleEvent(env, event) {
   // 1) 穆穆的指令通道(認主後,她的訊息永遠不走客服流程)
   const adminReply = await handleAdminMessage(env, uid, text);
   if (adminReply !== null) {
+    if (typeof adminReply === 'object' && adminReply.simulate) {
+      // 「測試 <訊息>」:用客人視角走完整流程。狀態隔離在 sim: 開頭的假聊天室,
+      // 回覆借用這一次的 replyToken(所以答案會出現在穆穆自己的聊天視窗)
+      await customerFlow(env, {
+        uid: `sim:${uid}`,
+        text: adminReply.simulate,
+        replyToken,
+        simulated: true, // 跳過值班/靜音判斷:永遠展示「小精靈值班時會說什麼」
+      });
+      return;
+    }
     await reply(env, replyToken, adminReply);
     return;
   }
 
+  await customerFlow(env, { uid, text, replyToken });
+}
+
+// 客服決策鏈本體(真客人與「測試」模擬共用)
+async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   // 2) 登記聊天室代號(通知穆穆時用)
   const sid = await state.indexRoom(env, uid);
 
-  // 3) 穆穆值班中 → 小精靈完全靜默,只留紀錄
-  if (!(await state.isBotActive(env))) {
-    await state.logExchange(env, uid, 'silent_on_duty', text, '');
-    return;
-  }
+  if (!simulated) {
+    // 3) 穆穆值班中 → 小精靈完全靜默,只留紀錄
+    if (!(await state.isBotActive(env))) {
+      await state.logExchange(env, uid, 'silent_on_duty', text, '');
+      return;
+    }
 
-  // 4) 這間被接手/已轉人工 → 靜默
-  if (await state.isMuted(env, uid)) {
-    await state.logExchange(env, uid, 'silent_muted', text, '');
-    return;
+    // 4) 這間被接手/已轉人工 → 靜默
+    if (await state.isMuted(env, uid)) {
+      await state.logExchange(env, uid, 'silent_muted', text, '');
+      return;
+    }
   }
 
   const hist = await state.getHistory(env, uid);

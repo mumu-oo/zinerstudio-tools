@@ -5,13 +5,14 @@ import * as state from './state.js';
 import { LIMITS } from './config.js';
 
 const HELP = [
-  '🧚 小精靈聽得懂的話:',
+  '🧚 這裡是主人指令頻道,小精靈聽得懂的話:',
+  '・「測試 你的問題」→ 用客人視角試小精靈(例:測試 可以印A3嗎)',
   '・「下班」→ 小精靈接手回覆',
   '・「上班」→ 小精靈完全靜默',
   '・「交給排程」→ 依時間表自動切(週一~五 10:00-19:00 你值班)',
   '・「狀態」→ 看目前模式與今日用量',
   '・「接手 #代號」→ 那間聊天室你自己回,小精靈閉嘴',
-  '・「放行 #代號」/「放行 全部」→ 解除靜音',
+  '・「放行 #代號」→ 解除該聊天室靜音',
 ].join('\n');
 
 export async function isAdmin(env, uid) {
@@ -32,6 +33,10 @@ export async function handleAdminMessage(env, uid, text) {
   }
 
   if (!(await isAdmin(env, uid))) return null;
+
+  // 「測試 <訊息>」→ 讓穆穆扮演客人:回傳模擬請求,由 handler 走完整客服流程
+  const sim = t.match(/^測試\s+([\s\S]+)$/);
+  if (sim) return { simulate: sim[1].trim() };
 
   if (t === '下班') {
     await state.setMode(env, 'force_off_duty');
