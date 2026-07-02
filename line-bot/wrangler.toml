@@ -14,7 +14,7 @@ compatibility_date = "2026-06-01"
 
 [[kv_namespaces]]
 binding = "STATE"
-id = "TBD_等開好帳號後建立"
+id = "e0762f279b254aa18011e22f716f0b99"
 
 [vars]
 # 誌造所官方帳號的 Messaging API Channel ID(非機密;secret 走 wrangler secret)
