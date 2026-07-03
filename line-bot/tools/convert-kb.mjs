@@ -85,6 +85,7 @@ for (const r of rows.slice(1)) {
 const EXTRA_SOURCES = [
   { file: 'data/source/瑞蘇補充.json', prefix: 'rs' },
   { file: 'data/source/穆穆補充.json', prefix: 'mm' },
+  { file: 'data/source/invoice補充.json', prefix: 'zi' }, // Ziner Invoice app=現行權威價格源
 ];
 for (const { file, prefix } of EXTRA_SOURCES) {
   const extra = JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
