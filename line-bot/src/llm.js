@@ -47,8 +47,9 @@ export async function chatComplete(env, { system, messages }) {
     messages: [{ role: 'system', content: system }, ...messages],
   };
   if (isReasoning) {
-    body.max_completion_tokens = 800;
-    body.reasoning_effort = 'minimal';
+    body.max_completion_tokens = 1200;
+    // 預設 minimal;涉及計算的場景可用 LLM_REASONING_EFFORT 調高(low/medium)
+    body.reasoning_effort = env.LLM_REASONING_EFFORT || 'minimal';
   } else {
     body.max_tokens = c.maxTokens;
     body.temperature = c.temperature;
