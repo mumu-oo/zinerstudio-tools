@@ -85,7 +85,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     await state.logExchange(env, uid, `limited_${budget.reason}`, text, '');
     if (budget.reason === 'burst' && budget.burst === LIMITS.burstPer10Min + 1) {
       // 剛跨過門檻的那一則才警報,避免洗版 Discord
-      await notify(env, escalationCard({ sid, name: null, question: `10分鐘內第 ${budget.burst} 則訊息,已熔斷`, kind: 'burst' }));
+      await notify(env, escalationCard({ sid, name: null, question: `10 分鐘內第 ${budget.burst} 則訊息，已熔斷`, kind: 'burst' }));
     }
     return;
   }

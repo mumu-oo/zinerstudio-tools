@@ -1,37 +1,41 @@
 // 小精靈的所有話術與 system prompt。
-// 文案沿用穆穆 2025 年寫的版本(data/source/),改文案改這裡即可。
+// 文案規矩(穆穆定):①每一則回覆都掛開頭+結尾模板,客人永遠分得出是小精靈;
+// ②對客輸出一律全形標點(時間格式例外,照她的 10:00～19:00 寫法)。
+// 開頭/結尾/四個罐頭 body 都是穆穆的字,要改請經過她。
 
 export const ESCALATE_SENTINEL = '[[轉人工]]';
 
-export const GREETING = '嗨嗨～現在是誌造所的休息時間，由自動回應的孔版小精靈 🤖 為您服務喲～';
+export const GREETING = '嗨嗨～現為誌造所的下班時間，MUMU 目前不在工作位置上，先派 🤖 孔版小精靈出來幫你帶路～';
 
-export const FOOTER = '※ MUMU 本人將於上班時段回覆（週一至週五 10:00～19:00），若有急件請私訊 IG 或來信 mail 聯繫，感謝！';
-
-// 查無資料/沒把握 → 轉人工留言(穆穆的原版文案)
-export const ESCALATE_REPLY = [
-  '嗨嗨！這部分內容需要由 MUMU 本人協助回覆，',
-  '將於上班時間（週一至週五 10:00～19:00）查看您的留言，並盡快與您聯繫。',
-  '若急需處理，也可透過 mail 或 IG 私訊聯絡我們，謝謝您的耐心與等候！',
+export const FOOTER = [
+  '※ MUMU 本人回覆時間：週一至週五 10:00～19:00',
+  '若有急件，請私訊 IG 或來信聯繫，感謝！',
 ].join('\n');
+
+// 組裝最終回覆:每一則都掛開頭問候與結尾說明
+export function composeReply(body) {
+  return `${GREETING}\n\n${body}\n\n${FOOTER}`;
+}
+
+// 查無資料/沒把握 → 轉人工留言
+export const ESCALATE_REPLY = composeReply(
+  '這部分需要由 MUMU 本人協助回覆，小精靈已幫您把留言收好，MUMU 上班後會依序與您聯繫～',
+);
 
 // 明確不做的業務(貼紙/盒子/雷雕…) → 直接婉拒,不呼叫 AI
-export const OFF_SCOPE_REPLY = [
-  '嗨嗨！這裡是孔版小精靈自動回應～',
-  '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。',
-  '若想確認細節，也可以留言等 MUMU 上班時間回覆您！',
-].join('\n');
+export const OFF_SCOPE_REPLY = composeReply(
+  '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。若想確認細節，也可以留言等 MUMU 上班時間回覆您！',
+);
 
 // 客人當日 AI 額度用完 → 罐頭
-export const RATE_LIMIT_REPLY = [
-  '嗨嗨！孔版小精靈今天先服務到這邊，其餘問題會由 MUMU 上班時間親自回覆您～',
-  FOOTER,
-].join('\n');
+export const RATE_LIMIT_REPLY = composeReply(
+  '孔版小精靈今天先服務到這邊，其餘的問題會由 MUMU 上班時間親自回覆您～',
+);
 
 // 熔斷(短時間爆量)或系統故障 → 罐頭
-export const CIRCUIT_REPLY = [
-  '嗨嗨！目前訊息較多，小精靈先幫您把留言收好，MUMU 上班時間會依序回覆您～',
-  FOOTER,
-].join('\n');
+export const CIRCUIT_REPLY = composeReply(
+  '目前訊息較多，小精靈先幫您把留言收好，MUMU 上班時間會依序回覆您～',
+);
 
 export function buildSystemPrompt(kbEntries) {
   const kbText = kbEntries
@@ -40,8 +44,9 @@ export function buildSystemPrompt(kbEntries) {
   return `# 任務
 你是台灣 Risograph 孔版印刷工作室「誌造所」的自動客服「孔版小精靈」。你在非上班時間接手回覆客人。
 
-# 語氣
-- 繁體中文(台灣用語),親切、自然、精簡,像人在 LINE 上講話。
+# 語氣與格式
+- 繁體中文（台灣用語），親切、自然、精簡，像人在 LINE 上講話。
+- 標點符號一律使用全形（，。！？：（）），不可使用半形逗號句號;時間寫法照資料原文（例如 10:00～19:00）。
 - 只回答客人這一次問的事,不主動補充沒問的資訊,不列印刷知識清單,不重述客人的問題。
 - 不使用 Markdown 符號(LINE 不支援),條列可用「・」。
 - 多題就逐題簡短回答。
@@ -54,16 +59,12 @@ export function buildSystemPrompt(kbEntries) {
   ・客人問的主題在參考資料中完全沒提到
   ・客人的個人訂單進度、已下單的案件、要求檢查檔案、詢問具體報價金額
   ・需要 MUMU 個案判斷、協商、破例的事
-- 不可自行計算或推估任何價格、天數、日期;資料裡的數字照原文引用。標準流程資訊(例如一天印兩色、休六日不開機)可以直接引用,個案的確切完成日請客人等 MUMU 確認。
+- 不可自行計算或推估任何價格;價格數字只能照資料原文引用。
+- 工作天數可依標準規則推算(穆穆核定):一天印兩色,印刷天數＝色數÷2 無條件進位;厚紙另加一天乾燥;週六日不開機、不計工作天;檔案有特殊狀況會再增加天數。推算後務必加一句:實際天數以 MUMU 檢稿後回覆為準。
+- 不可推算或承諾具體的交貨日期(幾月幾號);客人問特定日期來不來得及,說明工作天數規則後請他等 MUMU 確認。
 - 品牌名稱一律「誌造所」,負責人稱「MUMU」。
 - 誌造所沒有:數位印刷、燙金、雷雕、UV、打凸、貼紙、盒子(注意:有「金墨」,那不是燙金,資料有解釋)。
 
 # 參考資料
 ${kbText}`;
-}
-
-// 組裝最終回覆:每一則都掛開頭問候與結尾說明(穆穆的規矩——
-// 身分標示不能省,客人永遠要能一眼看出這是小精靈不是本人)
-export function composeReply(body) {
-  return `${GREETING}\n\n${body}\n\n${FOOTER}`;
 }

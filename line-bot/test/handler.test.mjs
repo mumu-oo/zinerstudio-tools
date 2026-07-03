@@ -36,7 +36,7 @@ test('小精靈值班 + 知識庫命中 → 首次回覆帶問候語與結尾', 
     const r = f.replies();
     assert.equal(r.length, 1);
     assert.ok(r[0].startsWith(GREETING), '首次回覆要有問候語');
-    assert.ok(r[0].includes('MUMU 本人將於上班時段回覆'), '首次回覆要有結尾說明');
+    assert.ok(r[0].includes('※ MUMU 本人回覆時間'), '首次回覆要有結尾說明');
   } finally { f.restore(); }
 });
 
@@ -50,7 +50,7 @@ test('第二輪對話 → 模板照掛(每一則都要有身分標示,穆穆的�
     await handleEvent(env, msg('U1', '出血要留多少'));
     const r = f.replies();
     assert.ok(r[0].startsWith(GREETING), '第二輪也要有問候模板');
-    assert.ok(r[0].includes('MUMU 本人將於上班時段回覆'), '第二輪也要有結尾模板');
+    assert.ok(r[0].includes('※ MUMU 本人回覆時間'), '第二輪也要有結尾模板');
     // 對話記憶要進到模型
     const sent = f.llmCalls()[0].body.messages;
     assert.ok(sent.some((m) => m.content === '前一題'), '要帶上下文');
