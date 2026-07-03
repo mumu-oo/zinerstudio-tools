@@ -81,10 +81,16 @@ for (const r of rows.slice(1)) {
   });
 }
 
-// 瑞蘇(Discord bot)腦子的補充條目——價目表、急件、套印等,兩邊改要同步
-const EXTRA = JSON.parse(readFileSync(join(ROOT, 'data/source/瑞蘇補充.json'), 'utf8'));
-for (const e of EXTRA.entries) {
-  entries.push({ id: `rs-${String(entries.length + 1).padStart(2, '0')}`, ...e });
+// 補充知識源:瑞蘇(Discord bot,價目表等,兩邊改要同步)+ 穆穆口述(報價表格等)
+const EXTRA_SOURCES = [
+  { file: 'data/source/瑞蘇補充.json', prefix: 'rs' },
+  { file: 'data/source/穆穆補充.json', prefix: 'mm' },
+];
+for (const { file, prefix } of EXTRA_SOURCES) {
+  const extra = JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
+  for (const e of extra.entries) {
+    entries.push({ id: `${prefix}-${String(entries.length + 1).padStart(2, '0')}`, ...e });
+  }
 }
 
 writeFileSync(OUT, JSON.stringify({ updated: '2026-07-03', source: '孔版客服QA - 工作表1.csv', entries }, null, 2));
