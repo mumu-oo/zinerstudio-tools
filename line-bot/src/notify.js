@@ -18,15 +18,15 @@ export function escalationCard({ sid, name, question, kind }) {
   const who = name ? `${name}（#${sid}）` : `#${sid}`;
   const label = {
     no_kb: '查無資料轉人工',
-    llm_escalate: '小精靈沒把握轉人工',
+    llm_escalate: 'AI助手沒把握轉人工',
     llm_error: 'AI 呼叫失敗',
     burst: '⚠️ 熔斷：短時間訊息爆量',
     off_scope: '業務範圍外詢問',
   }[kind] || kind;
   return [
-    `🧚 **小精靈留言板｜${label}**`,
+    `🤖 **AI助手留言板｜${label}**`,
     `客人：${who}`,
     `訊息：${question}`,
-    `（回覆客人請開 LINE 官方帳號後台；要接手這間請對小精靈說「接手 #${sid}」）`,
+    `（回覆客人請開 LINE 官方帳號後台；要接手這間請對AI助手說「接手 #${sid}」）`,
   ].join('\n');
 }

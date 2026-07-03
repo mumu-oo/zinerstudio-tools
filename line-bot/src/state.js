@@ -19,6 +19,12 @@ export function isBusinessHours(now = new Date()) {
   return BUSINESS_HOURS.days.includes(day) && hour >= BUSINESS_HOURS.startHour && hour < BUSINESS_HOURS.endHour;
 }
 
+// 給 system prompt 用的日期標籤,例:2026-07-03(週五)
+export function taipeiDateLabel(now = new Date()) {
+  const { dateKey, day } = taipeiNow(now);
+  return `${dateKey}(週${'日一二三四五六'[day]})`;
+}
+
 // ---- 全域模式 ----
 // 'schedule'       依上班時間表自動切(預設)
 // 'force_on_duty'  穆穆值班:小精靈強制靜默(指令「上班」)

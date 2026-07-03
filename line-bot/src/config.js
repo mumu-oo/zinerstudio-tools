@@ -9,7 +9,7 @@ export const BUSINESS_HOURS = {
 };
 
 export const LIMITS = {
-  perUserDaily: 10,   // 每位客人每天最多幾次 AI 回覆,超過改罐頭訊息
+  perUserDaily: 20,   // 每位客人每天最多幾次 AI 回覆,超過改罐頭訊息(多輪對談很花,別設太小;穆穆的「測試」不佔額度)
   globalDaily: 100,   // 全帳號每天 AI 呼叫上限(成本封頂)
   burstPer10Min: 30,  // 10 分鐘內全帳號訊息數超過此值 → 熔斷(只回罐頭)+ Discord 警報
   maxMsgLen: 800,     // 超長訊息不送 AI

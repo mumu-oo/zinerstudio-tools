@@ -77,32 +77,39 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 7) 額度與熔斷
-  const budget = await guard.checkBudget(env, uid);
-  if (!budget.ok) {
-    const msg = budget.reason === 'user_daily' ? RATE_LIMIT_REPLY : CIRCUIT_REPLY;
-    await reply(env, replyToken, msg);
-    await state.logExchange(env, uid, `limited_${budget.reason}`, text, '');
-    if (budget.reason === 'burst' && budget.burst === LIMITS.burstPer10Min + 1) {
-      // 剛跨過門檻的那一則才警報,避免洗版 Discord
-      await notify(env, escalationCard({ sid, name: null, question: `10 分鐘內第 ${budget.burst} 則訊息，已熔斷`, kind: 'burst' }));
+  // 7) 額度與熔斷(「測試」模擬不佔額度——老闆娘測試不該被自家保險絲電到)
+  if (!simulated) {
+    const budget = await guard.checkBudget(env, uid);
+    if (!budget.ok) {
+      const msg = budget.reason === 'user_daily' ? RATE_LIMIT_REPLY : CIRCUIT_REPLY;
+      await reply(env, replyToken, msg);
+      await state.logExchange(env, uid, `limited_${budget.reason}`, text, '');
+      if (budget.reason === 'burst' && budget.burst === LIMITS.burstPer10Min + 1) {
+        // 剛跨過門檻的那一則才警報,避免洗版 Discord
+        await notify(env, escalationCard({ sid, name: null, question: `10 分鐘內第 ${budget.burst} 則訊息，已熔斷`, kind: 'burst' }));
+      }
+      return;
     }
-    return;
   }
 
-  // 8) 檢索知識庫:查無資料 → 轉人工,AI 一毛不花
-  const kbHits = retrieve(text);
+  // 8) 檢索知識庫:查無資料 → 轉人工,AI 一毛不花。
+  //    當前訊息查不到但有對話脈絡時,把近幾輪一起納入檢索——
+  //    接得住「那要幾天?」「這樣可以嗎?」這類靠上下文的追問
+  let kbHits = retrieve(text);
+  if (kbHits.length === 0 && hist.length > 0) {
+    kbHits = retrieve([...hist.slice(-4).map((h) => h.content), text].join('\n'), { topN: 4 });
+  }
   if (kbHits.length === 0) {
     await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb' });
     return;
   }
 
-  // 9) 呼叫 AI(只能引用檢索到的條目)
+  // 9) 呼叫 AI(只能引用檢索到的條目;附今天日期供交期推算)
   await showLoading(env, uid);
   let answer;
   try {
     answer = await chatComplete(env, {
-      system: buildSystemPrompt(kbHits),
+      system: buildSystemPrompt(kbHits, { today: state.taipeiDateLabel() }),
       messages: [...hist, { role: 'user', content: text }],
     });
   } catch (err) {
