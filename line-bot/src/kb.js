@@ -25,3 +25,8 @@ export function retrieve(message, { topN = 3 } = {}) {
 export function kbSize() {
   return KB.entries.length;
 }
+
+// 全表:檢索完全沒命中時的降級路徑用,讓 AI 看過全表自己判斷有沒有相關資料
+export function allEntries() {
+  return KB.entries;
+}

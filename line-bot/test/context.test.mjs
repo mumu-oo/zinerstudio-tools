@@ -31,13 +31,13 @@ test('追問靠上下文:「這樣的話沒問題嗎?」單獨查無資料,有�
   } finally { f.restore(); }
 });
 
-test('沒有脈絡的無關訊息 → 仍然轉人工(上下文檢索不會濫開大門)', async () => {
+test('沒有脈絡的無關訊息 → 交給 AI 看全表判斷,AI 說沒把握就轉人工', async () => {
   const env = mockEnv();
-  const f = stubFetch();
+  const f = stubFetch({ llmAnswer: '[[轉人工]]' });
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U8', '這樣的話沒問題嗎？'));
-    assert.equal(f.llmCalls().length, 0);
+    assert.equal(f.llmCalls().length, 1, '0 命中不再直接罐頭,要讓 AI 看過全表判斷');
     assert.equal(f.replies()[0], ESCALATE_REPLY);
   } finally { f.restore(); }
 });

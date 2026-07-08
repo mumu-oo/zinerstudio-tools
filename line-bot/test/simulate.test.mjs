@@ -27,9 +27,9 @@ test('測試指令:走完整客服流程,答案回到穆穆的視窗', async () 
   } finally { f.restore(); }
 });
 
-test('測試指令:查無資料 → 看到轉人工留言,靜音只落在模擬房', async () => {
+test('測試指令:查無資料 → AI 看全表判斷、沒把握就轉人工,靜音只落在模擬房', async () => {
   const env = mockEnv();
-  const f = stubFetch();
+  const f = stubFetch({ llmAnswer: '[[轉人工]]' });
   try {
     await state.setAdminId(env, 'U-mumu');
     await state.setMode(env, 'force_off_duty');

@@ -71,13 +71,13 @@ test('退休詞「上班/下班」→ 教新詞,不動任何設定', async () =>
   } finally { f.restore(); }
 });
 
-test('查無資料 → 轉人工留言、該房靜音、不呼叫 AI、通知 Discord', async () => {
+test('查無資料 → AI 看全表判斷、AI 說沒把握就轉人工、靜音、通知 Discord', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
-  const f = stubFetch();
+  const f = stubFetch({ llmAnswer: '[[轉人工]]' });
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U2', '請問可以贊助我們嗎'));
-    assert.equal(f.llmCalls().length, 0, '查無資料不可花錢呼叫 AI');
+    assert.equal(f.llmCalls().length, 1, '0 命中要交給 AI 看全表判斷,不再直接罐頭');
     assert.equal(f.replies()[0], ESCALATE_REPLY);
     assert.equal(await state.isMuted(env, 'U2'), true, '轉人工後應靜音');
     assert.ok(f.calls.some((c) => c.url.includes('discord')), '要通知穆穆');

@@ -4,7 +4,7 @@
 import * as state from './state.js';
 import * as guard from './guard.js';
 import { LIMITS } from './config.js';
-import { retrieve } from './kb.js';
+import { retrieve, allEntries } from './kb.js';
 import { chatComplete } from './llm.js';
 import { reply, showLoading, getDisplayName } from './line.js';
 import { notify, escalationCard } from './notify.js';
@@ -92,16 +92,18 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     }
   }
 
-  // 8) 檢索知識庫:查無資料 → 轉人工,AI 一毛不花。
-  //    當前訊息查不到但有對話脈絡時,把近幾輪一起納入檢索——
-  //    接得住「那要幾天?」「這樣可以嗎?」這類靠上下文的追問
+  // 8) 檢索知識庫:
+  //    命中 → 只餵命中的條目(精準、省 token);
+  //    完全沒命中 → 把全表交給 AI 判斷「這題我們有沒有答案」,
+  //    有 → 依資料答,沒有 → 由 AI 吐 sentinel 讓程式轉人工。
+  //    有對話脈絡時把近幾輪一起餵給檢索器,接住「那要幾天?」這類追問。
   let kbHits = retrieve(text);
   if (kbHits.length === 0 && hist.length > 0) {
     kbHits = retrieve([...hist.slice(-4).map((h) => h.content), text].join('\n'), { topN: 4 });
   }
   if (kbHits.length === 0) {
-    await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb' });
-    return;
+    // 降級成全表判斷,不再直接罐頭。GPT-5-mini 全表判斷成本約每次台幣 0.02
+    kbHits = allEntries();
   }
 
   // 9) 呼叫 AI(只能引用檢索到的條目;附今天日期供交期推算)
