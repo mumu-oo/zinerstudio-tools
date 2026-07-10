@@ -8,10 +8,7 @@ export const ESCALATE_SENTINEL = '[[轉人工]]';
 
 export const GREETING = '嗨嗨～現為誌造所的下班時間，MUMU 目前不在工作位置上，先派 🤖 孔版AI助手出來幫你帶路～';
 
-export const FOOTER = [
-  '※ MUMU 本人回覆時間：週一至週五 10:00～19:00',
-  '若有急件，請私訊 IG 或來信聯繫，感謝！',
-].join('\n');
+export const FOOTER = '🛠️ 平日 10:00～19:00 由 MUMU 回覆 💌 急件請走 IG或信箱';
 
 // 組裝最終回覆:開場那一則掛問候,之後只掛結尾
 export function composeReply(body, { sessionStart = false } = {}) {
