@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleEvent } from '../src/handler.js';
-import { ESCALATE_REPLY } from '../src/reply.js';
+import { ESCALATE_BODY, composeReply } from '../src/reply.js';
 import * as state from '../src/state.js';
 import { retrieve } from '../src/kb.js';
 import { LIMITS } from '../src/config.js';
@@ -38,7 +38,7 @@ test('沒有脈絡的無關訊息 → 交給 AI 看全表判斷,AI 說沒把握�
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U8', '這樣的話沒問題嗎？'));
     assert.equal(f.llmCalls().length, 1, '0 命中不再直接罐頭,要讓 AI 看過全表判斷');
-    assert.equal(f.replies()[0], ESCALATE_REPLY);
+    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }));
   } finally { f.restore(); }
 });
 

@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleEvent } from '../src/handler.js';
-import { ESCALATE_REPLY, OFF_SCOPE_REPLY, GREETING, ESCALATE_SENTINEL } from '../src/reply.js';
+import { ESCALATE_BODY, OFF_SCOPE_BODY, GREETING, ESCALATE_SENTINEL, composeReply } from '../src/reply.js';
 import * as state from '../src/state.js';
 import { mockEnv, stubFetch } from './helpers.mjs';
 
@@ -40,7 +40,7 @@ test('小精靈值班 + 知識庫命中 → 首次回覆帶問候語與結尾', 
   } finally { f.restore(); }
 });
 
-test('第二輪對話 → 模板照掛(每一則都要有身分標示,穆穆的規矩)', async () => {
+test('第二輪對話 → 問候語不再掛(2026-07-11 穆穆拍板:開場限定),結尾照掛', async () => {
   const env = mockEnv();
   const f = stubFetch({ llmAnswer: '出血留 3mm 喔' });
   try {
@@ -49,8 +49,8 @@ test('第二輪對話 → 模板照掛(每一則都要有身分標示,穆穆的�
     await state.pushHistory(env, 'U1', 'assistant', '前一答');
     await handleEvent(env, msg('U1', '出血要留多少'));
     const r = f.replies();
-    assert.ok(r[0].startsWith(GREETING), '第二輪也要有問候模板');
-    assert.ok(r[0].includes('※ MUMU 本人回覆時間'), '第二輪也要有結尾模板');
+    assert.ok(!r[0].startsWith(GREETING), '第二輪不掛問候語(實測 15 分鐘轟炸客人八次的教訓)');
+    assert.ok(r[0].includes('※ MUMU 本人回覆時間'), '結尾每則照掛');
     // 對話記憶要進到模型
     const sent = f.llmCalls()[0].body.messages;
     assert.ok(sent.some((m) => m.content === '前一題'), '要帶上下文');
@@ -71,21 +71,21 @@ test('退休詞「上班/下班」→ 教新詞,不動任何設定', async () =>
   } finally { f.restore(); }
 });
 
-test('查無資料 → AI 看全表判斷、AI 說沒把握就轉人工、靜音、通知 Discord', async () => {
+test('查無資料 → AI 看全表判斷、沒把握轉人工、通知 Discord,但不再封房', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
   const f = stubFetch({ llmAnswer: '[[轉人工]]' });
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U2', '請問可以贊助我們嗎'));
     assert.equal(f.llmCalls().length, 1, '0 命中要交給 AI 看全表判斷,不再直接罐頭');
-    assert.equal(f.replies()[0], ESCALATE_REPLY);
-    assert.equal(await state.isMuted(env, 'U2'), true, '轉人工後應靜音');
+    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }));
+    assert.equal(await state.isMuted(env, 'U2'), false, '2026-07-11 起轉人工不再自動靜音(一題答不了不封整間房)');
     assert.ok(f.calls.some((c) => c.url.includes('discord')), '要通知穆穆');
 
-    // 靜音後再來訊息 → 完全沉默
-    const before = f.calls.length;
-    await handleEvent(env, msg('U2', '在嗎?'));
-    assert.equal(f.calls.length, before, '靜音房不該有任何回應');
+    // 轉人工後下一題 → 照常服務(實錄教訓:第八題轉人工害工作坊題被無視)
+    const beforeLlm = f.llmCalls().length;
+    await handleEvent(env, msg('U2', '最近有工作坊或活動嗎'));
+    assert.equal(f.llmCalls().length, beforeLlm + 1, '轉人工後的下一題要照常回答');
   } finally { f.restore(); }
 });
 
@@ -96,18 +96,18 @@ test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U3', '可以印貼紙嗎'));
     assert.equal(f.llmCalls().length, 0);
-    assert.equal(f.replies()[0], OFF_SCOPE_REPLY);
+    assert.equal(f.replies()[0], composeReply(OFF_SCOPE_BODY, { sessionStart: true }));
   } finally { f.restore(); }
 });
 
-test('AI 自己說沒把握(sentinel)→ 轉人工', async () => {
+test('AI 自己說沒把握(sentinel)→ 轉人工,不封房', async () => {
   const env = mockEnv();
   const f = stubFetch({ llmAnswer: ESCALATE_SENTINEL });
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U4', '三色單面大概幾個工作天'));
-    assert.equal(f.replies()[0], ESCALATE_REPLY);
-    assert.equal(await state.isMuted(env, 'U4'), true);
+    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }));
+    assert.equal(await state.isMuted(env, 'U4'), false, '轉人工不再自動靜音');
   } finally { f.restore(); }
 });
 

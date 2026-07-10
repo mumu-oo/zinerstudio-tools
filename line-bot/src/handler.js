@@ -10,8 +10,8 @@ import { reply, showLoading, getDisplayName } from './line.js';
 import { notify, escalationCard } from './notify.js';
 import { handleAdminMessage } from './commands.js';
 import {
-  ESCALATE_SENTINEL, ESCALATE_REPLY, OFF_SCOPE_REPLY,
-  RATE_LIMIT_REPLY, CIRCUIT_REPLY, buildSystemPrompt, composeReply,
+  ESCALATE_SENTINEL, ESCALATE_BODY, OFF_SCOPE_BODY,
+  RATE_LIMIT_BODY, CIRCUIT_BODY, buildSystemPrompt, composeReply,
 } from './reply.js';
 
 export async function handleEvent(env, event) {
@@ -62,18 +62,21 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   }
 
   const hist = await state.getHistory(env, uid);
+  // 開場判斷:這間房 2 小時內沒有對話記憶=新會話,問候語只在開場那一則出現
+  const sessionStart = hist.length === 0;
 
   // 5) 明確範圍外的業務 → 罐頭婉拒(免費)
   if (guard.isOffScope(text)) {
-    await reply(env, replyToken, OFF_SCOPE_REPLY);
-    await state.logExchange(env, uid, 'off_scope', text, OFF_SCOPE_REPLY);
+    const msg = composeReply(OFF_SCOPE_BODY, { sessionStart });
+    await reply(env, replyToken, msg);
+    await state.logExchange(env, uid, 'off_scope', text, msg);
     await notify(env, escalationCard({ sid, name: null, question: text, kind: 'off_scope' }));
     return;
   }
 
   // 6) 超長訊息 → 直接轉人工(不送 AI)
   if (guard.isTooLong(text)) {
-    await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb' });
+    await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb', sessionStart });
     return;
   }
 
@@ -81,7 +84,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   if (!simulated) {
     const budget = await guard.checkBudget(env, uid);
     if (!budget.ok) {
-      const msg = budget.reason === 'user_daily' ? RATE_LIMIT_REPLY : CIRCUIT_REPLY;
+      const msg = composeReply(budget.reason === 'user_daily' ? RATE_LIMIT_BODY : CIRCUIT_BODY, { sessionStart });
       await reply(env, replyToken, msg);
       await state.logExchange(env, uid, `limited_${budget.reason}`, text, '');
       if (budget.reason === 'burst' && budget.burst === LIMITS.burstPer10Min + 1) {
@@ -116,29 +119,36 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     });
   } catch (err) {
     console.error('LLM error:', err.message);
-    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_error' });
+    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_error', sessionStart });
     return;
   }
 
   // 10) 小精靈自己說沒把握 → 轉人工
   if (!answer || answer.includes(ESCALATE_SENTINEL)) {
-    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_escalate' });
+    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_escalate', sessionStart });
     return;
   }
 
   // 11) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
   await state.logExchange(env, uid, 'answered', text, answer);
-  await reply(env, replyToken, composeReply(answer));
+  await reply(env, replyToken, composeReply(answer, { sessionStart }));
   await state.pushHistory(env, uid, 'user', text);
   await state.pushHistory(env, uid, 'assistant', answer);
 }
 
-// 轉人工:靜音、記錄、通知穆穆都先做,最後才回罐頭留言
+// 轉人工:記錄、通知穆穆先做,最後才回罐頭留言
 // (順序保證:就算 LINE 回覆失敗,穆穆也一定會知道有客人在等)
-async function escalate(env, { uid, sid, replyToken, text, kind }) {
-  await state.muteRoom(env, uid);
-  await state.logExchange(env, uid, `escalated_${kind}`, text, ESCALATE_REPLY);
+// 2026-07-11 拆掉「轉人工=自動靜音」:一題答不了不再封整間房 24 小時
+// (實錄:客人連問七題都答得好,第八題轉人工後,連「工作坊資訊」這種
+//  資料庫有的題都被無視——客人體感是 bot 消失)。要 AI 閉嘴的房間,
+// 穆穆用「接手 #代號」手動靜音。
+async function escalate(env, { uid, sid, replyToken, text, kind, sessionStart = false }) {
+  const msg = composeReply(ESCALATE_BODY, { sessionStart });
+  await state.logExchange(env, uid, `escalated_${kind}`, text, msg);
   const name = await getDisplayName(env, uid);
   await notify(env, escalationCard({ sid, name, question: text, kind }));
-  await reply(env, replyToken, ESCALATE_REPLY);
+  await reply(env, replyToken, msg);
+  // 轉人工的那一題也記入對話脈絡,讓 AI 記得「這題我說過要等 MUMU」
+  await state.pushHistory(env, uid, 'user', text);
+  await state.pushHistory(env, uid, 'assistant', ESCALATE_BODY);
 }

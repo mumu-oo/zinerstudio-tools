@@ -1,6 +1,7 @@
 // 孔版AI助手的所有話術與 system prompt。
-// 文案規矩(穆穆定):①每一則回覆都掛開頭+結尾模板;②對客輸出一律全形標點
-// (時間 10:00～19:00 的半形冒號除外);③語氣規則沿用她為瑞蘇(Discord bot)調的聲線。
+// 文案規矩(穆穆定):①開頭問候只在「對話開場」出現一次(2026-07-11 改版:
+// 之前每則必掛,實測 15 分鐘轟炸客人八次,她拍板改開場限定);②結尾每則照掛;
+// ③對客輸出一律全形標點(時間 10:00～19:00 的半形冒號除外)。
 // 開頭/結尾/罐頭 body 都是穆穆的字,要改請經過她。
 
 export const ESCALATE_SENTINEL = '[[轉人工]]';
@@ -12,30 +13,22 @@ export const FOOTER = [
   '若有急件，請私訊 IG 或來信聯繫，感謝！',
 ].join('\n');
 
-// 組裝最終回覆:每一則都掛開頭問候與結尾說明
-export function composeReply(body) {
-  return `${GREETING}\n\n${body}\n\n${FOOTER}`;
+// 組裝最終回覆:開場那一則掛問候,之後只掛結尾
+export function composeReply(body, { sessionStart = false } = {}) {
+  return sessionStart ? `${GREETING}\n\n${body}\n\n${FOOTER}` : `${body}\n\n${FOOTER}`;
 }
 
 // 查無資料/沒把握 → 轉人工留言
-export const ESCALATE_REPLY = composeReply(
-  '這部分需要由 MUMU 本人協助回覆，AI助手已幫您把留言收好，MUMU 上班後會依序與您聯繫～',
-);
+export const ESCALATE_BODY = '這部分需要由 MUMU 本人協助回覆，AI助手已幫您把留言收好，MUMU 上班後會依序與您聯繫～';
 
 // 明確不做的業務(貼紙/盒子/雷雕…) → 直接婉拒,不呼叫 AI
-export const OFF_SCOPE_REPLY = composeReply(
-  '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。若想確認細節，也可以留言等 MUMU 上班時間回覆您！',
-);
+export const OFF_SCOPE_BODY = '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。若想確認細節，也可以留言等 MUMU 上班時間回覆您！';
 
 // 客人當日 AI 額度用完 → 罐頭
-export const RATE_LIMIT_REPLY = composeReply(
-  '孔版AI助手今天先服務到這邊，其餘的問題會由 MUMU 上班時間親自回覆您～',
-);
+export const RATE_LIMIT_BODY = '孔版AI助手今天先服務到這邊，其餘的問題會由 MUMU 上班時間親自回覆您～';
 
 // 熔斷(短時間爆量)或系統故障 → 罐頭
-export const CIRCUIT_REPLY = composeReply(
-  '目前訊息較多，AI助手先幫您把留言收好，MUMU 上班時間會依序回覆您～',
-);
+export const CIRCUIT_BODY = '目前訊息較多，AI助手先幫您把留言收好，MUMU 上班時間會依序回覆您～';
 
 export function buildSystemPrompt(kbEntries, { today } = {}) {
   const kbText = kbEntries

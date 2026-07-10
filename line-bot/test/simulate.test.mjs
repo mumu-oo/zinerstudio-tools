@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleEvent } from '../src/handler.js';
-import { ESCALATE_REPLY, GREETING } from '../src/reply.js';
+import { ESCALATE_BODY, GREETING, composeReply } from '../src/reply.js';
 import * as state from '../src/state.js';
 import { mockEnv, stubFetch } from './helpers.mjs';
 
@@ -27,20 +27,20 @@ test('測試指令:走完整客服流程,答案回到穆穆的視窗', async () 
   } finally { f.restore(); }
 });
 
-test('測試指令:查無資料 → AI 看全表判斷、沒把握就轉人工,靜音只落在模擬房', async () => {
+test('測試指令:查無資料 → AI 看全表判斷、沒把握就轉人工,且不再自動靜音', async () => {
   const env = mockEnv();
   const f = stubFetch({ llmAnswer: '[[轉人工]]' });
   try {
     await state.setAdminId(env, 'U-mumu');
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U-mumu', '測試 我可以參觀工作室嗎'));
-    assert.equal(f.replies().at(-1), ESCALATE_REPLY, '要看到客人視角的轉人工留言');
-    assert.equal(await state.isMuted(env, 'sim:U-mumu'), true, '模擬房被靜音');
+    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: true }), '要看到客人視角的轉人工留言');
+    assert.equal(await state.isMuted(env, 'sim:U-mumu'), false, '2026-07-11 起轉人工不再自動靜音');
     assert.equal(await state.isMuted(env, 'U-mumu'), false, '穆穆本人的房間不可被靜音');
 
-    // 模擬房的靜音不影響下一次測試(simulated 跳過靜音判斷)
+    // 再測一次:模擬房已有對話記憶 → 不再是開場,回覆不掛問候語
     await handleEvent(env, msg('U-mumu', '測試 我可以參觀工作室嗎'));
-    assert.equal(f.replies().at(-1), ESCALATE_REPLY, '再測一次仍要有回應');
+    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: false }), '第二輪不掛問候語,仍要有回應');
   } finally { f.restore(); }
 });
 
