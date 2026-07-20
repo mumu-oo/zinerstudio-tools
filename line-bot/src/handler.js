@@ -10,8 +10,8 @@ import { reply, showLoading, getDisplayName } from './line.js';
 import { notify, escalationCard } from './notify.js';
 import { handleAdminMessage } from './commands.js';
 import {
-  ESCALATE_SENTINEL, ESCALATE_BODY, OFF_SCOPE_BODY,
-  RATE_LIMIT_BODY, CIRCUIT_BODY, buildSystemPrompt, composeReply,
+  ESCALATE_SENTINEL, ESCALATE_QUOTE_SENTINEL, ESCALATE_BODY, ESCALATE_QUOTE_BODY,
+  OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, buildSystemPrompt, composeReply,
 } from './reply.js';
 
 export async function handleEvent(env, event) {
@@ -123,8 +123,12 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 10) 小精靈自己說沒把握 → 轉人工
-  if (!answer || answer.includes(ESCALATE_SENTINEL)) {
+  // 10) 小精靈自己說沒把握 → 轉人工(估價暗號優先判,兩個都用 includes 而不是相等)
+  if (!answer || answer.includes(ESCALATE_QUOTE_SENTINEL)) {
+    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_quote', sessionStart });
+    return;
+  }
+  if (answer.includes(ESCALATE_SENTINEL)) {
     await escalate(env, { uid, sid, replyToken, text, kind: 'llm_escalate', sessionStart });
     return;
   }
@@ -143,12 +147,14 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
 //  資料庫有的題都被無視——客人體感是 bot 消失)。要 AI 閉嘴的房間,
 // 穆穆用「接手 #代號」手動靜音。
 async function escalate(env, { uid, sid, replyToken, text, kind, sessionStart = false }) {
-  const msg = composeReply(ESCALATE_BODY, { sessionStart });
+  const isQuote = kind === 'llm_quote';
+  const body = isQuote ? ESCALATE_QUOTE_BODY : ESCALATE_BODY;
+  const msg = composeReply(body, { sessionStart });
   await state.logExchange(env, uid, `escalated_${kind}`, text, msg);
   const name = await getDisplayName(env, uid);
   await notify(env, escalationCard({ sid, name, question: text, kind }));
   await reply(env, replyToken, msg);
   // 轉人工的那一題也記入對話脈絡,讓 AI 記得「這題我說過要等 MUMU」
   await state.pushHistory(env, uid, 'user', text);
-  await state.pushHistory(env, uid, 'assistant', ESCALATE_BODY);
+  await state.pushHistory(env, uid, 'assistant', body);
 }

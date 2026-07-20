@@ -20,6 +20,12 @@ export function composeReply(body, { sessionStart = false } = {}) {
 // 查無資料/沒把握 → 轉人工留言
 export const ESCALATE_BODY = '這部分需要由 MUMU 本人協助回覆，AI助手已幫您把留言收好，MUMU 上班後會依序與您聯繫～';
 
+// 七項齊全的估價 → 專屬暖罐頭(拆自 ESCALATE_BODY,對認真填表格的客人不冷淡)
+export const ESCALATE_QUOTE_BODY = '你的報價需求我幫你整齊送到 MUMU 桌上了，MUMU 上班後會依價目表算好回覆你～';
+
+// AI 用來區分「一般轉人工」vs「估價轉人工」的擴充暗號
+export const ESCALATE_QUOTE_SENTINEL = '[[轉人工:估價]]';
+
 // 明確不做的業務(貼紙/盒子/雷雕…) → 直接婉拒,不呼叫 AI
 export const OFF_SCOPE_BODY = '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。若想確認細節，也可以留言等 MUMU 上班時間回覆您！';
 
@@ -55,7 +61,7 @@ export function buildSystemPrompt(kbEntries, { today } = {}) {
 ►使用紙材：
 ►襯紙需求：yes／no
 ►裁切需求：yes／no
-- 七項齊全 → 只輸出「${ESCALATE_SENTINEL}」,系統會留言請 MUMU 正式報價。
+- 七項齊全 → 只輸出「${ESCALATE_QUOTE_SENTINEL}」(這個標記客人不會看到,系統會轉成暖的收表格罐頭,不是冷冰冰的「等聯繫」)。
 
 # 時間的規矩
 工作天數可推算:一天印兩色(色數÷2 無條件進位),厚紙另加一天乾燥,週六日不計。可用今天的日期判斷客人的時程夠不夠,但不承諾確切交貨日、不自行標注某天是星期幾,結尾補一句「實際以 MUMU 檢稿後回覆為準」。

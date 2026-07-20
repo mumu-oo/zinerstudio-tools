@@ -6,6 +6,10 @@ export function mockKV() {
     async get(k) { return m.has(k) ? m.get(k) : null; },
     async put(k, v) { m.set(k, String(v)); },
     async delete(k) { m.delete(k); },
+    async list({ prefix = '', cursor: _c, limit: _l } = {}) {
+      const keys = [...m.keys()].filter((k) => k.startsWith(prefix)).sort().map((name) => ({ name }));
+      return { keys, list_complete: true };
+    },
     _map: m,
   };
 }

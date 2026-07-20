@@ -14,11 +14,17 @@ export async function notify(env, text) {
   }
 }
 
+// 系統事件通知(模式切換、接手、放行 等 — 跟客人轉人工的 escalationCard 分開)
+export function systemNoteCard(title, lines) {
+  return [`🔧 **系統|${title}**`, ...lines].join('\n');
+}
+
 export function escalationCard({ sid, name, question, kind }) {
   const who = name ? `${name}（#${sid}）` : `#${sid}`;
   const label = {
     no_kb: '查無資料轉人工',
     llm_escalate: 'AI助手沒把握轉人工',
+    llm_quote: '📋 七項齊全的估價單（客人已收到暖回覆）',
     llm_error: 'AI 呼叫失敗',
     burst: '⚠️ 熔斷：短時間訊息爆量',
     off_scope: '業務範圍外詢問',

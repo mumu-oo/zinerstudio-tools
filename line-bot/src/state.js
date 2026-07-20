@@ -120,3 +120,54 @@ export async function logExchange(env, uid, kind, q, a) {
   const key = `log:${Date.now()}:${shortId(uid)}`;
   await env.STATE.put(key, JSON.stringify({ uid, kind, q, a }), { expirationTtl: LIMITS.logTtlSec });
 }
+
+// 「查帳」用:掃全 log,依 sid 去重,回最近 N 位互動客人
+export async function recentRooms(env, { limit = 10 } = {}) {
+  const rows = [];
+  let cursor;
+  do {
+    const res = await env.STATE.list({ prefix: 'log:', cursor, limit: 1000 });
+    for (const k of res.keys) rows.push(k.name);
+    cursor = res.list_complete ? undefined : res.cursor;
+  } while (cursor && rows.length < 4000);
+  rows.sort().reverse(); // 時間戳倒序
+  const seen = new Set();
+  const picked = [];
+  for (const name of rows) {
+    const parts = name.split(':');
+    const ts = Number(parts[1]);
+    const sid = parts[2];
+    if (!sid || seen.has(sid)) continue;
+    seen.add(sid);
+    const raw = await env.STATE.get(name);
+    if (!raw) continue;
+    let entry;
+    try { entry = JSON.parse(raw); } catch { continue; }
+    picked.push({ sid, ts, kind: entry.kind, q: entry.q, uid: entry.uid });
+    if (picked.length >= limit) break;
+  }
+  return picked;
+}
+
+// 「看 #代號」用:某位客人最近幾則對話
+export async function recentByRoom(env, sid, { limit = 3 } = {}) {
+  const rows = [];
+  let cursor;
+  do {
+    const res = await env.STATE.list({ prefix: 'log:', cursor, limit: 1000 });
+    for (const k of res.keys) {
+      if (k.name.endsWith(`:${sid}`)) rows.push(k.name);
+    }
+    cursor = res.list_complete ? undefined : res.cursor;
+  } while (cursor && rows.length < 200);
+  rows.sort().reverse();
+  const out = [];
+  for (const name of rows.slice(0, limit)) {
+    const raw = await env.STATE.get(name);
+    if (!raw) continue;
+    let entry;
+    try { entry = JSON.parse(raw); } catch { continue; }
+    out.push({ ts: Number(name.split(':')[1]), ...entry });
+  }
+  return out;
+}

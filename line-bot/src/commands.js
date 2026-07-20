@@ -4,6 +4,7 @@
 
 import * as state from './state.js';
 import { LIMITS } from './config.js';
+import { notify, systemNoteCard } from './notify.js';
 
 const HELP = [
   '🤖 這裡是主人指令頻道，孔版AI助手聽得懂的話（主詞都是AI助手）：',
@@ -12,9 +13,27 @@ const HELP = [
   '・「收工」→ AI助手靜默，妳親自回',
   '・「交給排程」→ 平日 10:00～19:00 自動收工、其餘時間自動上工',
   '・「狀態」→ 看目前模式與今日用量',
+  '・「查帳」→ 列最近 10 位互動客人',
+  '・「看 #代號」→ 看那位客人的最近幾則對話',
   '・「接手 #代號」→ 那間聊天室妳自己回，AI助手閉嘴',
   '・「放行 #代號」→ 解除該聊天室靜音',
 ].join('\n');
+
+const MODE_LABEL = {
+  schedule: '排程自動換手',
+  force_on_duty: 'AI助手收工（妳值班）',
+  force_off_duty: 'AI助手上工',
+};
+
+// 給 Discord 通知用的相對時間(此刻到 ts 多久前)
+function agoLabel(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60_000) return '剛剛';
+  if (diff < 3600_000) return `${Math.floor(diff / 60_000)} 分前`;
+  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)} 小時前`;
+  const days = Math.floor(diff / 86400_000);
+  return days < 14 ? `${days} 天前` : new Date(ts).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
+}
 
 export async function isAdmin(env, uid) {
   return (await state.getAdminId(env)) === uid;
@@ -41,10 +60,18 @@ export async function handleAdminMessage(env, uid, text) {
 
   if (t === '上工' || t === '小精靈上工' || t === 'AI助手上工') {
     await state.setMode(env, 'force_off_duty');
+    await notify(env, systemNoteCard('模式切換 → AI助手上工', [
+      '客人訊息由 AI 接手，穆穆不必看 LINE。',
+      '想切回自動排程請對 AI 說「交給排程」。',
+    ]));
     return '收到，孔版AI助手上工！🤖 客人訊息由我接手，答不了的會留言請妳回。';
   }
   if (t === '收工' || t === '小精靈收工' || t === 'AI助手收工') {
     await state.setMode(env, 'force_on_duty');
+    await notify(env, systemNoteCard('模式切換 → AI助手收工', [
+      '所有訊息靜默留給穆穆親自回，AI 不會出手。',
+      '想恢復自動排程請對 AI 說「交給排程」。',
+    ]));
     return '收到，孔版AI助手收工 🤐 接下來的訊息都靜靜留給妳親自回。';
   }
   // 「上班/下班」語意模糊(是妳上班還是AI助手上班?),已退休 → 教新詞,不猜意思
@@ -59,25 +86,70 @@ export async function handleAdminMessage(env, uid, text) {
   }
   if (t === '交給排程') {
     await state.setMode(env, 'schedule');
+    await notify(env, systemNoteCard('模式切換 → 排程自動換手', [
+      '平日 10:00～19:00 妳值班（AI 靜默）、其餘時間 AI 上工。',
+    ]));
     return '收到，改依時間表：平日 10:00～19:00 AI助手收工換妳，其餘時間AI助手自動上工。';
   }
   if (t === '狀態') {
     const mode = await state.getMode(env);
     const active = await state.isBotActive(env);
     const { globalDaily } = await state.getCounters(env);
-    const modeName = { schedule: '排程自動換手', force_on_duty: 'AI助手收工（妳值班）', force_off_duty: 'AI助手上工' }[mode];
     return [
-      `模式：${modeName}`,
+      `模式：${MODE_LABEL[mode] || mode}`,
       `此刻：${active ? 'AI助手上工中 🤖' : 'AI助手收工中（妳值班）'}`,
       `今日 AI 回覆：${globalDaily} / ${LIMITS.globalDaily}`,
     ].join('\n');
   }
 
+  // 「查帳」→ 列最近 10 位互動客人(去重代號、最新在上)
+  if (t === '查帳' || t === '最近') {
+    const rooms = await state.recentRooms(env, { limit: 10 });
+    if (!rooms.length) return '目前沒有互動紀錄（客服訊息保留 14 天）。';
+    const KIND = {
+      answered: '✓ 已答',
+      escalated_llm_quote: '📋 估價待妳',
+      escalated_llm_escalate: '🖐 沒把握',
+      escalated_no_kb: '🖐 查無資料',
+      escalated_llm_error: '⚠️ AI 失敗',
+      off_scope: '🚫 範圍外',
+      silent_on_duty: '🤫 妳值班',
+      silent_muted: '🤐 靜音中',
+      limited_user_daily: '額度爆',
+      limited_burst: '⚠️ 熔斷',
+    };
+    const lines = rooms.map((r) =>
+      `#${r.sid} · ${agoLabel(r.ts)} · ${KIND[r.kind] || r.kind}\n　${String(r.q).replace(/\n/g, ' ').slice(0, 40)}`,
+    );
+    return [`📖 最近 ${rooms.length} 位聊過的：`, '', ...lines, '', '看內容 → 「看 #代號」，接手 → 「接手 #代號」'].join('\n');
+  }
+
+  // 「看 #代號」→ 那位客人的最近 3 則
+  const look = t.match(/^看\s*#?(\w+)$/);
+  if (look) {
+    const sid = look[1];
+    const target = await state.resolveRoom(env, sid);
+    if (!target) return `找不到代號 #${sid} 的聊天室（可能已超過 30 天或代號打錯）。`;
+    const rows = await state.recentByRoom(env, sid, { limit: 5 });
+    if (!rows.length) return `#${sid} 目前沒對話紀錄（14 天前已過期）。`;
+    const lines = rows.map((r) => {
+      const kind = (r.kind || '').startsWith('answered') ? '答' : '轉';
+      const q = String(r.q || '').replace(/\n/g, ' ').slice(0, 40);
+      const a = String(r.a || '').replace(/\n/g, ' ').slice(0, 40);
+      return `[${agoLabel(r.ts)}·${kind}]\n客：${q}\nAI：${a}`;
+    });
+    return [`📖 #${sid} 最近 ${rows.length} 則：`, '', ...lines].join('\n');
+  }
+
   const take = t.match(/^接手\s*#?(\w+)$/);
   if (take) {
     const target = await state.resolveRoom(env, take[1]);
-    if (!target) return `找不到代號 #${take[1]} 的聊天室（代號會出現在 Discord 通知裡）。`;
+    if (!target) return `找不到代號 #${take[1]} 的聊天室（代號會出現在 Discord 通知裡；或傳「查帳」看清單）。`;
     await state.muteRoom(env, target, 7 * 24 * 3600);
+    await notify(env, systemNoteCard('接手房間', [
+      `代號：#${take[1]}`,
+      'AI 已在該房閉嘴（7 天後自動解除，或對 AI 說「放行 #代號」）。',
+    ]));
     return `好，#${take[1]} 那間妳來，AI助手不插嘴（7 天後自動解除，或對我說「放行 #${take[1]}」）。`;
   }
 
@@ -90,6 +162,10 @@ export async function handleAdminMessage(env, uid, text) {
     const target = await state.resolveRoom(env, release[1]);
     if (!target) return `找不到代號 #${release[1]} 的聊天室。`;
     await state.unmuteRoom(env, target);
+    await notify(env, systemNoteCard('放行房間', [
+      `代號：#${release[1]}`,
+      'AI 恢復服務這間。',
+    ]));
     return `#${release[1]} 已放行，AI助手恢復服務這間。`;
   }
 
