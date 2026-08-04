@@ -917,7 +917,7 @@ const INKS = [
   { id:'norange', name:'螢橘',  short:'螢橘',  hex:'#FF5F00', tier:'neon',    price:130 },
   { id:'sky',     name:'天空',  short:'天空',  hex:'#62A8E5', tier:'premium', price:170 },
   { id:'mint',    name:'薄荷',  short:'薄荷',  hex:'#82D8D5', tier:'premium', price:170 },
-  { id:'gold',    name:'金色',  short:'金',   hex:'#AC936E', tier:'premium', price:170 },
+  { id:'gold',    name:'金色',  short:'金',   hex:'#AC936E', tier:'special', price:220 },
 ];
 
 const PAPER_STORAGE_KEY = 'ziner_paper_catalog_v1';
@@ -1724,9 +1724,9 @@ function calcStandardAll() {
     const total = (inkFront[ink.id]||0) + (inkBack[ink.id]||0);
     if (total > 0) allInks[ink.id] = total;
   });
-  const tierGroups = { normal:[], neon:[], premium:[] };
+  const tierGroups = { normal:[], neon:[], premium:[], special:[] };
   INKS.forEach(ink => { if (allInks[ink.id]) tierGroups[ink.tier].push(ink); });
-  ['normal','neon','premium'].forEach(tier => {
+  ['normal','neon','premium','special'].forEach(tier => {
     const grp = tierGroups[tier];
     if (!grp.length) return;
     const price    = grp[0].price;
@@ -1818,9 +1818,9 @@ function calcNotepadAll() {
     const total = (inkFront[ink.id] || 0) + (inkBack[ink.id] || 0);
     if (total > 0) allInks[ink.id] = total;
   });
-  const tierGroups = { normal:[], neon:[], premium:[] };
+  const tierGroups = { normal:[], neon:[], premium:[], special:[] };
   INKS.forEach(ink => { if (allInks[ink.id]) tierGroups[ink.tier].push(ink); });
-  ['normal','neon','premium'].forEach(tier => {
+  ['normal','neon','premium','special'].forEach(tier => {
     const grp = tierGroups[tier];
     if (!grp.length) return;
     const price = grp[0].price;

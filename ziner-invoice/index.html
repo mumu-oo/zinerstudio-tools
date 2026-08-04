@@ -386,7 +386,8 @@ input,select,textarea,button{font-family:var(--font);}
 .inv-table tbody td.r{text-align:right;}
 .inv-table tbody td:last-child{padding-right:18px;}
 .inv-table tbody td.name{font-weight:700;}
-.inv-table tbody td.note{white-space:nowrap;}
+.inv-table tbody td.note{word-break:break-word;}
+.inv-table tbody td.name{white-space:nowrap;}
 .inv-table tbody tr:last-child td{border-bottom:none;}
 
 .notepad-calc{
@@ -512,7 +513,7 @@ input,select,textarea,button{font-family:var(--font);}
       <a class="form-top-jump-link" href="letter.html">寫信去</a>
     </div>
     Ziner Studio ✦ 報價單產生器
-    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v1.9｜2026.05.22</span></small>
+    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v2.3.1｜2026.08.04</span></small>
   </div>
 
   <!-- Logo upload hidden (logo is embedded) -->
@@ -556,6 +557,15 @@ input,select,textarea,button{font-family:var(--font);}
   <!-- 便條紙專用 -->
   <div class="fsec hidden" id="notepadModeSection">
     <div class="stitle">便條紙專用設定</div>
+    <div class="frow">
+      <div class="fw2">
+        <label class="flbl">成品尺寸</label>
+        <select class="fsel" id="notepadSize" onchange="update()">
+          <option value="A7">A7（10 模/A3）</option>
+          <option value="A6">A6（4 模/A3）</option>
+        </select>
+      </div>
+    </div>
     <div class="frow">
       <div class="fw1">
         <label class="flbl">加工本數</label>
@@ -723,6 +733,35 @@ input,select,textarea,button{font-family:var(--font);}
         </div>
       </div>
     </div>
+    <label class="chk-row" onclick="toggleChk('chkStitch','stitchSub')" style="margin-top:10px;">
+      <div class="chk-info">
+        <span class="chk-lbl">純車縫線加工</span>
+        <span class="chk-sub">接單門檻 $300（含前 5 本）＋加本工錢</span>
+      </div>
+      <div class="sw"><input type="checkbox" id="chkStitch" onchange="update()"><span class="sw-tr"></span></div>
+    </label>
+    <div id="stitchSub" class="sub-content">
+      <div class="frow">
+        <div class="fw2">
+          <label class="flbl">成品尺寸</label>
+          <select class="fsel" id="stitchSize" onchange="update()">
+            <option value="A4">A4（$35/本，A3 一張一本）</option>
+            <option value="A5">A5（$25/本，A3 一張兩本）</option>
+          </select>
+        </div>
+        <div class="fw1">
+          <label class="flbl">本數</label>
+          <input class="finp" id="stitchCount" type="number" min="1" value="10" oninput="update()">
+        </div>
+      </div>
+      <label class="chk-row" style="margin-top:8px;padding:6px 10px;border-radius:6px;background:var(--panel);">
+        <div class="chk-info">
+          <span class="chk-lbl">使用和紙（+20%）</span>
+          <span class="chk-sub">紙細易破、車起來要小心</span>
+        </div>
+        <div class="sw"><input type="checkbox" id="chkStitchWashi" onchange="update()"><span class="sw-tr"></span></div>
+      </label>
+    </div>
   </div>
 
   <!-- 運費 -->
@@ -757,7 +796,11 @@ input,select,textarea,button{font-family:var(--font);}
   <div class="fsec">
     <div class="sec-hd">
       <div class="stitle">加購 ／ 其他項目</div>
-      <button class="btn-add-row" onclick="addExtraRow()">＋ 新增</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn-add-row" onclick="openTrialModal()">＋ 試印</button>
+        <button class="btn-add-row" onclick="openSampleModal()">＋ 印樣</button>
+        <button class="btn-add-row" onclick="addExtraRow()">＋ 新增</button>
+      </div>
     </div>
     <div id="extraRowsWrap" style="margin-top:6px;font-size:11px;color:var(--muted);">尚無項目</div>
   </div>
@@ -909,6 +952,50 @@ input,select,textarea,button{font-family:var(--font);}
 </div><!-- /preview-panel -->
 </div><!-- /app -->
 
+<div class="modal" id="trialModal" onclick="if(event.target===this) closeTrialModal()">
+  <div class="modal-card" style="max-width:360px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">＋ 試印費用</div>
+        <div class="modal-sub">選試印那天的日期，會加一行「印刷費」到加購清單，單價之後自己填。</div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeTrialModal()">關閉</button>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="flbl">試印日期</label>
+      <input class="finp" type="date" id="trialDateInput" style="width:100%;">
+    </div>
+    <div class="btn-row" style="margin-top:14px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeTrialModal()">先不要</button>
+      <button class="btn btn-acc" onclick="applyTrialRow()">加到報價單</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="sampleModal" onclick="if(event.target===this) closeSampleModal()">
+  <div class="modal-card" style="max-width:420px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">🎁 加購印樣</div>
+        <div class="modal-sub">勾選要加購的商品，程式會自動算組合價（含組合折扣）。加入後預設不套用試印 88 折。</div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeSampleModal()">關閉</button>
+    </div>
+    <div id="sampleOptions" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;"></div>
+    <div style="margin-top:14px;padding:10px 12px;background:var(--panel-hover,#f5f5f5);border-radius:8px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;">
+        <span>組合合計</span>
+        <span id="sampleComboTotal" style="font-weight:600;">$0</span>
+      </div>
+      <div id="sampleComboSaved" style="font-size:11px;color:#c25;margin-top:2px;display:none;"></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeSampleModal()">先不要</button>
+      <button class="btn btn-acc" onclick="applySampleCombo()">加到報價單</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="paperManagerModal" onclick="if(event.target===this) closePaperManager()">
   <div class="modal-card">
     <div class="modal-head">
@@ -948,7 +1035,7 @@ const INKS = [
   { id:'norange', name:'螢橘',  short:'螢橘',  hex:'#FF5F00', tier:'neon',    price:130 },
   { id:'sky',     name:'天空',  short:'天空',  hex:'#62A8E5', tier:'premium', price:170 },
   { id:'mint',    name:'薄荷',  short:'薄荷',  hex:'#82D8D5', tier:'premium', price:170 },
-  { id:'gold',    name:'金色',  short:'金',   hex:'#AC936E', tier:'premium', price:170 },
+  { id:'gold',    name:'金色',  short:'金',   hex:'#AC936E', tier:'special', price:220 },
 ];
 
 const PAPER_STORAGE_KEY = 'ziner_paper_catalog_v1';
@@ -1196,8 +1283,11 @@ function getNotepadModeData() {
   const jobCount = normalizeNotepadJobCount();
   const sheetsPerPad = normalizeNotepadSheetsPerPad();
   const actualBooks = getNotepadActualBooks(jobCount);
-  const paperSheets = Math.ceil((actualBooks * sheetsPerPad) / 10);
-  const backingSheets = Math.ceil(actualBooks / 10);
+  const size = val('notepadSize') || 'A7';
+  const upPerA3 = size === 'A6' ? 4 : 10;
+  const a3PerLayer = Math.ceil(actualBooks / upPerA3);
+  const paperSheets = sheetsPerPad * a3PerLayer;
+  const backingSheets = a3PerLayer;
   const printUnitPrice = getNotepadPrintUnitPrice(jobCount);
   const unitPrice = jobCount <= 30 ? 15 : jobCount <= 50 ? 13 : jobCount <= 100 ? 12 : 10;
   const processFee = unitPrice * jobCount;
@@ -1759,11 +1849,15 @@ function renderExtraRows() {
           <input class="finp" type="number" min="1" value="${row.qty}" oninput="setExtraField(${row.id},'qty',this.value)">
         </div>
       </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;">
+        <input type="checkbox" ${row.excludeDiscount?'checked':''} onchange="setExtraField(${row.id},'excludeDiscount',this.checked)">
+        <span>此項不套用試印 88 折</span>
+      </label>
     </div>
   `).join('');
 }
 function addExtraRow() {
-  extraRows.push({ id:_extraId++, name:'', note:'', price:0, qty:1 });
+  extraRows.push({ id:_extraId++, name:'', note:'', price:0, qty:1, excludeDiscount:false });
   renderExtraRows(); update();
 }
 function delExtraRow(id) {
@@ -1775,6 +1869,107 @@ function setExtraField(id, field, val) {
   if (!row) return;
   row[field] = (field==='price'||field==='qty') ? (parseFloat(val)||0) : val;
   update();
+}
+
+/* ════════════════════════════
+   加購印樣：4 商品 + 組合折扣
+════════════════════════════ */
+const SAMPLE_PRODUCTS = [
+  { id:'p2024', emoji:'🍎', name:'2024 混色追加組',      price:200 },
+  { id:'p2025', emoji:'🍋', name:'2025 混色追加組',      price:270 },
+  { id:'ink',   emoji:'🫐', name:'孔版印刷油墨色票盒',   price:300 },
+  { id:'sample',emoji:'🥨', name:'孔版印刷印樣套組',    price:700 },
+];
+const _sampleSelected = {};
+
+function calcSampleCombo() {
+  const picked = SAMPLE_PRODUCTS.filter(p => _sampleSelected[p.id]);
+  const base = picked.reduce((s,p) => s + p.price, 0);
+  let saved = 0;
+  const has = id => picked.some(p => p.id === id);
+  if (has('p2024') && has('p2025')) saved += 20;
+  if (has('sample') && has('p2024') && has('p2025')) saved += 50;
+  return { picked, base, saved, total: base - saved };
+}
+
+function openSampleModal() {
+  SAMPLE_PRODUCTS.forEach(p => { _sampleSelected[p.id] = false; });
+  const wrap = $('sampleOptions');
+  wrap.innerHTML = SAMPLE_PRODUCTS.map(p => `
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border,#ddd);border-radius:8px;cursor:pointer;">
+      <input type="checkbox" id="sample-${p.id}" onchange="toggleSample('${p.id}',this.checked)">
+      <span style="font-size:18px;">${p.emoji}</span>
+      <span style="flex:1;">${p.name}</span>
+      <span style="color:var(--muted);">$${p.price}</span>
+    </label>
+  `).join('');
+  renderSampleTotal();
+  $('sampleModal').classList.add('show');
+}
+
+function closeSampleModal() { $('sampleModal').classList.remove('show'); }
+
+function toggleSample(id, checked) {
+  _sampleSelected[id] = checked;
+  renderSampleTotal();
+}
+
+function renderSampleTotal() {
+  const { total, saved } = calcSampleCombo();
+  $('sampleComboTotal').textContent = `$${total}`;
+  const savedEl = $('sampleComboSaved');
+  if (saved > 0) {
+    savedEl.style.display = '';
+    savedEl.textContent = `已套用組合折扣 −$${saved}`;
+  } else {
+    savedEl.style.display = 'none';
+  }
+}
+
+function applySampleCombo() {
+  const { picked, total } = calcSampleCombo();
+  if (picked.length === 0) { closeSampleModal(); return; }
+  const comboName = picked.map(p => `${p.emoji}${p.name}`).join(' + ');
+  extraRows.push({
+    id: _extraId++,
+    name: '加購費',
+    note: comboName,
+    price: total,
+    qty: 1,
+    excludeDiscount: true,
+  });
+  renderExtraRows();
+  update();
+  closeSampleModal();
+}
+
+/* ════════════════════════════
+   ＋ 試印：小日期選單 → 加行
+════════════════════════════ */
+function openTrialModal() {
+  const today = new Date();
+  const iso = today.toISOString().slice(0,10);
+  $('trialDateInput').value = iso;
+  $('trialModal').classList.add('show');
+  setTimeout(() => $('trialDateInput').focus(), 50);
+}
+function closeTrialModal() { $('trialModal').classList.remove('show'); }
+function applyTrialRow() {
+  const iso = $('trialDateInput').value;
+  if (!iso) return;
+  const [y,m,d] = iso.split('-');
+  const dateStr = `${y}/${m}/${d}`;
+  extraRows.push({
+    id: _extraId++,
+    name: '印刷費',
+    note: `${dateStr} 試印費用`,
+    price: 0,
+    qty: 1,
+    excludeDiscount: true,
+  });
+  renderExtraRows();
+  update();
+  closeTrialModal();
 }
 
 function removeCutRow(id) {
@@ -1846,9 +2041,9 @@ function calcStandardAll() {
     const total = (inkFront[ink.id]||0) + (inkBack[ink.id]||0);
     if (total > 0) allInks[ink.id] = total;
   });
-  const tierGroups = { normal:[], neon:[], premium:[] };
+  const tierGroups = { normal:[], neon:[], premium:[], special:[] };
   INKS.forEach(ink => { if (allInks[ink.id]) tierGroups[ink.tier].push(ink); });
-  ['normal','neon','premium'].forEach(tier => {
+  ['normal','neon','premium','special'].forEach(tier => {
     const grp = tierGroups[tier];
     if (!grp.length) return;
     const price    = grp[0].price;
@@ -1893,11 +2088,30 @@ function calcStandardAll() {
     items.push({ name:'加工費', note:'線裝本加工基本費', price:1000, qty:1 });
     items.push({ name:'加工費', note:`線裝本裝訂費（${bindingLabel}）`, price:bindingPrice, qty:books });
   }
+  if (chk('chkStitch')) {
+    const books = Math.max(1, num('stitchCount'));
+    const size = val('stitchSize') || 'A4';
+    const perBook = size === 'A5' ? 25 : 35;
+    const washi = chk('chkStitchWashi');
+    const extraBooks = Math.max(0, books - 5);
+    items.push({ name:'加工費', note:`純車縫線接單門檻（${size} 成品，含前 5 本）`, price:300, qty:1 });
+    if (extraBooks > 0) {
+      items.push({ name:'加工費', note:`純車縫線加本工錢（${size}）`, price:perBook, qty:extraBooks });
+    }
+    if (washi) {
+      const stitchTotal = 300 + perBook * extraBooks;
+      const surcharge = Math.round(stitchTotal * 0.2);
+      items.push({ name:'加工費', note:'和紙加成 +20%（車線工序）', price:surcharge, qty:1 });
+    }
+  }
 
   // ── 加購 / 其他 ──
+  let excludedFromDiscount = 0;
   extraRows.forEach(row => {
     if (row.name.trim() && row.price !== 0) {
-      items.push({ name: row.name.trim(), note: row.note || '', price: row.price, qty: Math.max(1, row.qty) });
+      const qty = Math.max(1, row.qty);
+      items.push({ name: row.name.trim(), note: row.note || '', price: row.price, qty, excludeDiscount: !!row.excludeDiscount });
+      if (row.excludeDiscount) excludedFromDiscount += row.price * qty;
     }
   });
 
@@ -1911,9 +2125,9 @@ function calcStandardAll() {
     urgentAmt = Math.round(printTotal * 0.3);
   }
 
-  // ── 試印折扣 ──
+  // ── 試印折扣（排除折扣項目不進底數） ──
   let discAmt = 0;
-  const baseForDiscount = subtotal + urgentAmt;
+  const baseForDiscount = subtotal + urgentAmt - excludedFromDiscount;
   if (chk('chkDiscount')) discAmt = Math.round(baseForDiscount * 0.12);
 
   // ── 運費 ──
@@ -1925,7 +2139,7 @@ function calcStandardAll() {
   else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
   else                            { shipFee = 38; shipLabel = '超商取貨'; }
 
-  const total = baseForDiscount - discAmt + shipFee;
+  const total = subtotal + urgentAmt - discAmt + shipFee;
   return { items, subtotal, urgentAmt, discAmt, shipFee, shipLabel, total, totalPaperSheets };
 }
 
@@ -1938,9 +2152,9 @@ function calcNotepadAll() {
     const total = (inkFront[ink.id] || 0) + (inkBack[ink.id] || 0);
     if (total > 0) allInks[ink.id] = total;
   });
-  const tierGroups = { normal:[], neon:[], premium:[] };
+  const tierGroups = { normal:[], neon:[], premium:[], special:[] };
   INKS.forEach(ink => { if (allInks[ink.id]) tierGroups[ink.tier].push(ink); });
-  ['normal','neon','premium'].forEach(tier => {
+  ['normal','neon','premium','special'].forEach(tier => {
     const grp = tierGroups[tier];
     if (!grp.length) return;
     const price = grp[0].price;
@@ -2124,13 +2338,18 @@ function buildBackupPayload() {
       notepadBackingCustomName: val('notepadBackingCustomName'),
       notepadBackingCustomPrice: val('notepadBackingCustomPrice'),
       notepadCount: val('notepadCount'),
+      notepadSize: val('notepadSize'),
       bindingType: val('bindingType'),
       bindingCount: val('bindingCount'),
+      stitchSize: val('stitchSize'),
+      stitchCount: val('stitchCount'),
       invoiceNote: val('invoiceNote'),
       chkUrgent: chk('chkUrgent'),
       chkLining: chk('chkLining'),
       chkNotepad: chk('chkNotepad'),
       chkBinding: chk('chkBinding'),
+      chkStitch: chk('chkStitch'),
+      chkStitchWashi: chk('chkStitchWashi'),
       chkDiscount: chk('chkDiscount')
     },
     orderRows: orderRows.map(row => ({ ...row })),
@@ -2164,11 +2383,14 @@ function applyBackupPayload(payload = {}) {
   $('notepadBackingCustomName').value = form.notepadBackingCustomName || '';
   $('notepadBackingCustomPrice').value = form.notepadBackingCustomPrice || '';
   $('notepadCount').value = form.notepadCount || '40';
+  $('notepadSize').value = form.notepadSize || 'A7';
   $('bindingType').value = form.bindingType || 'saddle';
   $('bindingCount').value = form.bindingCount || '20';
+  $('stitchSize').value = form.stitchSize || 'A4';
+  $('stitchCount').value = form.stitchCount || '10';
   $('invoiceNote').value = form.invoiceNote || '';
 
-  ['chkUrgent', 'chkLining', 'chkNotepad', 'chkBinding', 'chkDiscount'].forEach(id => {
+  ['chkUrgent', 'chkLining', 'chkNotepad', 'chkBinding', 'chkStitch', 'chkStitchWashi', 'chkDiscount'].forEach(id => {
     if ($(id)) $(id).checked = Boolean(form[id]);
   });
 
@@ -2194,6 +2416,7 @@ function applyBackupPayload(payload = {}) {
   orderTypeChange();
   $('notepadSub')?.classList.toggle('open', chk('chkNotepad'));
   $('bindingSub')?.classList.toggle('open', chk('chkBinding'));
+  $('stitchSub')?.classList.toggle('open', chk('chkStitch'));
   renderOrderRows();
   renderPaperRows();
   renderCutRows();
@@ -2315,11 +2538,14 @@ function resetForm() {
   $('notepadBackingCustomName').value = '';
   $('notepadBackingCustomPrice').value = '';
   $('notepadCount').value = '40';
+  $('notepadSize').value  = 'A7';
   $('bindingType').value  = 'saddle';
   $('bindingCount').value = '20';
+  $('stitchSize').value   = 'A4';
+  $('stitchCount').value  = '10';
   $('invoiceNote').value  = '';
-  ['chkUrgent','chkLining','chkNotepad','chkBinding','chkDiscount'].forEach(id => { if ($(id)) $(id).checked = false; });
-  ['notepadSub','bindingSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
+  ['chkUrgent','chkLining','chkNotepad','chkBinding','chkStitch','chkStitchWashi','chkDiscount'].forEach(id => { if ($(id)) $(id).checked = false; });
+  ['notepadSub','bindingSub','stitchSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
   $('orderType').value = '';
 
   // Reset inks
