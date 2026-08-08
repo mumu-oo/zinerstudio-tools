@@ -98,9 +98,11 @@ test('BOO-POS 詢問 → 不分上下班直接導流,不呼叫 AI、不掛問候
     await state.setMode(env, 'force_on_duty');
     await handleEvent(env, msg('U-bp1', '請問 BOO-POS 可以匯出報表嗎'));
     assert.equal(f.llmCalls().length, 0, '不呼叫 AI');
-    assert.equal(f.replies()[0], BOOPOS_BODY, '單獨一則導流:不掛問候語與結尾');
+    assert.equal(f.replies()[0], BOOPOS_BODY, '單獨一則導流:不掛標準問候與結尾');
     assert.ok(f.replies()[0].includes('booposapp@gmail.com'), '要含信箱');
-    assert.ok(!f.replies()[0].includes('MUMU'), '不談 MUMU 在不在位子');
+    assert.ok(f.replies()[0].includes('孔版印刷相關問題'), '要有導回孔版印刷的邀請(2026-08-09 穆穆:別讓客人以為沒真人)');
+    assert.ok(f.replies()[0].includes('孔版AI助手自動回覆'), '要有 AI 識別尾(上班時段客人不會誤以為 MUMU 親手打了句「去看 Feedback」)');
+    assert.ok(!f.replies()[0].includes('目前不在'), '不出現「MUMU 目前不在」這類把她 out 掉的話');
     assert.ok(f.calls.some((c) => c.url.includes('discord')), '要在留言板知會穆穆一聲');
 
     // 下班模式照樣導流,同樣不進 AI
