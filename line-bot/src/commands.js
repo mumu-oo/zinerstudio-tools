@@ -113,6 +113,7 @@ export async function handleAdminMessage(env, uid, text) {
       escalated_no_kb: '🖐 查無資料',
       escalated_llm_error: '⚠️ AI 失敗',
       off_scope: '🚫 範圍外',
+      boopos_redirect: '📱 BOO-POS 導流',
       silent_on_duty: '🤫 妳值班',
       silent_muted: '🤐 靜音中',
       limited_user_daily: '額度爆',
@@ -133,7 +134,7 @@ export async function handleAdminMessage(env, uid, text) {
     const rows = await state.recentByRoom(env, sid, { limit: 5 });
     if (!rows.length) return `#${sid} 目前沒對話紀錄（14 天前已過期）。`;
     const lines = rows.map((r) => {
-      const kind = (r.kind || '').startsWith('answered') ? '答' : '轉';
+      const kind = (r.kind || '').startsWith('answered') || r.kind === 'boopos_redirect' ? '答' : '轉';
       const q = String(r.q || '').replace(/\n/g, ' ').slice(0, 40);
       const a = String(r.a || '').replace(/\n/g, ' ').slice(0, 40);
       return `[${agoLabel(r.ts)}·${kind}]\n客：${q}\nAI：${a}`;

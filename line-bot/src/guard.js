@@ -1,11 +1,15 @@
 // 防洗訊息與範圍守門:所有「不花錢就能擋掉」的判斷都在這裡,順序在呼叫 AI 之前。
 
-import { LIMITS, OFF_SCOPE_PATTERNS } from './config.js';
+import { LIMITS, OFF_SCOPE_PATTERNS, BOOPOS_PATTERN } from './config.js';
 import * as state from './state.js';
 
 export function isOffScope(text) {
   const t = String(text || '');
   return OFF_SCOPE_PATTERNS.some((p) => t.includes(p));
+}
+
+export function isBooPos(text) {
+  return BOOPOS_PATTERN.test(String(text || ''));
 }
 
 export function isTooLong(text) {

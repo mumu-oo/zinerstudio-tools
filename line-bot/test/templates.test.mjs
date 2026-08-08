@@ -4,10 +4,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   GREETING, FOOTER, composeReply,
-  ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY,
+  ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY,
 } from '../src/reply.js';
 
-const TEXTS = { GREETING, FOOTER, ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY };
+const TEXTS = { GREETING, FOOTER, ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY };
 // 不允許出現的半形標點(冒號不在內:10:00～19:00 是穆穆核定寫法)
 const HALFWIDTH = /[,;()!?]/;
 

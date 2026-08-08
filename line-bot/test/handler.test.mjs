@@ -2,8 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleEvent } from '../src/handler.js';
-import { ESCALATE_BODY, OFF_SCOPE_BODY, GREETING, ESCALATE_SENTINEL, composeReply } from '../src/reply.js';
+import { ESCALATE_BODY, OFF_SCOPE_BODY, BOOPOS_BODY, GREETING, ESCALATE_SENTINEL, composeReply } from '../src/reply.js';
 import * as state from '../src/state.js';
+import * as guard from '../src/guard.js';
 import { mockEnv, stubFetch } from './helpers.mjs';
 
 const msg = (uid, text) => ({
@@ -87,6 +88,51 @@ test('查無資料 → AI 看全表判斷、沒把握轉人工、通知 Discord,
     await handleEvent(env, msg('U2', '最近有工作坊或活動嗎'));
     assert.equal(f.llmCalls().length, beforeLlm + 1, '轉人工後的下一題要照常回答');
   } finally { f.restore(); }
+});
+
+test('BOO-POS 詢問 → 不分上下班直接導流,不呼叫 AI、不掛問候結尾(2026-08-09 穆穆裁定)', async () => {
+  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
+  const f = stubFetch();
+  try {
+    // 上班模式(平常小精靈全靜默)也要回——唯一突破值班靜默的罐頭
+    await state.setMode(env, 'force_on_duty');
+    await handleEvent(env, msg('U-bp1', '請問 BOO-POS 可以匯出報表嗎'));
+    assert.equal(f.llmCalls().length, 0, '不呼叫 AI');
+    assert.equal(f.replies()[0], BOOPOS_BODY, '單獨一則導流:不掛問候語與結尾');
+    assert.ok(f.replies()[0].includes('booposapp@gmail.com'), '要含信箱');
+    assert.ok(!f.replies()[0].includes('MUMU'), '不談 MUMU 在不在位子');
+    assert.ok(f.calls.some((c) => c.url.includes('discord')), '要在留言板知會穆穆一聲');
+
+    // 下班模式照樣導流,同樣不進 AI
+    await state.setMode(env, 'force_off_duty');
+    await handleEvent(env, msg('U-bp2', 'boo pos 的帳目怪怪的怎麼回報'));
+    assert.equal(f.replies().length, 2);
+    assert.equal(f.replies()[1], BOOPOS_BODY);
+    assert.equal(f.llmCalls().length, 0);
+  } finally { f.restore(); }
+});
+
+test('被接手的房間問 BOO-POS → 仍然靜默(穆穆在跟客人說話,機器不插嘴)', async () => {
+  const env = mockEnv();
+  const f = stubFetch();
+  try {
+    await state.setMode(env, 'force_off_duty');
+    await state.setAdminId(env, 'U-mumu');
+    const sid = await state.indexRoom(env, 'U-bp3');
+    await handleEvent(env, msg('U-mumu', `接手 #${sid}`));
+    const before = f.replies().length;
+    await handleEvent(env, msg('U-bp3', 'BOO-POS 一直閃退'));
+    assert.equal(f.replies().length, before, '接手中的房間連導流罐頭也不發');
+  } finally { f.restore(); }
+});
+
+test('BOO-POS 偵測:常見寫法都命中,一般含 pos/boo 字樣不誤觸', () => {
+  for (const t of ['BOO-POS', 'boopos 怎麼用', 'Boo Pos 匯出', '我想問boo-pos的事', 'BOO_POS']) {
+    assert.ok(guard.isBooPos(t), `該命中:${t}`);
+  }
+  for (const t of ['可以印 poster 嗎', '報價 position 怎麼算', 'boo 是什麼', '有 pos 機收據紙嗎', '可以印海報嗎']) {
+    assert.ok(!guard.isBooPos(t), `不該命中:${t}`);
+  }
 });
 
 test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {

@@ -11,7 +11,7 @@ import { notify, escalationCard } from './notify.js';
 import { handleAdminMessage } from './commands.js';
 import {
   ESCALATE_SENTINEL, ESCALATE_QUOTE_SENTINEL, ESCALATE_BODY, ESCALATE_QUOTE_BODY,
-  OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, buildSystemPrompt, composeReply,
+  OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY, buildSystemPrompt, composeReply,
 } from './reply.js';
 
 export async function handleEvent(env, event) {
@@ -48,15 +48,28 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   const sid = await state.indexRoom(env, uid);
 
   if (!simulated) {
-    // 3) 穆穆值班中 → 小精靈完全靜默,只留紀錄
-    if (!(await state.isBotActive(env))) {
-      await state.logExchange(env, uid, 'silent_on_duty', text, '');
-      return;
-    }
-
-    // 4) 這間被接手/已轉人工 → 靜默
+    // 3) 這間被穆穆接手 → 全面靜默(人在跟客人說話,連導流罐頭也不插嘴)
     if (await state.isMuted(env, uid)) {
       await state.logExchange(env, uid, 'silent_muted', text, '');
+      return;
+    }
+  }
+
+  // 4) BOO-POS APP 的詢問 → 不分上下班直接導流(2026-08-09 穆穆裁定:
+  //    唯一突破「值班靜默」的罐頭;單獨投遞、不掛問候結尾,不談 MUMU 在不在位子)
+  if (guard.isBooPos(text)) {
+    await state.logExchange(env, uid, 'boopos_redirect', text, BOOPOS_BODY);
+    await notify(env, escalationCard({ sid, name: null, question: text, kind: 'boopos' }));
+    await reply(env, replyToken, BOOPOS_BODY);
+    await state.pushHistory(env, uid, 'user', text);
+    await state.pushHistory(env, uid, 'assistant', BOOPOS_BODY);
+    return;
+  }
+
+  if (!simulated) {
+    // 5) 穆穆值班中 → 小精靈完全靜默,只留紀錄
+    if (!(await state.isBotActive(env))) {
+      await state.logExchange(env, uid, 'silent_on_duty', text, '');
       return;
     }
   }
@@ -65,7 +78,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   // 開場判斷:這間房 2 小時內沒有對話記憶=新會話,問候語只在開場那一則出現
   const sessionStart = hist.length === 0;
 
-  // 5) 明確範圍外的業務 → 罐頭婉拒(免費)
+  // 6) 明確範圍外的業務 → 罐頭婉拒(免費)
   if (guard.isOffScope(text)) {
     const msg = composeReply(OFF_SCOPE_BODY, { sessionStart });
     await reply(env, replyToken, msg);
@@ -74,13 +87,13 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 6) 超長訊息 → 直接轉人工(不送 AI)
+  // 7) 超長訊息 → 直接轉人工(不送 AI)
   if (guard.isTooLong(text)) {
     await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb', sessionStart });
     return;
   }
 
-  // 7) 額度與熔斷(「測試」模擬不佔額度——老闆娘測試不該被自家保險絲電到)
+  // 8) 額度與熔斷(「測試」模擬不佔額度——老闆娘測試不該被自家保險絲電到)
   if (!simulated) {
     const budget = await guard.checkBudget(env, uid);
     if (!budget.ok) {
@@ -95,7 +108,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     }
   }
 
-  // 8) 檢索知識庫:
+  // 9) 檢索知識庫:
   //    命中 → 只餵命中的條目(精準、省 token);
   //    完全沒命中 → 把全表交給 AI 判斷「這題我們有沒有答案」,
   //    有 → 依資料答,沒有 → 由 AI 吐 sentinel 讓程式轉人工。
@@ -109,7 +122,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     kbHits = allEntries();
   }
 
-  // 9) 呼叫 AI(只能引用檢索到的條目;附今天日期供交期推算)
+  // 10) 呼叫 AI(只能引用檢索到的條目;附今天日期供交期推算)
   await showLoading(env, uid);
   let answer;
   try {
@@ -123,7 +136,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 10) 小精靈自己說沒把握 → 轉人工(估價暗號優先判,兩個都用 includes 而不是相等)
+  // 11) 小精靈自己說沒把握 → 轉人工(估價暗號優先判,兩個都用 includes 而不是相等)
   if (!answer || answer.includes(ESCALATE_QUOTE_SENTINEL)) {
     await escalate(env, { uid, sid, replyToken, text, kind: 'llm_quote', sessionStart });
     return;
@@ -133,7 +146,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 11) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
+  // 12) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
   await state.logExchange(env, uid, 'answered', text, answer);
   await reply(env, replyToken, composeReply(answer, { sessionStart }));
   await state.pushHistory(env, uid, 'user', text);

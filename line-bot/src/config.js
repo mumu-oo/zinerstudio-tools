@@ -29,3 +29,7 @@ export const LLM_DEFAULTS = {
 
 // 明確不做的業務 → 不呼叫 AI,直接用罐頭婉拒(燙金不在此列:知識庫會解釋金墨)
 export const OFF_SCOPE_PATTERNS = ['貼紙', '紙盒', '盒子', '雷雕', 'UV印', 'uv印', '打凸', '打凹', '數位印刷', '雷射印'];
+
+// BOO-POS APP 的詢問 → 不分上下班,直接導流到 APP 內 Feedback / 信箱(2026-08-09 穆穆裁定)
+// 故意收窄到「boo?pos」字樣:單獨的 pos/app 字眼太廣,模糊問法下班時段由 AI 的 prompt 接
+export const BOOPOS_PATTERN = /boo[\s\-_.—–]*pos/i;

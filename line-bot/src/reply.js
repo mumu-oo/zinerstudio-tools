@@ -29,6 +29,10 @@ export const ESCALATE_QUOTE_SENTINEL = '[[轉人工:估價]]';
 // 明確不做的業務(貼紙/盒子/雷雕…) → 直接婉拒,不呼叫 AI
 export const OFF_SCOPE_BODY = '這個項目不在誌造所的孔版印刷業務範圍內喔（我們專注 Risograph 孔版印刷，貼紙、紙盒、雷雕等服務沒有提供）。若想確認細節，也可以留言等 MUMU 上班時間回覆您！';
 
+// BOO-POS APP 的詢問 → 不分上下班直接導流(2026-08-09 穆穆裁定)。
+// 這則單獨投遞:不掛問候、不掛結尾——刻意不談 MUMU 在不在位子上。
+export const BOOPOS_BODY = '關於 BOO-POS 的問題，歡迎多多利用 APP 中的 Feedback 填寫反饋心得，或寫信來 booposapp@gmail.com 喔！';
+
 // 客人當日 AI 額度用完 → 罐頭
 export const RATE_LIMIT_BODY = '孔版AI助手今天先服務到這邊，其餘的問題會由 MUMU 上班時間親自回覆您～';
 
@@ -71,7 +75,7 @@ export function buildSystemPrompt(kbEntries, { today } = {}) {
 ・印刷相關的問題,但參考資料完全沒提到
 ・客人的個人訂單進度、已下單案件、要求檢查檔案
 ・需要 MUMU 個案判斷、協商、破例的事(含課程、活動、優惠的最終確認)
-(與印刷無關的訊息不轉人工,直接帶回業務。)
+(與印刷無關的訊息不轉人工,直接帶回業務。例外:BOO-POS APP 的問題也不轉人工——請客人多多利用 APP 中的 Feedback 填寫反饋心得,或寫信來 booposapp@gmail.com。)
 
 # 格式
 繁體中文台灣用語;標點一律全形(，。!?:());LINE 不支援 Markdown,條列用「・」;只答對方這次問的,答完就停。

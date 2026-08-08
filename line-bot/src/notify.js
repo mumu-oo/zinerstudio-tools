@@ -28,6 +28,7 @@ export function escalationCard({ sid, name, question, kind }) {
     llm_error: 'AI 呼叫失敗',
     burst: '⚠️ 熔斷：短時間訊息爆量',
     off_scope: '業務範圍外詢問',
+    boopos: '📱 BOO-POS 詢問（已導流 Feedback／信箱）',
   }[kind] || kind;
   return [
     `🤖 **AI助手留言板｜${label}**`,
