@@ -7,7 +7,7 @@ import { LIMITS } from './config.js';
 import { retrieve, allEntries } from './kb.js';
 import { chatComplete } from './llm.js';
 import { reply, showLoading, getDisplayName } from './line.js';
-import { notify, escalationCard } from './notify.js';
+import { notifyEscalation } from './notify.js';
 import { handleAdminMessage } from './commands.js';
 import {
   ESCALATE_SENTINEL, ESCALATE_QUOTE_SENTINEL, ESCALATE_BODY, ESCALATE_QUOTE_BODY,
@@ -59,7 +59,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   //    唯一突破「值班靜默」的罐頭;單獨投遞、不掛問候結尾,不談 MUMU 在不在位子)
   if (guard.isBooPos(text)) {
     await state.logExchange(env, uid, 'boopos_redirect', text, BOOPOS_BODY);
-    await notify(env, escalationCard({ sid, name: null, question: text, kind: 'boopos' }));
+    await notifyEscalation(env, { sid, name: null, question: text, kind: 'boopos' });
     await reply(env, replyToken, BOOPOS_BODY);
     await state.pushHistory(env, uid, 'user', text);
     await state.pushHistory(env, uid, 'assistant', BOOPOS_BODY);
@@ -83,7 +83,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     const msg = composeReply(OFF_SCOPE_BODY, { sessionStart });
     await reply(env, replyToken, msg);
     await state.logExchange(env, uid, 'off_scope', text, msg);
-    await notify(env, escalationCard({ sid, name: null, question: text, kind: 'off_scope' }));
+    await notifyEscalation(env, { sid, name: null, question: text, kind: 'off_scope' });
     return;
   }
 
@@ -102,7 +102,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
       await state.logExchange(env, uid, `limited_${budget.reason}`, text, '');
       if (budget.reason === 'burst' && budget.burst === LIMITS.burstPer10Min + 1) {
         // 剛跨過門檻的那一則才警報,避免洗版 Discord
-        await notify(env, escalationCard({ sid, name: null, question: `10 分鐘內第 ${budget.burst} 則訊息，已熔斷`, kind: 'burst' }));
+        await notifyEscalation(env, { sid, name: null, question: `10 分鐘內第 ${budget.burst} 則訊息，已熔斷`, kind: 'burst' });
       }
       return;
     }
@@ -165,7 +165,7 @@ async function escalate(env, { uid, sid, replyToken, text, kind, sessionStart = 
   const msg = composeReply(body, { sessionStart });
   await state.logExchange(env, uid, `escalated_${kind}`, text, msg);
   const name = await getDisplayName(env, uid);
-  await notify(env, escalationCard({ sid, name, question: text, kind }));
+  await notifyEscalation(env, { sid, name, question: text, kind });
   await reply(env, replyToken, msg);
   // 轉人工的那一題也記入對話脈絡,讓 AI 記得「這題我說過要等 MUMU」
   await state.pushHistory(env, uid, 'user', text);

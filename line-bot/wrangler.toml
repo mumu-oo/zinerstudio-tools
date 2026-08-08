@@ -6,6 +6,7 @@
 #      npx wrangler secret put LLM_API_KEY
 #      npx wrangler secret put ADMIN_SECRET          # 穆穆「認主」的通關密語
 #      npx wrangler secret put DISCORD_WEBHOOK_URL   # 選配:留言板通知
+#      npx wrangler secret put ACTION_SECRET         # 選配:Discord 按鈕(接手/放行)的簽章金鑰,建議 openssl rand -base64 48
 #   4. npx wrangler deploy → 把網址填到 LINE Developers 的 Webhook URL
 
 name = "zinerstudio-line-bot"
@@ -23,3 +24,5 @@ LINE_CHANNEL_ID = "2007766255"
 LLM_PROVIDER = "openai"
 LLM_BASE_URL = "https://api.openai.com/v1"
 LLM_MODEL = "gpt-5-mini"
+# Discord 按鈕的 base URL(給 hmac.js 產按鈕 URL 用;非機密)。若換域名/自訂路徑,改這裡
+PUBLIC_BASE_URL = "https://zinerstudio-line-bot.zinerstudio.workers.dev"
