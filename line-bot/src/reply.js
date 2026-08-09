@@ -1,20 +1,43 @@
 // 孔版AI助手的所有話術與 system prompt。
 // 文案規矩(穆穆定):①開頭問候只在「對話開場」出現一次;②結尾每則照掛
-// (一行 emoji 版,🛠️ 當「助手在說話」的識別);③對客輸出一律全形標點。
+// (LINE 官方 emoji 當「助手在說話」的識別);③對客輸出一律全形標點。
 // 2026-07-11 prompt 大整頓(穆穆指示「不是 BUG 出來一個加一個條件」):
 // 34 條規則砍到骨架——口吻類全部收進「資深店員」人設一句話,只留四類硬規則
 // (資料唯一性/錢/時間/轉人工)。教訓:規則越多 AI 挑著聽,人設清楚勝過禁令堆。
+// 2026-08-09 改用 LINE 官方 emoji 做「AI 說話」識別(穆穆選的 emoji 三顆):
+// 每則答案前綴、footer 兩行前綴,全部用 emoji 標,取代之前 Unicode 🤖/🛠️/💌。
 // 開頭/結尾/罐頭 body 都是穆穆的字,要改請經過她。
 
 export const ESCALATE_SENTINEL = '[[轉人工]]';
 
 export const GREETING = '嗨嗨～現為誌造所的下班時間，MUMU 目前不在工作位置上，先派 🤖 孔版AI助手出來幫你帶路～';
 
-export const FOOTER = '🛠️ 平日 10:00～19:00 由 MUMU 回覆 💌 急件請走 IG或信箱';
+// LINE 官方 emoji(穆穆從 developers.line.biz/en/docs/messaging-api/emoji-list/ 挑的三顆)
+// $ 是 LINE API 用的佔位符,實際渲染時被 emojis[].index 對應的 emoji 圖案取代
+const EMOJI_AI_PREFIX = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '133' };  // 答案本體前綴
+const EMOJI_FOOTER_ROBOT = { productId: '5ac21ef5031a6752fb806d5e', emojiId: '054' }; // footer:AI 識別
+const EMOJI_FOOTER_CLOCK = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '140' }; // footer:時段/信箱
 
-// 組裝最終回覆:開場那一則掛問候,之後只掛結尾
+export const FOOTER_LINE_1 = '$ 此則由孔版助手AI自動回覆';
+export const FOOTER_LINE_2 = '$ 平日 10:00～19:00 真人回覆・急件走 IG私訊 或信箱';
+export const FOOTER = `${FOOTER_LINE_1}\n${FOOTER_LINE_2}`;
+
+// 組裝最終回覆(回 { text, emojis }):
+//   開場那一則掛問候,之後只掛結尾;答案本體前綴一顆 AI emoji;
+//   footer 兩行各一顆 emoji。emojis[].index 是 UTF-16 位置(JS 字串長度單位)。
 export function composeReply(body, { sessionStart = false } = {}) {
-  return sessionStart ? `${GREETING}\n\n${body}\n\n${FOOTER}` : `${body}\n\n${FOOTER}`;
+  const emojis = [];
+  let text = '';
+  if (sessionStart) text += GREETING + '\n\n';
+  // 答案本體:$ 空格 + body
+  emojis.push({ index: text.length, ...EMOJI_AI_PREFIX });
+  text += `$ ${body}\n\n`;
+  // Footer 兩行,各前綴一個 $
+  emojis.push({ index: text.length, ...EMOJI_FOOTER_ROBOT });
+  text += `${FOOTER_LINE_1}\n`;
+  emojis.push({ index: text.length, ...EMOJI_FOOTER_CLOCK });
+  text += FOOTER_LINE_2;
+  return { text, emojis };
 }
 
 // 查無資料/沒把握 → 轉人工留言

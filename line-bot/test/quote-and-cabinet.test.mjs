@@ -24,7 +24,7 @@ test('①七項齊全 → AI 吐估價暗號 → 客人收到暖罐頭(不是冷
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U-quote', '想估價 完整表格...'));
     const r = f.replies()[0];
-    assert.equal(r, composeReply(ESCALATE_QUOTE_BODY, { sessionStart: true }));
+    assert.equal(r, composeReply(ESCALATE_QUOTE_BODY, { sessionStart: true }).text);
     assert.ok(!r.includes('MUMU 上班後會依序與您聯繫'), '不該是冷版通用罐頭');
     assert.ok(r.includes('依價目表算好'), '要是暖版收表格罐頭');
     const dc = f.calls.filter((c) => c.url.includes('discord'));

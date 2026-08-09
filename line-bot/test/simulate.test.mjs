@@ -34,13 +34,13 @@ test('測試指令:查無資料 → AI 看全表判斷、沒把握就轉人工,�
     await state.setAdminId(env, 'U-mumu');
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U-mumu', '測試 我可以參觀工作室嗎'));
-    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: true }), '要看到客人視角的轉人工留言');
+    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: true }).text, '要看到客人視角的轉人工留言');
     assert.equal(await state.isMuted(env, 'sim:U-mumu'), false, '2026-07-11 起轉人工不再自動靜音');
     assert.equal(await state.isMuted(env, 'U-mumu'), false, '穆穆本人的房間不可被靜音');
 
     // 再測一次:模擬房已有對話記憶 → 不再是開場,回覆不掛問候語
     await handleEvent(env, msg('U-mumu', '測試 我可以參觀工作室嗎'));
-    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: false }), '第二輪不掛問候語,仍要有回應');
+    assert.equal(f.replies().at(-1), composeReply(ESCALATE_BODY, { sessionStart: false }).text, '第二輪不掛問候語,仍要有回應');
   } finally { f.restore(); }
 });
 

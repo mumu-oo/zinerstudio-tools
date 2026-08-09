@@ -59,13 +59,17 @@ async function call(env, path, body) {
   return res;
 }
 
-export async function reply(env, replyToken, texts) {
-  const list = (Array.isArray(texts) ? texts : [texts]).filter(Boolean);
+// payload 可以是純字串(舊呼叫者)或 { text, emojis } 物件(帶 LINE 官方 emoji 的新版)
+export async function reply(env, replyToken, payloads) {
+  const list = (Array.isArray(payloads) ? payloads : [payloads]).filter(Boolean);
   if (!list.length) return;
-  await call(env, '/message/reply', {
-    replyToken,
-    messages: list.slice(0, 5).map((t) => ({ type: 'text', text: String(t).slice(0, 4900) })),
+  const messages = list.slice(0, 5).map((p) => {
+    if (typeof p === 'string') return { type: 'text', text: p.slice(0, 4900) };
+    const m = { type: 'text', text: String(p.text ?? '').slice(0, 4900) };
+    if (p.emojis && p.emojis.length) m.emojis = p.emojis;
+    return m;
   });
+  await call(env, '/message/reply', { replyToken, messages });
 }
 
 // 聊天室顯示「輸入中…」動畫(免費,最長 60 秒,AI 思考時的禮貌)

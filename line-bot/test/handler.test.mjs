@@ -37,7 +37,7 @@ test('小精靈值班 + 知識庫命中 → 首次回覆帶問候語與結尾', 
     const r = f.replies();
     assert.equal(r.length, 1);
     assert.ok(r[0].startsWith(GREETING), '首次回覆要有問候語');
-    assert.ok(r[0].includes('🛠️ 平日 10:00～19:00 由 MUMU 回覆'), '首次回覆要有結尾說明');
+    assert.ok(r[0].includes('孔版助手AI自動回覆'), '首次回覆要有結尾說明');
   } finally { f.restore(); }
 });
 
@@ -51,7 +51,7 @@ test('第二輪對話 → 問候語不再掛(2026-07-11 穆穆拍板:開場限�
     await handleEvent(env, msg('U1', '出血要留多少'));
     const r = f.replies();
     assert.ok(!r[0].startsWith(GREETING), '第二輪不掛問候語(實測 15 分鐘轟炸客人八次的教訓)');
-    assert.ok(r[0].includes('🛠️ 平日 10:00～19:00 由 MUMU 回覆'), '結尾每則照掛');
+    assert.ok(r[0].includes('孔版助手AI自動回覆'), '結尾每則照掛');
     // 對話記憶要進到模型
     const sent = f.llmCalls()[0].body.messages;
     assert.ok(sent.some((m) => m.content === '前一題'), '要帶上下文');
@@ -79,7 +79,7 @@ test('查無資料 → AI 看全表判斷、沒把握轉人工、通知 Discord,
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U2', '請問可以贊助我們嗎'));
     assert.equal(f.llmCalls().length, 1, '0 命中要交給 AI 看全表判斷,不再直接罐頭');
-    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }));
+    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }).text);
     assert.equal(await state.isMuted(env, 'U2'), false, '2026-07-11 起轉人工不再自動靜音(一題答不了不封整間房)');
     assert.ok(f.calls.some((c) => c.url.includes('discord')), '要通知穆穆');
 
@@ -144,7 +144,7 @@ test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U3', '可以印貼紙嗎'));
     assert.equal(f.llmCalls().length, 0);
-    assert.equal(f.replies()[0], composeReply(OFF_SCOPE_BODY, { sessionStart: true }));
+    assert.equal(f.replies()[0], composeReply(OFF_SCOPE_BODY, { sessionStart: true }).text);
   } finally { f.restore(); }
 });
 
@@ -154,7 +154,7 @@ test('AI 自己說沒把握(sentinel)→ 轉人工,不封房', async () => {
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, msg('U4', '三色單面大概幾個工作天'));
-    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }));
+    assert.equal(f.replies()[0], composeReply(ESCALATE_BODY, { sessionStart: true }).text);
     assert.equal(await state.isMuted(env, 'U4'), false, '轉人工不再自動靜音');
   } finally { f.restore(); }
 });
