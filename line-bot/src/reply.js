@@ -12,30 +12,33 @@ export const ESCALATE_SENTINEL = '[[轉人工]]';
 
 export const GREETING = '嗨嗨～現為誌造所的下班時間，MUMU 目前不在工作位置上，先派 🤖 孔版AI助手出來幫你帶路～';
 
-// LINE 官方 emoji(穆穆從 developers.line.biz/en/docs/messaging-api/emoji-list/ 挑的三顆)
+// LINE 官方 emoji(穆穆從 developers.line.biz/en/docs/messaging-api/emoji-list/ 挑的兩顆)
 // $ 是 LINE API 用的佔位符,實際渲染時被 emojis[].index 對應的 emoji 圖案取代
-const EMOJI_AI_PREFIX = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '133' };  // 答案本體前綴
-const EMOJI_FOOTER_ROBOT = { productId: '5ac21ef5031a6752fb806d5e', emojiId: '054' }; // footer:AI 識別
-const EMOJI_FOOTER_CLOCK = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '140' }; // footer:時段/信箱
+const EMOJI_HEADER = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '133' };  // 標頭:地瓜球頭
+const EMOJI_FOOTER = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '140' };  // 尾:急件
 
-export const FOOTER_LINE_1 = '$ 此則由孔版助手AI自動回覆';
-export const FOOTER_LINE_2 = '$ 平日 10:00～19:00 真人回覆・急件走 IG私訊 或信箱';
+// 排版(2026-08-09 穆穆定):
+//   AI 識別擺頭部(標題感)→答案本體→尾巴兩行「怎麼找真人」
+//   分工:頭部管「是誰在說」、尾巴只管「怎麼找 MUMU 真人回」
+export const HEADER_LINE = '$ ⎨孔版助手 AI 自動回覆⎬';
+export const FOOTER_LINE_1 = '➜ 平日 10:00–19:00 由 MUMU 真人回覆'; // 時段的 en-dash「–」是穆穆故意用的
+export const FOOTER_LINE_2 = '$ 急件請走IG私訊或信箱'; // 中間不加空格是穆穆定的
 export const FOOTER = `${FOOTER_LINE_1}\n${FOOTER_LINE_2}`;
 
 // 組裝最終回覆(回 { text, emojis }):
-//   開場那一則掛問候,之後只掛結尾;答案本體前綴一顆 AI emoji;
-//   footer 兩行各一顆 emoji。emojis[].index 是 UTF-16 位置(JS 字串長度單位)。
+//   開場那一則掛問候→AI 識別頭→答案本體→尾巴兩行。emojis[].index 是 UTF-16 位置。
 export function composeReply(body, { sessionStart = false } = {}) {
   const emojis = [];
   let text = '';
   if (sessionStart) text += GREETING + '\n\n';
-  // 答案本體:$ 空格 + body
-  emojis.push({ index: text.length, ...EMOJI_AI_PREFIX });
-  text += `$ ${body}\n\n`;
-  // Footer 兩行,各前綴一個 $
-  emojis.push({ index: text.length, ...EMOJI_FOOTER_ROBOT });
+  // 頭:AI 識別
+  emojis.push({ index: text.length, ...EMOJI_HEADER });
+  text += `${HEADER_LINE}\n\n`;
+  // 答案本體(不再前綴 emoji;頭部已經標識過)
+  text += `${body}\n\n`;
+  // 尾巴兩行
   text += `${FOOTER_LINE_1}\n`;
-  emojis.push({ index: text.length, ...EMOJI_FOOTER_CLOCK });
+  emojis.push({ index: text.length, ...EMOJI_FOOTER });
   text += FOOTER_LINE_2;
   return { text, emojis };
 }

@@ -37,7 +37,7 @@ test('小精靈值班 + 知識庫命中 → 首次回覆帶問候語與結尾', 
     const r = f.replies();
     assert.equal(r.length, 1);
     assert.ok(r[0].startsWith(GREETING), '首次回覆要有問候語');
-    assert.ok(r[0].includes('孔版助手AI自動回覆'), '首次回覆要有結尾說明');
+    assert.ok(r[0].includes('孔版助手 AI 自動回覆'), '首次回覆要有結尾說明');
   } finally { f.restore(); }
 });
 
@@ -51,7 +51,7 @@ test('第二輪對話 → 問候語不再掛(2026-07-11 穆穆拍板:開場限�
     await handleEvent(env, msg('U1', '出血要留多少'));
     const r = f.replies();
     assert.ok(!r[0].startsWith(GREETING), '第二輪不掛問候語(實測 15 分鐘轟炸客人八次的教訓)');
-    assert.ok(r[0].includes('孔版助手AI自動回覆'), '結尾每則照掛');
+    assert.ok(r[0].includes('孔版助手 AI 自動回覆'), '結尾每則照掛');
     // 對話記憶要進到模型
     const sent = f.llmCalls()[0].body.messages;
     assert.ok(sent.some((m) => m.content === '前一題'), '要帶上下文');

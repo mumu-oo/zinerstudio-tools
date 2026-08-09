@@ -3,11 +3,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  GREETING, FOOTER, composeReply,
+  GREETING, HEADER_LINE, FOOTER, FOOTER_LINE_1, FOOTER_LINE_2, composeReply,
   ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY,
 } from '../src/reply.js';
 
-const TEXTS = { GREETING, FOOTER, ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY };
+const TEXTS = {
+  GREETING, HEADER_LINE, FOOTER, FOOTER_LINE_1, FOOTER_LINE_2,
+  ESCALATE_BODY, OFF_SCOPE_BODY, RATE_LIMIT_BODY, CIRCUIT_BODY, BOOPOS_BODY,
+};
 // 不允許出現的半形標點(冒號不在內:10:00～19:00 是穆穆核定寫法)
 const HALFWIDTH = /[,;()!?]/;
 
@@ -29,18 +32,17 @@ test('開場那一則:問候+內容+結尾;之後:內容+結尾(不再轟炸問�
   }
 });
 
-test('LINE emoji:三顆位置正確、index 指到 $、後續輪次也是三顆', () => {
+test('LINE emoji:兩顆位置正確、index 指到 $、順序頭→尾', () => {
   for (const sessionStart of [true, false]) {
     const { text, emojis } = composeReply(ESCALATE_BODY, { sessionStart });
-    assert.equal(emojis.length, 3, '三顆:AI 前綴 + footer 兩行');
-    // 每顆 index 位置都要對應到文字裡的 $
+    assert.equal(emojis.length, 2, '兩顆:頭部 AI 標題 + 尾巴急件行');
     for (const e of emojis) {
       assert.equal(text[e.index], '$', `index ${e.index} 應指到 $,實際是「${text[e.index]}」`);
       assert.ok(e.productId, 'productId 必填');
       assert.ok(e.emojiId, 'emojiId 必填');
     }
-    // 三顆不應重疊
-    const idx = emojis.map((e) => e.index);
-    assert.equal(new Set(idx).size, 3, '三個 index 不能重複');
+    // 兩顆位置不重疊、且頭在前尾在後
+    assert.notEqual(emojis[0].index, emojis[1].index);
+    assert.ok(emojis[0].index < emojis[1].index, '頭 emoji 要在尾 emoji 前面');
   }
 });
