@@ -5,9 +5,10 @@ import * as state from './state.js';
 import * as guard from './guard.js';
 import { LIMITS } from './config.js';
 import { retrieve, allEntries } from './kb.js';
+import { looksLikeQuoteForm, parseQuoteForm, calcQuote, quoteReplyBody, quoteDetailForMumu } from './quote.js';
 import { chatComplete } from './llm.js';
 import { reply, showLoading, getDisplayName } from './line.js';
-import { notifyEscalation } from './notify.js';
+import { notify, notifyEscalation, systemNoteCard } from './notify.js';
 import { handleAdminMessage } from './commands.js';
 import {
   ESCALATE_SENTINEL, ESCALATE_QUOTE_SENTINEL, ESCALATE_BODY, ESCALATE_QUOTE_BODY,
@@ -91,6 +92,28 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   if (guard.isTooLong(text)) {
     await escalate(env, { uid, sid, replyToken, text, kind: 'no_kb', sessionStart });
     return;
+  }
+
+  // 7.5) 客人貼回填好的 ►報價表格 → 計價引擎直接算,AI 全程不碰數字
+  //      (2026-08-09 穆穆抓包:七項填齊 AI 還轉人工投降。錢的事交程式,不再指望 LLM 選對暗號)
+  if (looksLikeQuoteForm(text)) {
+    const { fields, missing } = parseQuoteForm(text);
+    if (missing.length === 0) {
+      const result = calcQuote(fields);
+      if (result.ok) {
+        const body = quoteReplyBody(fields, result);
+        await state.logExchange(env, uid, 'quoted_engine', text, body);
+        await notify(env, systemNoteCard(`💰 引擎試算已回覆（#${sid}）`, [quoteDetailForMumu(fields, result)]));
+        await reply(env, replyToken, composeReply(body, { sessionStart }));
+        await state.pushHistory(env, uid, 'user', text);
+        await state.pushHistory(env, uid, 'assistant', body);
+        return;
+      }
+      // 算不出來(尺寸超範圍等)→ 走人工,原因附進通知
+      await escalate(env, { uid, sid, replyToken, text: `${text}\n(引擎:${result.reason})`, kind: 'llm_quote', sessionStart });
+      return;
+    }
+    // 表格有缺 → 交給 AI 追問缺項(它看得到表格內容與缺什麼)
   }
 
   // 8) 額度與熔斷(「測試」模擬不佔額度——老闆娘測試不該被自家保險絲電到)
