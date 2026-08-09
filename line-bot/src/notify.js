@@ -35,7 +35,7 @@ export async function notify(env, payload) {
 
 // 系統事件通知(模式切換、接手、放行 等 — 跟客人轉人工的 escalationCard 分開)
 export function systemNoteCard(title, lines) {
-  return [`🔧 **系統|${title}**`, ...lines].join('\n');
+  return [`🔧 **系統｜${title}**`, ...lines].join('\n');
 }
 
 // 產出接手/放行的 markdown 連結。沒設 ACTION_SECRET/PUBLIC_BASE_URL → 回 null,

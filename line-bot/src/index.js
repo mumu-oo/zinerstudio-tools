@@ -81,7 +81,7 @@ export default {
       }
       if (a === 't') {
         await state.muteRoom(env, uid, LIMITS.muteTtlSec);
-        ctx.waitUntil(notify(env, systemNoteCard('接手房間（Discord 連結）', [
+        ctx.waitUntil(notify(env, systemNoteCard('接手房間', [
           `代號：#${s}`,
           'AI 已在該房閉嘴（24 小時後自動解除，或按同則通知的「🤖 放行」）。',
         ])));
@@ -89,7 +89,7 @@ export default {
       }
       // a === 'r'
       await state.unmuteRoom(env, uid);
-      ctx.waitUntil(notify(env, systemNoteCard('放行房間（Discord 連結）', [
+      ctx.waitUntil(notify(env, systemNoteCard('放行房間', [
         `代號：#${s}`,
         'AI 恢復服務這間。',
       ])));
