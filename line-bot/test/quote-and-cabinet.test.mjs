@@ -29,7 +29,7 @@ test('①七項齊全 → AI 吐估價暗號 → 客人收到暖罐頭(不是冷
     assert.ok(r.includes('依價目表算好'), '要是暖版收表格罐頭');
     const dc = f.calls.filter((c) => c.url.includes('discord'));
     assert.ok(dc.length >= 1, '要通知 Discord');
-    assert.ok(dc[0].body.content.includes('估價單'), 'Discord 卡片要標明是估價');
+    assert.ok(dc[0].body.embeds[0].description.includes('估價單'), 'Discord 卡片要標明是估價');
   } finally { f.restore(); }
 });
 

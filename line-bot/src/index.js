@@ -5,6 +5,7 @@ import { verifySignature } from './line.js';
 import { handleEvent } from './handler.js';
 import { verifyAction } from './hmac.js';
 import { notify, systemNoteCard } from './notify.js';
+import { LIMITS } from './config.js';
 import * as state from './state.js';
 
 // Discord 按鈕按下去打開的簡單狀態頁(手機 in-app browser 也 render 得漂亮)
@@ -79,20 +80,20 @@ export default {
         return htmlPage('找不到房間', `代號 #${s} 已過期或不存在(客人聊天室代號保留 30 天)。`, 404);
       }
       if (a === 't') {
-        await state.muteRoom(env, uid, 7 * 24 * 3600);
-        ctx.waitUntil(notify(env, systemNoteCard('接手房間（Discord 按鈕）', [
+        await state.muteRoom(env, uid, LIMITS.muteTtlSec);
+        ctx.waitUntil(notify(env, systemNoteCard('接手房間（Discord 連結）', [
           `代號：#${s}`,
-          'AI 已在該房閉嘴（7 天後自動解除，或按同則通知的「✅ 放行」）。',
+          'AI 已在該房閉嘴（24 小時後自動解除，或按同則通知的「🤖 放行」）。',
         ])));
-        return htmlPage('✋ 已接手', `#${s} 那間妳來，AI 助手不插嘴。`);
+        return htmlPage('🍆 已接手', `#${s} 那間妳來，AI 助手不插嘴。`);
       }
       // a === 'r'
       await state.unmuteRoom(env, uid);
-      ctx.waitUntil(notify(env, systemNoteCard('放行房間（Discord 按鈕）', [
+      ctx.waitUntil(notify(env, systemNoteCard('放行房間（Discord 連結）', [
         `代號：#${s}`,
         'AI 恢復服務這間。',
       ])));
-      return htmlPage('✅ 已放行', `#${s} 已放行，AI 助手恢復服務這間。`);
+      return htmlPage('🤖 已放行', `#${s} 已放行，AI 助手恢復服務這間。`);
     }
 
     if (request.method === 'POST' && url.pathname === '/webhook') {

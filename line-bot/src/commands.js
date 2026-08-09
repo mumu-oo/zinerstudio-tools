@@ -146,12 +146,12 @@ export async function handleAdminMessage(env, uid, text) {
   if (take) {
     const target = await state.resolveRoom(env, take[1]);
     if (!target) return `找不到代號 #${take[1]} 的聊天室（代號會出現在 Discord 通知裡；或傳「查帳」看清單）。`;
-    await state.muteRoom(env, target, 7 * 24 * 3600);
+    await state.muteRoom(env, target, LIMITS.muteTtlSec);
     await notify(env, systemNoteCard('接手房間', [
       `代號：#${take[1]}`,
-      'AI 已在該房閉嘴（7 天後自動解除，或對 AI 說「放行 #代號」）。',
+      'AI 已在該房閉嘴（24 小時後自動解除，或對 AI 說「放行 #代號」）。',
     ]));
-    return `好，#${take[1]} 那間妳來，AI助手不插嘴（7 天後自動解除，或對我說「放行 #${take[1]}」）。`;
+    return `好，#${take[1]} 那間妳來，AI助手不插嘴（24 小時後自動解除，或對我說「放行 #${take[1]}」）。`;
   }
 
   const release = t.match(/^放行\s*#?(\w+|全部)$/);
