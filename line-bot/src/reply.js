@@ -44,7 +44,7 @@ export function composeReply(body, { sessionStart = false } = {}) {
 }
 
 // 查無資料/沒把握 → 轉人工留言
-export const ESCALATE_BODY = '這部分需要由 MUMU 本人協助回覆，AI助手已幫您把留言收好，MUMU 會依序與您聯繫～';
+export const ESCALATE_BODY = '收到，孔版助手已將通知MUMU，請耐心等候老闆親回';
 
 // 估價轉人工 → 專屬暖罐頭(引擎算不動的個案才會走到這;順手附試算機讓客人先抓大概)
 export const ESCALATE_QUOTE_BODY = '你的報價需求我幫你整齊送到 MUMU 桌上了，MUMU 上班後會依價目表算好回覆你～想先抓個大概，也可以用線上試算機自己算算看：https://www.zinerstudio.com/quote';

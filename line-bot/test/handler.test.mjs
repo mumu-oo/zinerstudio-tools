@@ -153,7 +153,7 @@ test('客人呼叫老闆 → 程式硬擋、必轉人工必通知,不進 AI(2026
   const f = stubFetch();
   try {
     await state.setMode(env, 'force_off_duty');
-    for (const t of ['我想找老闆', '找 MUMU 談', '要跟真人講', '呼叫老闆來', '請幫我叫老闆', '小助手你好可愛但我要找你老闆', '幫我找一下你們的 MUMU']) {
+    for (const t of ['我想找老闆', '找 MUMU 談', '要跟真人講', '呼叫老闆來', '請幫我叫老闆', '小助手你好可愛但我要找你老闆', '幫我找一下你們的 MUMU', '老闆在嗎', 'MUMU 在嗎', '老闆在不在', 'MUMU 有空嗎', '真人在嗎']) {
       f.calls.length = 0;
       await handleEvent(env, msg(`U-call-${t}`, t));
       assert.equal(f.llmCalls().length, 0, `「${t}」不該進 AI`);
