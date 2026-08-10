@@ -59,7 +59,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   // 3.5) 客人主動呼叫老闆 → 一律轉人工、繞開 AI 判斷(2026-08-09 穆穆令:
   //      「有需要可向助手呼叫老闆來」是給客人的真出口,不能指望 gpt-5-mini
   //      每次都選對 sentinel;程式硬擋保證 Discord 一定響。)
-  if (!simulated && /(找|叫|呼叫)\s*(老闆|MUMU|真人)|要跟\s*(真人|人|MUMU|老闆)/i.test(text)) {
+  if (!simulated && /(找|叫|呼叫)[^\n。！？，、]{0,10}(老闆|MUMU|真人)|要跟[^\n。！？，、]{0,3}(真人|人|MUMU|老闆)/i.test(text)) {
     const hist0 = await state.getHistory(env, uid);
     await escalate(env, { uid, sid, replyToken, text, kind: 'call_owner', sessionStart: hist0.length === 0 });
     return;
