@@ -169,6 +169,14 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
+  // 10.5) 保險網:AI 沒吐暗號、卻對客人說「無法回答」這族句子 → 程式攔下改走轉人工。
+  //       實錄 2026-08-09 09:48:「A4 最大印刷範圍資料沒寫,無法回答」——客人吃閉門羹、
+  //       Discord 零通知、題目蒸發。prompt 已勸,這裡是勸不聽時的硬擋。
+  if (/無法回答|沒辦法回答|資料沒|資料未|資料裡沒|資料中沒|沒有相關資料/.test(answer)) {
+    await escalate(env, { uid, sid, replyToken, text, kind: 'llm_escalate', sessionStart });
+    return;
+  }
+
   // 12) 先記錄、後投遞(就算 LINE 回覆失敗,紀錄也不會丟)
   await state.logExchange(env, uid, 'answered', text, answer);
   await reply(env, replyToken, composeReply(answer, { sessionStart }));

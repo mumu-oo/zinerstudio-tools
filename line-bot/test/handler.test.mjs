@@ -148,6 +148,19 @@ test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {
   } finally { f.restore(); }
 });
 
+test('保險網:AI 沒吐暗號卻說「無法回答」→ 程式攔下轉人工＋通知穆穆(2026-08-09 實錄洞)', async () => {
+  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
+  const f = stubFetch({ llmAnswer: 'A4 最大印刷範圍資料沒寫，無法回答。' });
+  try {
+    await state.setMode(env, 'force_off_duty');
+    await handleEvent(env, msg('U-cannot', '請問A4最大的印刷範圍？'));
+    const r = f.replies()[0];
+    assert.ok(!r.includes('無法回答'), '「無法回答」不准送到客人眼前');
+    assert.ok(r.includes(ESCALATE_BODY.slice(0, 10)), '要改走轉人工暖罐頭');
+    assert.ok(f.calls.some((c) => c.url.includes('discord')), '穆穆一定要收到通知');
+  } finally { f.restore(); }
+});
+
 test('AI 自己說沒把握(sentinel)→ 轉人工,不封房', async () => {
   const env = mockEnv();
   const f = stubFetch({ llmAnswer: ESCALATE_SENTINEL });
