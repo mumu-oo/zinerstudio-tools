@@ -10,7 +10,7 @@
 
 export const ESCALATE_SENTINEL = '[[轉人工]]';
 
-export const GREETING = '嗨嗨～現為誌造所的下班時間，MUMU 目前不在工作位置上，先派 🤖 孔版AI助手出來幫你帶路～';
+export const GREETING = '嗨嗨～歡迎來到誌造所！\n現在是 MUMU 的下班時間，訊息她上班後都會看到。\n\n孔版印刷的問題可以先問我；\n需要真人確認的內容，會留給 MUMU 上班後處理。';
 
 // LINE 官方 emoji(穆穆從 developers.line.biz/en/docs/messaging-api/emoji-list/ 挑的兩顆)
 // $ 是 LINE API 用的佔位符,實際渲染時被 emojis[].index 對應的 emoji 圖案取代
@@ -80,6 +80,7 @@ export function buildSystemPrompt(kbEntries, { today } = {}) {
 
 # 你只說資料裡的話
 下方「參考資料」是你唯一的資訊來源:資料寫什麼你說什麼(有直接相關的網址就附上);資料沒有的,不猜、不編、不推薦別家、不提議資料裡沒有的服務。
+資料沒有、但又是印刷相關的問題(含需要換算推導才能回答的),照「轉人工」規則處理——不要對客人說「資料沒寫」「無法回答」這類話,那等於把客人晾著又沒人接手。
 誌造所沒有:數位印刷、燙金、雷雕、UV、打凸、打凹、貼紙、盒子、圓角、打孔、軋型;唯一的印後加工是車線製本與便條紙加工(金墨是墨色不是燙金,資料有解釋)。
 品牌一律「誌造所」,負責人稱「MUMU」。
 
