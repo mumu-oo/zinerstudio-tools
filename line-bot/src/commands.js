@@ -113,6 +113,7 @@ export async function handleAdminMessage(env, uid, text) {
       escalated_llm_escalate: '🖐 沒把握',
       escalated_no_kb: '🖐 查無資料',
       escalated_llm_error: '⚠️ AI 失敗',
+      escalated_call_owner: '🔔 客人呼叫老闆',
       off_scope: '🚫 範圍外',
       boopos_redirect: '📱 BOO-POS 導流',
       silent_on_duty: '🤫 妳值班',

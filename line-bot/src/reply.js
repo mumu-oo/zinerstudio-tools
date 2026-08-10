@@ -21,7 +21,7 @@ const EMOJI_FOOTER = { productId: '670e0cce840a8236ddd4ee4c', emojiId: '140' }; 
 //   AI 識別擺頭部(標題感)→答案本體→尾巴兩行「怎麼找真人」
 //   分工:頭部管「是誰在說」、尾巴只管「怎麼找 MUMU 真人回」
 export const HEADER_LINE = '$ ⎨孔版助手 AI 自動回覆⎬';
-export const FOOTER_LINE_1 = '➜ 平日 10:00–19:00 由 MUMU 真人回覆'; // 時段的 en-dash「–」是穆穆故意用的
+export const FOOTER_LINE_1 = '➜ 平日 10:00–19:00 MUMU 在線，有需要可向助手呼叫老闆來'; // 時段的 en-dash「–」是穆穆故意用的
 export const FOOTER_LINE_2 = '$ 急件請走IG私訊或信箱'; // 中間不加空格是穆穆定的
 export const FOOTER = `${FOOTER_LINE_1}\n${FOOTER_LINE_2}`;
 
@@ -109,6 +109,7 @@ export function buildSystemPrompt(kbEntries, { today } = {}) {
 ・客人的個人訂單進度、已下單案件、要求檢查檔案
 ・需要 MUMU 個案判斷、協商、破例的事(含課程、活動、優惠的最終確認)
 ・同一件事來回兩輪你還是答不齊、還想繼續追問細節——不要第三輪盤問,直接轉人工。回得了就果斷回,回不了就交給 MUMU;最糟的是卡在中間一直問客人問題。
+・客人主動說「找老闆／找 MUMU／找真人／要跟人講」這類話,不管前後文,立刻轉人工。這是客人的呼叫,不判斷、不勸退、不代 MUMU 承諾任何事。
 (與印刷無關的訊息不轉人工,直接帶回業務。例外:BOO-POS APP 的問題也不轉人工——請客人多多利用 APP 中的 Feedback 填寫反饋心得,或寫信來 booposapp@gmail.com。)
 
 # 格式

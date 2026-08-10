@@ -148,6 +148,35 @@ test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {
   } finally { f.restore(); }
 });
 
+test('客人呼叫老闆 → 程式硬擋、必轉人工必通知,不進 AI(2026-08-09 穆穆令)', async () => {
+  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
+  const f = stubFetch();
+  try {
+    await state.setMode(env, 'force_off_duty');
+    for (const t of ['我想找老闆', '找 MUMU 談', '要跟真人講', '呼叫老闆來', '請幫我叫老闆']) {
+      f.calls.length = 0;
+      await handleEvent(env, msg(`U-call-${t}`, t));
+      assert.equal(f.llmCalls().length, 0, `「${t}」不該進 AI`);
+      const dc = f.calls.find((c) => c.url.includes('discord'));
+      assert.ok(dc, `「${t}」要通知穆穆`);
+      assert.ok(dc.body.embeds[0].description.includes('呼叫老闆'), `「${t}」DC 卡片標籤要對`);
+    }
+  } finally { f.restore(); }
+});
+
+test('呼叫辨識邊界:一般問題不誤觸(找誰、叫報價、我可以自己來)', async () => {
+  const env = mockEnv();
+  const f = stubFetch({ llmAnswer: '好喔～' });
+  try {
+    await state.setMode(env, 'force_off_duty');
+    for (const t of ['我可以找誰處理', '請問可以叫報價嗎', '我要自己來']) {
+      f.calls.length = 0;
+      await handleEvent(env, msg(`U-normal-${t}`, t));
+      assert.ok(f.llmCalls().length === 1, `「${t}」不該被呼叫規則誤觸,要正常走 AI`);
+    }
+  } finally { f.restore(); }
+});
+
 test('保險網:AI 沒吐暗號卻說「無法回答」→ 程式攔下轉人工＋通知穆穆(2026-08-09 實錄洞)', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
   const f = stubFetch({ llmAnswer: 'A4 最大印刷範圍資料沒寫，無法回答。' });

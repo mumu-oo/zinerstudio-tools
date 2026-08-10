@@ -62,6 +62,7 @@ const KIND_LABEL = {
   burst: '⚠️ 熔斷：短時間訊息爆量',
   off_scope: '業務範圍外詢問',
   boopos: '📱 BOO-POS 詢問（已導流 Feedback／信箱）',
+  call_owner: '🔔 客人呼叫老闆',
 };
 
 // 客人事件通知的完整卡片(embed + 內嵌接手/放行連結)
