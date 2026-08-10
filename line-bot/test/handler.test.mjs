@@ -148,6 +148,23 @@ test('範圍外業務(貼紙)→ 罐頭婉拒,不呼叫 AI', async () => {
   } finally { f.restore(); }
 });
 
+test('模擬「測試 」也要能觸發 call_owner(2026-08-09 實錄:!simulated 誤放 bug)', async () => {
+  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
+  const f = stubFetch();
+  try {
+    await state.setAdminId(env, 'U-mumu');
+    await state.setMode(env, 'force_off_duty');
+    for (const t of ['MUMU在嗎', '老闆在嗎', '我要找老闆']) {
+      f.calls.length = 0;
+      await handleEvent(env, msg('U-mumu', `測試 ${t}`));
+      assert.equal(f.llmCalls().length, 0, `模擬「測試 ${t}」不該進 AI`);
+      const dc = f.calls.find((c) => c.url.includes('discord'));
+      assert.ok(dc && dc.body.embeds[0].description.includes('呼叫老闆'),
+        `模擬「測試 ${t}」DC 卡片要標「呼叫老闆」`);
+    }
+  } finally { f.restore(); }
+});
+
 test('客人呼叫老闆 → 程式硬擋、必轉人工必通知,不進 AI(2026-08-09 穆穆令)', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
   const f = stubFetch();
