@@ -109,6 +109,7 @@ export async function handleAdminMessage(env, uid, text) {
     const KIND = {
       answered: '✓ 已答',
       quoted_engine: '💰 引擎已試算',
+      quote_sanity_reask: '❓ 引擎反問可疑值',
       escalated_llm_quote: '📋 估價待妳',
       escalated_llm_escalate: '🖐 沒把握',
       escalated_no_kb: '🖐 查無資料',
@@ -136,7 +137,7 @@ export async function handleAdminMessage(env, uid, text) {
     const rows = await state.recentByRoom(env, sid, { limit: 5 });
     if (!rows.length) return `#${sid} 目前沒對話紀錄（14 天前已過期）。`;
     const lines = rows.map((r) => {
-      const kind = (r.kind || '').startsWith('answered') || r.kind === 'boopos_redirect' || r.kind === 'quoted_engine' ? '答' : '轉';
+      const kind = (r.kind || '').startsWith('answered') || r.kind === 'boopos_redirect' || r.kind === 'quoted_engine' || r.kind === 'quote_sanity_reask' ? '答' : '轉';
       const q = String(r.q || '').replace(/\n/g, ' ').slice(0, 40);
       const a = String(r.a || '').replace(/\n/g, ' ').slice(0, 40);
       return `[${agoLabel(r.ts)}·${kind}]\n客：${q}\nAI：${a}`;

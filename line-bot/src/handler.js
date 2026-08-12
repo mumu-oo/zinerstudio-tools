@@ -5,7 +5,7 @@ import * as state from './state.js';
 import * as guard from './guard.js';
 import { LIMITS } from './config.js';
 import { retrieve, allEntries } from './kb.js';
-import { looksLikeQuoteForm, parseQuoteForm, calcQuote, quoteReplyBody, quoteDetailForMumu } from './quote.js';
+import { looksLikeQuoteForm, parseQuoteForm, calcQuote, quoteReplyBody, quoteDetailForMumu, sanityCheck, sanityReplyBody } from './quote.js';
 import { chatComplete } from './llm.js';
 import { reply, showLoading, getDisplayName } from './line.js';
 import { notify, notifyEscalation, systemNoteCard } from './notify.js';
@@ -108,6 +108,20 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
   if (looksLikeQuoteForm(text)) {
     const { fields, missing } = parseQuoteForm(text);
     if (missing.length === 0) {
+      // 可疑值先攔——程式判定超過預設值(尺寸太小/太大、張數異常等)→ 反問客人,不算價
+      const susp = sanityCheck(fields);
+      if (susp) {
+        const body = sanityReplyBody(susp);
+        await state.logExchange(env, uid, 'quote_sanity_reask', text, body);
+        await notify(env, systemNoteCard(`❓ 引擎反問可疑值（#${sid}）`, [
+          ...susp.map((i) => `${i.field}「${i.value}」→ ${i.hint}`),
+          '已請客人重新確認再貼。',
+        ]));
+        await reply(env, replyToken, composeReply(body, { sessionStart }));
+        await state.pushHistory(env, uid, 'user', text);
+        await state.pushHistory(env, uid, 'assistant', body);
+        return;
+      }
       const result = calcQuote(fields);
       if (result.ok) {
         const body = quoteReplyBody(fields, result);

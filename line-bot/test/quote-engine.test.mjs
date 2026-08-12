@@ -2,7 +2,7 @@
 // 基準案例=穆穆 2026-08-09 的真實測試(A6 100張 正赤紅反金 米牙 襯紙yes 裁切yes)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { imposition, parseQuoteForm, looksLikeQuoteForm, calcQuote, quoteReplyBody } from '../src/quote.js';
+import { imposition, parseQuoteForm, looksLikeQuoteForm, calcQuote, quoteReplyBody, sanityCheck, sanityReplyBody } from '../src/quote.js';
 import { handleEvent } from '../src/handler.js';
 import * as state from '../src/state.js';
 import { mockEnv, stubFetch } from './helpers.mjs';
@@ -16,6 +16,22 @@ const FORM = [
   '►襯紙需求：yes',
   '►裁切需求：yes',
 ].join('\n');
+
+test('尺寸解析:支援小數、cm 單位、常見寫法(2026-08-09 Elsa Cheng 實錄:29.7x21mm 漏抓)', () => {
+  const cases = [
+    { raw: '29.7x21mm', w: 29.7, h: 21 },       // 客人漏寫 c 的字面案例
+    { raw: '29.7x21cm', w: 297, h: 210 },       // 客人寫 cm 就自動轉 mm
+    { raw: '140x280', w: 140, h: 280 },         // 沒寫單位=mm
+    { raw: 'A4', w: 210, h: 297 },              // 標準尺寸
+    { raw: '297×210mm', w: 297, h: 210 },       // 全形×
+  ];
+  for (const c of cases) {
+    const p = parseQuoteForm(`►印刷張數：50\n►印刷色數：正面1色\n►使用墨色：正面 黑\n►完成尺寸：${c.raw}\n►使用紙材：白尺\n►襯紙需求：no\n►裁切需求：no`);
+    assert.deepEqual(p.missing, [], `「${c.raw}」不該缺尺寸`);
+    assert.equal(p.fields.size.w, c.w, `「${c.raw}」寬 ${p.fields.size.w} 應=${c.w}`);
+    assert.equal(p.fields.size.h, c.h, `「${c.raw}」高 ${p.fields.size.h} 應=${c.h}`);
+  }
+});
 
 test('落版:規格書驗收案例', () => {
   assert.equal(imposition(140, 280), 2, '140×280 → 2 版(2026-07-03 她驗收過)');
@@ -96,6 +112,46 @@ test('端對端:客人貼齊表格 → 引擎直接回總額,AI 一次都不呼�
     assert.ok(dc.body.content.includes('引擎試算已回覆'));
     assert.ok(dc.body.content.includes('合計 1,220 元'), '穆穆的通知要有明細可對帳');
     assert.ok(dc.body.content.includes('製版費(赤紅) 110'), '明細含製版');
+  } finally { f.restore(); }
+});
+
+test('sanityCheck:尺寸太小/太大、張數/色數異常都抓、正常值放行', () => {
+  // 小尺寸(29.7x21mm,Elsa Cheng 實錄)
+  const small = parseQuoteForm('►印刷張數：50\n►印刷色數：正面1色\n►使用墨色：正面 黑\n►完成尺寸：29.7x21mm\n►使用紙材：白尺\n►襯紙需求：no\n►裁切需求：no').fields;
+  const susp1 = sanityCheck(small);
+  assert.ok(susp1, '29.7x21mm 要抓');
+  assert.ok(susp1[0].guess.includes('297×210mm'), '要提示 cm 換算');
+
+  // 大尺寸
+  const big = parseQuoteForm('►印刷張數：50\n►印刷色數：正面1色\n►使用墨色：正面 黑\n►完成尺寸：500x400mm\n►使用紙材：白尺\n►襯紙需求：no\n►裁切需求：no').fields;
+  assert.ok(sanityCheck(big), '超過 A3 要抓');
+
+  // 大張數
+  const many = parseQuoteForm('►印刷張數：99999\n►印刷色數：正面1色\n►使用墨色：正面 黑\n►完成尺寸：A6\n►使用紙材：白尺\n►襯紙需求：no\n►裁切需求：no').fields;
+  assert.ok(sanityCheck(many), '99999 張要抓');
+
+  // 正常值放行(基準案例)
+  const { fields } = parseQuoteForm(FORM);
+  assert.equal(sanityCheck(fields), null, '正常 A6 100 張不該被抓');
+});
+
+test('端對端:29.7x21mm 進來 → 引擎反問、不算價、不進 AI、通知穆穆(Elsa Cheng 實錄修法)', async () => {
+  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
+  const f = stubFetch();
+  try {
+    await state.setMode(env, 'force_off_duty');
+    const form = FORM.replace('A6', '29.7x21mm');
+    await handleEvent(env, {
+      type: 'message', replyToken: 'rt-1',
+      source: { type: 'user', userId: 'U-elsa' },
+      message: { type: 'text', text: form },
+    });
+    assert.equal(f.llmCalls().length, 0, '可疑值不進 AI');
+    const r = f.replies()[0];
+    assert.ok(r.includes('297×210mm'), '要提示 cm 換算');
+    assert.ok(!r.match(/\d{1,4} 元/), '反問時不該出現金額');
+    const dc = f.calls.find((c) => c.url.includes('discord'));
+    assert.ok(dc && dc.body.content.includes('引擎反問可疑值'), '要通知穆穆');
   } finally { f.restore(); }
 });
 

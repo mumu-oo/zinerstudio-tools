@@ -84,8 +84,12 @@ function findPaper(raw) {
 function parseSize(raw) {
   const t = raw.replace(/\s+/g, '').toUpperCase();
   if (SIZES[t]) return { w: SIZES[t][0], h: SIZES[t][1], label: t };
-  const m = t.match(/^(\d{2,3})[X×*](\d{2,3})(MM)?$/);
-  if (m) return { w: +m[1], h: +m[2], label: `${m[1]}×${m[2]}mm` };
+  // 支援小數(29.7×21)與 cm 單位(29.7×21cm→297×210mm);沒寫單位當 mm
+  const m = t.match(/^(\d{1,4}(?:\.\d+)?)[X×*](\d{1,4}(?:\.\d+)?)(MM|CM)?$/);
+  if (m) {
+    const unit = m[3] === 'CM' ? 10 : 1;
+    return { w: +m[1] * unit, h: +m[2] * unit, label: `${m[1]}×${m[2]}${(m[3] || 'mm').toLowerCase()}` };
+  }
   return null;
 }
 
@@ -150,6 +154,54 @@ export function looksLikeQuoteForm(text) {
   const labels = ['印刷張數', '印刷色數', '使用墨色', '完成尺寸', '使用紙材', '襯紙需求', '裁切需求'];
   const hits = labels.filter((l) => String(text || '').includes(l)).length;
   return hits >= 3;
+}
+
+// ---- 可疑值檢查:引擎判定「這值超過預設、可能是筆誤」→ 交給程式反問 ----
+// (AI 腦子留給語言判斷,數值範圍檢查該給程式;2026-08-09 Elsa Cheng 案例:
+//  29.7×21mm 明顯是想寫 A4 的 cm 版本、漏了 c 字元,程式該反問而不是照小算。)
+export function sanityCheck(fields) {
+  const issues = [];
+  const s = fields.size;
+  if (s.w < 30 || s.h < 30) {
+    const cmVer = `${+(s.w * 10).toFixed(1)}×${+(s.h * 10).toFixed(1)}mm`;
+    issues.push({
+      field: '完成尺寸', value: s.label,
+      hint: '比一般名片（90×54mm）還小',
+      guess: `會不會是想寫 cm、實際是 ${cmVer}？`,
+    });
+  }
+  if (s.w > 297 || s.h > 297) {
+    issues.push({
+      field: '完成尺寸', value: s.label,
+      hint: '超過 A3 印刷範圍（最大 297×420mm）',
+      guess: null,
+    });
+  }
+  if (fields.sheets > 5000) {
+    issues.push({
+      field: '印刷張數', value: `${fields.sheets} 張`,
+      hint: '數量偏大（一般案子多在幾百張以內）',
+      guess: null,
+    });
+  }
+  const inkTotal = fields.front.length + fields.back.length;
+  if (inkTotal > 8) {
+    issues.push({
+      field: '使用墨色', value: `正反共 ${inkTotal} 種`,
+      hint: '色數偏多（誌造所色墨共 11 種、單案通常 2〜4 種）',
+      guess: null,
+    });
+  }
+  return issues.length ? issues : null;
+}
+
+export function sanityReplyBody(issues) {
+  const lines = ['貼的表格裡有一個地方需要再確認一下唷～', ''];
+  for (const it of issues) {
+    lines.push(`・${it.field}「${it.value}」${it.hint}${it.guess ? '——' + it.guess : ''}`);
+  }
+  lines.push('', '麻煩再確認一下，把七項表格重新貼一次～');
+  return lines.join('\n');
 }
 
 // ---- 主計算:fields → { total, items, meta } ----
