@@ -109,7 +109,8 @@ export function parseQuoteForm(text) {
     if (/no|不要|不需|否|免|無/i.test(s)) return false;
     return null;
   };
-  const splitInks = (s) => s.split(/[｜|、,+\/\s]+/).filter(Boolean);
+  // 分隔:半形＋、全形＋、逗號、頓號、｜|、斜線、空白;過濾掉空 marker(—/-/–/無)
+  const splitInks = (s) => s.split(/[｜|、,+＋\/\s]+/).filter((t) => t && !/^[—–\-無]+$/.test(t));
 
   const fields = {};
   const missing = [];

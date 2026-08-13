@@ -115,6 +115,32 @@ test('端對端:客人貼齊表格 → 引擎直接回總額,AI 一次都不呼�
   } finally { f.restore(); }
 });
 
+test('墨色解析:全形＋、反面「—」empty marker(2026-08-09 #11kf 實錄)', () => {
+  const form = [
+    '►印刷張數：10',
+    '►印刷色數：正面3色｜反面0色',
+    '►使用墨色：正面 黑＋青藍＋赤紅｜反面 —',
+    '►完成尺寸：120x142mm',
+    '►使用紙材：白尺紙',
+    '►襯紙需求：yes',
+    '►裁切需求：yes',
+  ].join('\n');
+  const { fields, missing } = parseQuoteForm(form);
+  assert.deepEqual(missing, [], `不該缺項:${missing.join('/')}`);
+  assert.equal(fields.front.length, 3, '正面 3 色');
+  assert.deepEqual(fields.front.map((i) => i.name), ['黑', '青藍', '赤紅']);
+  assert.equal(fields.back.length, 0, '反面 — 要視為空');
+
+  const r = calcQuote(fields);
+  assert.ok(r.ok);
+  // 120x142 mm → 落 4 版 → ceil(10/4)=3 A3 + 備量 10(單面3色) = 13 張
+  assert.equal(r.meta.layout, 4);
+  assert.equal(r.meta.totalA3, 13);
+  // 製版 110×3 + 基本 250 + 印刷 5.5×13 + 紙材 6×13 + 襯紙 1.5×13 + 裁切 250(明信片規格)
+  // = 330 + 250 + 71.5 + 78 + 19.5 + 250 = 999
+  assert.equal(r.total, 999);
+});
+
 test('sanityCheck:尺寸太小/太大、張數/色數異常都抓、正常值放行', () => {
   // 小尺寸(29.7x21mm,Elsa Cheng 實錄)
   const small = parseQuoteForm('►印刷張數：50\n►印刷色數：正面1色\n►使用墨色：正面 黑\n►完成尺寸：29.7x21mm\n►使用紙材：白尺\n►襯紙需求：no\n►裁切需求：no').fields;
