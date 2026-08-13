@@ -48,32 +48,54 @@ test('actionLinks:產出兩個 markdown link 帶簽章;沒 secret/URL → null',
   assert.equal(await actionLinks(noBase, 'x'), null);
 });
 
-test('通知附連結:客人事件 Discord payload 用 embed、內含兩個簽名 URL', async () => {
+test('通知附連結:客人事件 Discord payload 用 embed、操作在獨立 field、內含兩個簽名 URL', async () => {
   const env = buttonEnv();
   const f = stubFetch();
   try {
     const sid = await state.indexRoom(env, 'U-btn-1');
     await notifyEscalation(env, { sid, name: null, question: '想估價', kind: 'llm_quote' });
     const dc = f.calls.find((c) => c.url.includes('discord'));
-    assert.ok(dc.body.embeds && dc.body.embeds[0], '要用 embed(頻道自建 webhook 不接 components)');
-    const desc = dc.body.embeds[0].description;
-    assert.ok(desc.includes(sid), 'embed 要含代號');
-    assert.ok(desc.includes('接手'), 'embed 要含接手連結');
-    assert.ok(desc.includes('放行'), 'embed 要含放行連結');
-    assert.ok(desc.includes(`s=${sid}&sig=`), 'URL 要含簽章');
+    const embed = dc.body.embeds && dc.body.embeds[0];
+    assert.ok(embed, '要用 embed(頻道自建 webhook 不接 components)');
+    assert.ok(embed.description.includes(sid), 'description 要含代號');
+    const opsField = (embed.fields || []).find((f) => f.name.includes('操作'));
+    assert.ok(opsField, '操作要放獨立 field(跟客人訊息隔離)');
+    assert.ok(opsField.value.includes('接手') && opsField.value.includes('放行'), 'field 要含兩個連結');
+    assert.ok(opsField.value.includes(`s=${sid}&sig=`), 'URL 要含簽章');
     assert.equal(dc.body.components, undefined, '不再用 components(避免踩到 webhook 限制)');
   } finally { f.restore(); }
 });
 
-test('沒設 ACTION_SECRET:通知退回舊指引文字、不 crash', async () => {
+test('客人訊息含 * 字元不會弄壞後續 markdown(實錄 100*148 事件)', async () => {
+  const env = buttonEnv();
+  const f = stubFetch();
+  try {
+    const sid = await state.indexRoom(env, 'U-star');
+    await notifyEscalation(env, {
+      sid, name: 'HannahC',
+      question: '►完成尺寸：100*148(mm)\n►使用墨色：黑、紫堇',
+      kind: 'llm_escalate',
+    });
+    const embed = f.calls.find((c) => c.url.includes('discord')).body.embeds[0];
+    // 客人訊息要在 code block 內(讓 * 不會觸發斜體)
+    assert.ok(embed.description.includes('```'), '訊息要用 code block 隔離');
+    // 操作 field 完全隔開、URL 完好
+    const opsField = embed.fields.find((f) => f.name.includes('操作'));
+    assert.ok(opsField.value.startsWith('[') && opsField.value.includes('](https://'), '連結 markdown 完好');
+  } finally { f.restore(); }
+});
+
+test('沒設 ACTION_SECRET:通知退回 footer 指引文字、不 crash', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
   const f = stubFetch();
   try {
     const sid = await state.indexRoom(env, 'U-btn-fb');
     await notifyEscalation(env, { sid, name: null, question: '想估價', kind: 'llm_quote' });
-    const dc = f.calls.find((c) => c.url.includes('discord'));
-    assert.ok(dc.body.embeds[0].description.includes('在 LINE 對助手說'), '要有舊指引');
-    assert.ok(!dc.body.embeds[0].description.includes('/dc-action'), '沒 secret 就不該有連結');
+    const embed = f.calls.find((c) => c.url.includes('discord')).body.embeds[0];
+    assert.ok(embed.footer && embed.footer.text.includes('在 LINE 對助手說'), '要用 embed.footer 帶指引');
+    assert.equal(embed.fields, undefined, '沒 secret 就不該有操作 field');
+    const wholeEmbed = JSON.stringify(embed);
+    assert.ok(!wholeEmbed.includes('/dc-action'), '沒 secret 就不該有連結');
   } finally { f.restore(); }
 });
 
@@ -183,9 +205,9 @@ test('端到端:客人觸發轉人工 → Discord embed 含連結 → 穆穆按�
       message: { type: 'text', text: '請問可以贊助我們嗎' },
     });
     const dc = f.calls.find((c) => c.url.includes('discord'));
-    const desc = dc.body.embeds[0].description;
+    const opsField = dc.body.embeds[0].fields.find((f) => f.name.includes('操作'));
     // 從 markdown link 解析出接手 URL
-    const takeUrl = desc.match(/\((https:[^)]+\?a=t[^)]+)\)/)[1];
+    const takeUrl = opsField.value.match(/\((https:[^)]+\?a=t[^)]+)\)/)[1];
     // 穆穆按接手連結
     const res = await worker.fetch(new Request(takeUrl), env, { waitUntil: (p) => p });
     assert.equal(res.status, 200);

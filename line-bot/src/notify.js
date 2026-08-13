@@ -65,25 +65,33 @@ const KIND_LABEL = {
   call_owner: '🔔 客人呼叫老闆',
 };
 
-// 客人事件通知的完整卡片(embed + 內嵌接手/放行連結)
+// 客人事件通知的完整卡片(embed:訊息用 code block 隔離 markdown、操作放獨立 field)
+// 2026-08-09 修:客人訊息裡的 * 字元(如「100*148」)會觸發 Discord embed 斜體、
+// 把後續 markdown 連結解析壞掉;code block 內字元一律不 render markdown。
+// 三反引號要用替換法防客人自己貼 ``` 破環包裝(把客人的 ``` 換掉)。
 export async function escalationCard(env, { sid, name, question, kind }) {
   const who = name ? `${name}（#${sid}）` : `#${sid}`;
   const label = KIND_LABEL[kind] || kind;
   const links = await actionLinks(env, sid);
-  const footer = links
-    ? `${links.takeover}　｜　${links.release}`
-    : `（在 LINE 對助手說「接手 #${sid}」「放行 #${sid}」）`;
+  const q = String(question).slice(0, 500).replace(/```/g, '\'\'\'');
   const description = [
     `**🤖 AI助手留言板｜${label}**`,
     `客人：${who}`,
-    `訊息：${String(question).slice(0, 500)}`,
-    '',
-    footer,
+    '訊息：',
+    '```',
+    q,
+    '```',
   ].join('\n');
-  return {
-    content: '',
-    embeds: [{ description, color: 0xd4a373 }],
-  };
+  const embed = { description, color: 0xd4a373 };
+  if (links) {
+    embed.fields = [{
+      name: '⚡ 操作',
+      value: `${links.takeover}　｜　${links.release}`,
+    }];
+  } else {
+    embed.footer = { text: `在 LINE 對助手說「接手 #${sid}」「放行 #${sid}」` };
+  }
+  return { content: '', embeds: [embed] };
 }
 
 // 客人事件通知的一站式:算好內容、送出。handler 用這個。
