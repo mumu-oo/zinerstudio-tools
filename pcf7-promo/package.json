@@ -1,0 +1,12 @@
+{
+  "name": "pcf7-promo",
+  "private": true,
+  "type": "module",
+  "description": "PCF 7（台創祭 7）宣傳自動化 — Sheet 排程 → 噗浪/IG/Threads 三平台同步發文",
+  "scripts": {
+    "test": "node --test 'test/*.test.js'",
+    "dev": "npx wrangler dev --test-scheduled",
+    "deploy": "npx wrangler deploy",
+    "tail": "npx wrangler tail"
+  }
+}

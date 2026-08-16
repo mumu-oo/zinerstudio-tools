@@ -1,0 +1,34 @@
+# PCF 7（台創祭 7）宣傳自動化 — Cloudflare Worker
+# 讀 Google Sheet 投稿列 → 依排程時段自動發噗浪 / IG / Threads → 回寫狀態
+#
+# 部署前置（同 LINE bot 帳號 zinerstudio@gmail.com；wrangler 已登入）：
+#   npx wrangler secret put GOOGLE_SA_JSON        # service account 整包 JSON（pcf-bot@pcf7-505010）
+#   npx wrangler secret put PLURK_APP_KEY
+#   npx wrangler secret put PLURK_APP_SECRET
+#   npx wrangler secret put PLURK_TOKEN
+#   npx wrangler secret put PLURK_TOKEN_SECRET
+#   npx wrangler secret put IG_TOKEN              # long-lived（60 天，需定期 refresh）
+#   npx wrangler secret put IG_APP_SECRET
+#   npx wrangler secret put THREADS_TOKEN         # long-lived
+#   npx wrangler secret put THREADS_APP_SECRET
+#   npx wrangler deploy
+
+name = "pcf7-promo"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+[triggers]
+# 每 15 分掃一次（UTC cron；Worker 內部一律轉 Asia/Taipei 判斷）
+crons = ["*/15 * * * *"]
+
+[vars]
+SHEET_ID = "1PVHA9KstRY3SrZEX1svMMoFIVMrG3ZHIAMhiy2XHizA"
+SHEET_TAB = "表單回覆 1"
+# 非機密 ID
+PLURK_USER_ID = "15789358"
+IG_USER_ID = "27563262943356510"
+THREADS_USER_ID = "28979550804978811"
+# 一天五個時段（台北時間，HH:MM）
+POST_SLOTS = "09:00,12:00,15:00,18:00,21:00"
+# 開發期：true = 不真的發，只寫 log；上線前改 false
+DRY_RUN = "true"
