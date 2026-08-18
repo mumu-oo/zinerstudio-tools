@@ -781,7 +781,8 @@ input,select,textarea,button{font-family:var(--font);}
   <div class="fsec">
     <div class="stitle">運費</div>
     <select class="fsel" id="shippingType" onchange="shippingChange()">
-      <option value="convenience">超商取貨　$38</option>
+      <option value="convenience">7-11 賣貨便　$38</option>
+      <option value="cvs60">7-11 交貨便　$60</option>
       <option value="kuroneko">黑貓宅配　$150 起</option>
       <option value="delivery">場送　$0</option>
       <option value="pickup">工作室自取　$0</option>
@@ -2198,12 +2199,13 @@ function calcStandardAll() {
 
   // ── 運費 ──
   const shipType = val('shippingType');
-  let shipFee = 38, shipLabel = '超商取貨';
+  let shipFee = 38, shipLabel = '7-11 賣貨便';
   if (shipType === 'kuroneko')    { shipFee = num('kuronekoFee') || 150; shipLabel = '黑貓宅配'; }
+  else if (shipType === 'cvs60')  { shipFee = 60; shipLabel = '7-11 交貨便'; }
   else if (shipType === 'delivery') { shipFee = 0; shipLabel = '場送'; }
   else if (shipType === 'pickup') { shipFee = 0; shipLabel = '工作室自取'; }
   else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
-  else                            { shipFee = 38; shipLabel = '超商取貨'; }
+  else                            { shipFee = 38; shipLabel = '7-11 賣貨便'; }
 
   const total = subtotal + urgentAmt - discAmt - customDiscAmt + shipFee;
   return { items, subtotal, urgentAmt, discAmt, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
@@ -2259,8 +2261,9 @@ function calcNotepadAll() {
   }
 
   const shipType = val('shippingType');
-  let shipFee = 38, shipLabel = '超商取貨';
+  let shipFee = 38, shipLabel = '7-11 賣貨便';
   if (shipType === 'kuroneko')    { shipFee = num('kuronekoFee') || 150; shipLabel = '黑貓宅配'; }
+  else if (shipType === 'cvs60')  { shipFee = 60; shipLabel = '7-11 交貨便'; }
   else if (shipType === 'delivery') { shipFee = 0; shipLabel = '場送'; }
   else if (shipType === 'pickup') { shipFee = 0; shipLabel = '工作室自取'; }
   else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
