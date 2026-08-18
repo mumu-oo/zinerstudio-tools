@@ -26,7 +26,8 @@ test('①七項齊全 → AI 吐估價暗號 → 客人收到暖罐頭(不是冷
     const r = f.replies()[0];
     assert.equal(r, composeReply(ESCALATE_QUOTE_BODY, { sessionStart: true }).text);
     assert.ok(!r.includes('MUMU 上班後會依序與您聯繫'), '不該是冷版通用罐頭');
-    assert.ok(r.includes('依價目表算好'), '要是暖版收表格罐頭');
+    assert.ok(r.includes('www.zinerstudio.com/quote'), '暖罐頭要附試算機(2026-08-09 引擎退場後改導網)');
+    assert.ok(r.includes('www.zinerstudio.com/order'), '暖罐頭要附官網下單頁');
     const dc = f.calls.filter((c) => c.url.includes('discord'));
     assert.ok(dc.length >= 1, '要通知 Discord');
     assert.ok(dc[0].body.embeds[0].description.includes('估價單'), 'Discord 卡片要標明是估價');

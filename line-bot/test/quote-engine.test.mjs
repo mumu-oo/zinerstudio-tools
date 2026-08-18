@@ -1,4 +1,6 @@
-// 計價引擎:落版、表格解析、計價、端對端(貼表格→程式算→AI 不碰)
+// 計價引擎單元測試(2026-08-09 起 LINE 客服不再啟用引擎——穆穆決策:官網
+// 試算機+下單頁已完整,AI 只導流不算錢;quote.js 保留在 repo 備用,單元
+// 測試留著讓公式不會腐朽。)
 // 基準案例=穆穆 2026-08-09 的真實測試(A6 100張 正赤紅反金 米牙 襯紙yes 裁切yes)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -95,23 +97,22 @@ test('回覆文案:只給總額不列細項(2026-07-03 她拍板)、附試算機
   assert.ok(!body.includes('印刷基本費'), '不列細項');
 });
 
-test('端對端:客人貼齊表格 → 引擎直接回總額,AI 一次都不呼叫、通知穆穆含明細', async () => {
+test('端對端:客人貼齊表格 → 交給 AI 導試算機、handler 不算錢(2026-08-09 引擎退場)', async () => {
   const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
-  const f = stubFetch();
+  const f = stubFetch({ llmAnswer: '幫你抓報價可以自己用試算機喔～https://www.zinerstudio.com/quote' });
   try {
     await state.setMode(env, 'force_off_duty');
     await handleEvent(env, {
       type: 'message', replyToken: 'rt-1',
-      source: { type: 'user', userId: 'U-quote-e2e' },
+      source: { type: 'user', userId: 'U-quote-flow' },
       message: { type: 'text', text: FORM },
     });
-    assert.equal(f.llmCalls().length, 0, '錢的事不進 AI');
+    assert.equal(f.llmCalls().length, 1, '報價表格現在交給 AI 判斷、不再進引擎');
     const r = f.replies()[0];
-    assert.ok(r.includes('1,220 元'), `回覆要含總額:${r}`);
+    assert.ok(!/\d,\d{3} 元/.test(r), 'handler 不再自己算總額');
+    // 確認 Discord 沒有「引擎試算已回覆」字樣(那是舊路徑的 systemNoteCard)
     const dc = f.calls.find((c) => c.url.includes('discord'));
-    assert.ok(dc.body.content.includes('引擎試算已回覆'));
-    assert.ok(dc.body.content.includes('合計 1,220 元'), '穆穆的通知要有明細可對帳');
-    assert.ok(dc.body.content.includes('製版費(赤紅) 110'), '明細含製版');
+    if (dc) assert.ok(!dc.body.content?.includes('引擎試算'), '不再走引擎試算通知');
   } finally { f.restore(); }
 });
 
@@ -161,36 +162,5 @@ test('sanityCheck:尺寸太小/太大、張數/色數異常都抓、正常值放
   assert.equal(sanityCheck(fields), null, '正常 A6 100 張不該被抓');
 });
 
-test('端對端:29.7x21mm 進來 → 引擎反問、不算價、不進 AI、通知穆穆(Elsa Cheng 實錄修法)', async () => {
-  const env = mockEnv({ DISCORD_WEBHOOK_URL: 'https://discord.example/hook' });
-  const f = stubFetch();
-  try {
-    await state.setMode(env, 'force_off_duty');
-    const form = FORM.replace('A6', '29.7x21mm');
-    await handleEvent(env, {
-      type: 'message', replyToken: 'rt-1',
-      source: { type: 'user', userId: 'U-elsa' },
-      message: { type: 'text', text: form },
-    });
-    assert.equal(f.llmCalls().length, 0, '可疑值不進 AI');
-    const r = f.replies()[0];
-    assert.ok(r.includes('297×210mm'), '要提示 cm 換算');
-    assert.ok(!r.match(/\d{1,4} 元/), '反問時不該出現金額');
-    const dc = f.calls.find((c) => c.url.includes('discord'));
-    assert.ok(dc && dc.body.content.includes('引擎反問可疑值'), '要通知穆穆');
-  } finally { f.restore(); }
-});
-
-test('端對端:表格有缺項 → 不擋、交給 AI 追問', async () => {
-  const env = mockEnv();
-  const f = stubFetch({ llmAnswer: '差墨色喔,正反面各要印什麼顏色?' });
-  try {
-    await state.setMode(env, 'force_off_duty');
-    await handleEvent(env, {
-      type: 'message', replyToken: 'rt-1',
-      source: { type: 'user', userId: 'U-quote-part' },
-      message: { type: 'text', text: FORM.replace('正面 紅｜反面 金', '正面?｜反面?') },
-    });
-    assert.equal(f.llmCalls().length, 1, '缺項表格要進 AI 讓它追問');
-  } finally { f.restore(); }
-});
+// 舊「引擎反問可疑值」與「缺項交 AI」的端對端測試已隨引擎退場刪除;
+// sanityCheck / parseQuoteForm 的單元測試留在上面,函式本體(quote.js)也保留。

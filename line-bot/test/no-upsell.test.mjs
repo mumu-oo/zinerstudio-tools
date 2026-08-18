@@ -16,8 +16,8 @@ test('人設樑柱:店員人設+不配合表演+不自我介紹', () => {
 
 test('硬規則樑柱:資料唯一/錢/時間/轉人工', () => {
   assert.ok(sys.includes('唯一的資訊來源'), '資料唯一性');
-  assert.ok(sys.includes('►印刷張數'), '估價七行表格');
-  assert.ok(sys.includes('計算不是你的事'), 'AI 不算總價');
+  assert.ok(sys.includes('www.zinerstudio.com/quote'), '估價一律導試算機(2026-08-09 引擎退場)');
+  assert.ok(sys.includes('總價一律不算'), 'AI 不算總價');
   assert.ok(sys.includes('不自行標注某天是星期幾'), '不編星期幾');
   assert.ok(sys.includes(ESCALATE_SENTINEL), '轉人工暗號');
   assert.ok(sys.includes('與印刷無關的訊息不轉人工'), '無關訊息不進穆穆的留言板');

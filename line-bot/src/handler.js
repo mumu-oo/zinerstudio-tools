@@ -5,7 +5,10 @@ import * as state from './state.js';
 import * as guard from './guard.js';
 import { LIMITS } from './config.js';
 import { retrieve, allEntries } from './kb.js';
-import { looksLikeQuoteForm, parseQuoteForm, calcQuote, quoteReplyBody, quoteDetailForMumu, sanityCheck, sanityReplyBody } from './quote.js';
+// 計價引擎(quote.js)保留在 repo 備用(內部工具),但 2026-08-09 起 LINE 客服不再
+// 呼叫引擎——穆穆決策:官網試算機+官網下單頁已是完整方案,AI 只做導流不算錢;
+// 半吊子的算錢能力反而傷品牌(算錯風險大於便利)。相關 code 保留無害、隨時可
+// 掛回。若要重啟,恢復 looksLikeQuoteForm 分支即可。
 import { chatComplete } from './llm.js';
 import { reply, showLoading, getDisplayName } from './line.js';
 import { notify, notifyEscalation, systemNoteCard } from './notify.js';
@@ -103,41 +106,7 @@ async function customerFlow(env, { uid, text, replyToken, simulated = false }) {
     return;
   }
 
-  // 7.5) 客人貼回填好的 ►報價表格 → 計價引擎直接算,AI 全程不碰數字
-  //      (2026-08-09 穆穆抓包:七項填齊 AI 還轉人工投降。錢的事交程式,不再指望 LLM 選對暗號)
-  if (looksLikeQuoteForm(text)) {
-    const { fields, missing } = parseQuoteForm(text);
-    if (missing.length === 0) {
-      // 可疑值先攔——程式判定超過預設值(尺寸太小/太大、張數異常等)→ 反問客人,不算價
-      const susp = sanityCheck(fields);
-      if (susp) {
-        const body = sanityReplyBody(susp);
-        await state.logExchange(env, uid, 'quote_sanity_reask', text, body);
-        await notify(env, systemNoteCard(`❓ 引擎反問可疑值（#${sid}）`, [
-          ...susp.map((i) => `${i.field}「${i.value}」→ ${i.hint}`),
-          '已請客人重新確認再貼。',
-        ]));
-        await reply(env, replyToken, composeReply(body, { sessionStart }));
-        await state.pushHistory(env, uid, 'user', text);
-        await state.pushHistory(env, uid, 'assistant', body);
-        return;
-      }
-      const result = calcQuote(fields);
-      if (result.ok) {
-        const body = quoteReplyBody(fields, result);
-        await state.logExchange(env, uid, 'quoted_engine', text, body);
-        await notify(env, systemNoteCard(`💰 引擎試算已回覆（#${sid}）`, [quoteDetailForMumu(fields, result)]));
-        await reply(env, replyToken, composeReply(body, { sessionStart }));
-        await state.pushHistory(env, uid, 'user', text);
-        await state.pushHistory(env, uid, 'assistant', body);
-        return;
-      }
-      // 算不出來(尺寸超範圍等)→ 走人工,原因附進通知
-      await escalate(env, { uid, sid, replyToken, text: `${text}\n(引擎:${result.reason})`, kind: 'llm_quote', sessionStart });
-      return;
-    }
-    // 表格有缺 → 交給 AI 追問缺項(它看得到表格內容與缺什麼)
-  }
+  // 7.5) 舊引擎分支已 2026-08-09 拆除——客人任何估價需求交 AI 導試算機/官網下單頁。
 
   // 8) 額度與熔斷(「測試」模擬不佔額度——老闆娘測試不該被自家保險絲電到)
   if (!simulated) {
