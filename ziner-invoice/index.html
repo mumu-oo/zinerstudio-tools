@@ -513,7 +513,7 @@ input,select,textarea,button{font-family:var(--font);}
       <a class="form-top-jump-link" href="letter.html">寫信去</a>
     </div>
     Ziner Studio ✦ 報價單產生器
-    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v2.3.1｜2026.08.04</span></small>
+    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v2.4｜2026.08.06</span></small>
   </div>
 
   <!-- Logo upload hidden (logo is embedded) -->
@@ -561,9 +561,22 @@ input,select,textarea,button{font-family:var(--font);}
       <div class="fw2">
         <label class="flbl">成品尺寸</label>
         <select class="fsel" id="notepadSize" onchange="update()">
-          <option value="A7">A7（10 模/A3）</option>
-          <option value="A6">A6（4 模/A3）</option>
+          <option value="A7">A7 74×105（8 模/A3）</option>
+          <option value="A6">A6 105×148（4 模/A3）</option>
+          <option value="custom">自訂尺寸（自動算模數）</option>
         </select>
+      </div>
+      <div class="fw1" id="notepadCustomWrap" style="display:none">
+        <label class="flbl">寬 mm</label>
+        <input class="finp" type="number" id="notepadW" placeholder="70" oninput="update()">
+      </div>
+      <div class="fw1" id="notepadCustomWrapH" style="display:none">
+        <label class="flbl">高 mm</label>
+        <input class="finp" type="number" id="notepadH" placeholder="100" oninput="update()">
+      </div>
+      <div class="fw1">
+        <label class="flbl">模數/A3</label>
+        <input class="finp" type="text" id="notepadUpShow" readonly value="8" style="background:transparent">
       </div>
     </div>
     <div class="frow">
@@ -792,6 +805,30 @@ input,select,textarea,button{font-family:var(--font);}
     </label>
   </div>
 
+  <!-- 自訂優惠（兩模式都顯示） -->
+  <div class="fsec">
+    <div class="stitle">自訂優惠</div>
+    <label class="chk-row" onclick="toggleChk('chkCustomPromo','customPromoSub')">
+      <div class="chk-info">
+        <span class="chk-lbl" id="customPromoLabel">8 月優惠 88 折</span>
+        <span class="chk-sub">套用於小計金額（可自訂名稱與折數）</span>
+      </div>
+      <div class="sw"><input type="checkbox" id="chkCustomPromo" onchange="update()"><span class="sw-tr"></span></div>
+    </label>
+    <div id="customPromoSub" class="sub-content">
+      <div class="frow">
+        <div class="fw2">
+          <label class="flbl">優惠名稱</label>
+          <input class="finp" id="customPromoName" type="text" value="8 月優惠" oninput="updateCustomPromoLabel(); update()">
+        </div>
+        <div class="fw1">
+          <label class="flbl">折（1-99）</label>
+          <input class="finp" id="customPromoRate" type="number" min="1" max="99" value="88" oninput="updateCustomPromoLabel(); update()">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 加購 / 其他項目 -->
   <div class="fsec">
     <div class="sec-hd">
@@ -931,6 +968,9 @@ input,select,textarea,button{font-family:var(--font);}
           </div>
           <div class="inv-trow negative" id="invDiscRow" style="display:none">
             <span>試印優惠 88折</span><span class="amt" id="invDiscAmt"></span>
+          </div>
+          <div class="inv-trow negative" id="invCustomPromoRow" style="display:none">
+            <span id="invCustomPromoLbl">自訂優惠</span><span class="amt" id="invCustomPromoAmt"></span>
           </div>
           <div class="inv-trow">
             <span id="invShipLbl">超商取貨</span><span class="amt" id="invShipAmt">$38</span>
@@ -1279,12 +1319,22 @@ function getNotepadPrintUnitPrice(jobCount) {
   return 5;
 }
 
+/* 便條紙一張 A3 排幾模（2026-08-18 穆穆實測定的公式：每格加 17mm 縫（含裁切標記）、兩向都算取大、留 1mm 餘裕）
+   實測錨點：66 寬能 5 直、67 寬爆掉只能 4；70×100 → 8；A7 74×105 → 8；A6 105×148 → 4 */
+const NOTEPAD_GUTTER = 17;
+function notepadUpPerA3(size, w, h) {
+  if (size === 'A6') return 4;    /* 穆穆實排：A6 轉向排 2×2 */
+  if (size === 'A7') return 8;    /* 74×105：4×2 */
+  if (!(w > 0 && h > 0)) return 8;
+  /* 方向固定：寬沿 A3 長邊 420、高沿短邊 297（膠條同一邊、不轉向）；留 1mm 餘裕 */
+  return Math.max(1, Math.floor(419 / (w + NOTEPAD_GUTTER)) * Math.floor(296 / (h + NOTEPAD_GUTTER)));
+}
 function getNotepadModeData() {
   const jobCount = normalizeNotepadJobCount();
   const sheetsPerPad = normalizeNotepadSheetsPerPad();
   const actualBooks = getNotepadActualBooks(jobCount);
   const size = val('notepadSize') || 'A7';
-  const upPerA3 = size === 'A6' ? 4 : 10;
+  const upPerA3 = notepadUpPerA3(size, parseFloat(val('notepadW')), parseFloat(val('notepadH')));
   const a3PerLayer = Math.ceil(actualBooks / upPerA3);
   const paperSheets = sheetsPerPad * a3PerLayer;
   const backingSheets = a3PerLayer;
@@ -2007,6 +2057,13 @@ function toggleChk(id, subId) {
   }, 0);
 }
 
+function updateCustomPromoLabel() {
+  const name = val('customPromoName') || '自訂優惠';
+  const rate = num('customPromoRate') || 88;
+  const el = $('customPromoLabel');
+  if (el) el.textContent = `${name} ${rate} 折`;
+}
+
 
 /* ════════════════════════════
    Calculation
@@ -2130,6 +2187,15 @@ function calcStandardAll() {
   const baseForDiscount = subtotal + urgentAmt - excludedFromDiscount;
   if (chk('chkDiscount')) discAmt = Math.round(baseForDiscount * 0.12);
 
+  // ── 自訂優惠（跟試印折扣走同底、可疊但為加成不複利） ──
+  let customDiscAmt = 0;
+  let customPromoLabel = '';
+  if (chk('chkCustomPromo')) {
+    const rate = Math.max(1, Math.min(99, num('customPromoRate') || 88));
+    customDiscAmt = Math.round(baseForDiscount * (1 - rate/100));
+    customPromoLabel = `${val('customPromoName') || '自訂優惠'} ${rate} 折`;
+  }
+
   // ── 運費 ──
   const shipType = val('shippingType');
   let shipFee = 38, shipLabel = '超商取貨';
@@ -2139,8 +2205,8 @@ function calcStandardAll() {
   else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
   else                            { shipFee = 38; shipLabel = '超商取貨'; }
 
-  const total = subtotal + urgentAmt - discAmt + shipFee;
-  return { items, subtotal, urgentAmt, discAmt, shipFee, shipLabel, total, totalPaperSheets };
+  const total = subtotal + urgentAmt - discAmt - customDiscAmt + shipFee;
+  return { items, subtotal, urgentAmt, discAmt, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
 }
 
 function calcNotepadAll() {
@@ -2199,8 +2265,17 @@ function calcNotepadAll() {
   else if (shipType === 'pickup') { shipFee = 0; shipLabel = '工作室自取'; }
   else if (shipType === 'courier'){ shipFee = 0; shipLabel = '自叫快遞'; }
 
-  const total = subtotal + urgentAmt + shipFee;
-  return { items, subtotal, urgentAmt, discAmt:0, shipFee, shipLabel, total, notepad:np };
+  // ── 自訂優惠（便條紙也吃、套整單小計）──
+  let customDiscAmt = 0;
+  let customPromoLabel = '';
+  if (chk('chkCustomPromo')) {
+    const rate = Math.max(1, Math.min(99, num('customPromoRate') || 88));
+    customDiscAmt = Math.round((subtotal + urgentAmt) * (1 - rate/100));
+    customPromoLabel = `${val('customPromoName') || '自訂優惠'} ${rate} 折`;
+  }
+
+  const total = subtotal + urgentAmt - customDiscAmt + shipFee;
+  return { items, subtotal, urgentAmt, discAmt:0, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, notepad:np };
 }
 
 function calcAll() {
@@ -2211,6 +2286,16 @@ function calcAll() {
    Render
 ════════════════════════════ */
 function update() {
+  /* 便條紙：自訂尺寸欄顯隱＋模數即時顯示 */
+  try {
+    const sz = val('notepadSize') || 'A7';
+    const isCustom = sz === 'custom';
+    const w1 = document.getElementById('notepadCustomWrap'), w2 = document.getElementById('notepadCustomWrapH');
+    if (w1) w1.style.display = isCustom ? '' : 'none';
+    if (w2) w2.style.display = isCustom ? '' : 'none';
+    const up = notepadUpPerA3(sz, parseFloat(val('notepadW')), parseFloat(val('notepadH')));
+    const show = document.getElementById('notepadUpShow'); if (show) show.value = up;
+  } catch (e) {}
   const data = calcAll();
   const notepadMode = isNotepadMode();
 
@@ -2307,6 +2392,11 @@ function update() {
     $('invDiscRow').style.display = '';
     $('invDiscAmt').textContent = `-${fmt(data.discAmt)}`;
   } else { $('invDiscRow').style.display = 'none'; }
+  if (data.customDiscAmt > 0) {
+    $('invCustomPromoRow').style.display = '';
+    $('invCustomPromoLbl').textContent = data.customPromoLabel || '自訂優惠';
+    $('invCustomPromoAmt').textContent = `-${fmt(data.customDiscAmt)}`;
+  } else { $('invCustomPromoRow').style.display = 'none'; }
   $('invShipLbl').textContent = data.shipLabel;
   $('invShipAmt').textContent = data.shipFee === 0 ? '$0' : fmt(data.shipFee);
   $('invTotal').textContent   = fmt(data.total);
@@ -2339,10 +2429,13 @@ function buildBackupPayload() {
       notepadBackingCustomPrice: val('notepadBackingCustomPrice'),
       notepadCount: val('notepadCount'),
       notepadSize: val('notepadSize'),
+      notepadW: val('notepadW'), notepadH: val('notepadH'),
       bindingType: val('bindingType'),
       bindingCount: val('bindingCount'),
       stitchSize: val('stitchSize'),
       stitchCount: val('stitchCount'),
+      customPromoName: val('customPromoName'),
+      customPromoRate: val('customPromoRate'),
       invoiceNote: val('invoiceNote'),
       chkUrgent: chk('chkUrgent'),
       chkLining: chk('chkLining'),
@@ -2350,7 +2443,8 @@ function buildBackupPayload() {
       chkBinding: chk('chkBinding'),
       chkStitch: chk('chkStitch'),
       chkStitchWashi: chk('chkStitchWashi'),
-      chkDiscount: chk('chkDiscount')
+      chkDiscount: chk('chkDiscount'),
+      chkCustomPromo: chk('chkCustomPromo')
     },
     orderRows: orderRows.map(row => ({ ...row })),
     paperRows: paperRows.map(row => ({ ...row })),
@@ -2384,13 +2478,17 @@ function applyBackupPayload(payload = {}) {
   $('notepadBackingCustomPrice').value = form.notepadBackingCustomPrice || '';
   $('notepadCount').value = form.notepadCount || '40';
   $('notepadSize').value = form.notepadSize || 'A7';
+  if ($('notepadW')) $('notepadW').value = form.notepadW || '';
+  if ($('notepadH')) $('notepadH').value = form.notepadH || '';
   $('bindingType').value = form.bindingType || 'saddle';
   $('bindingCount').value = form.bindingCount || '20';
   $('stitchSize').value = form.stitchSize || 'A4';
   $('stitchCount').value = form.stitchCount || '10';
+  $('customPromoName').value = form.customPromoName || '8 月優惠';
+  $('customPromoRate').value = form.customPromoRate || '88';
   $('invoiceNote').value = form.invoiceNote || '';
 
-  ['chkUrgent', 'chkLining', 'chkNotepad', 'chkBinding', 'chkStitch', 'chkStitchWashi', 'chkDiscount'].forEach(id => {
+  ['chkUrgent', 'chkLining', 'chkNotepad', 'chkBinding', 'chkStitch', 'chkStitchWashi', 'chkDiscount', 'chkCustomPromo'].forEach(id => {
     if ($(id)) $(id).checked = Boolean(form[id]);
   });
 
@@ -2417,6 +2515,8 @@ function applyBackupPayload(payload = {}) {
   $('notepadSub')?.classList.toggle('open', chk('chkNotepad'));
   $('bindingSub')?.classList.toggle('open', chk('chkBinding'));
   $('stitchSub')?.classList.toggle('open', chk('chkStitch'));
+  $('customPromoSub')?.classList.toggle('open', chk('chkCustomPromo'));
+  updateCustomPromoLabel();
   renderOrderRows();
   renderPaperRows();
   renderCutRows();
@@ -2539,13 +2639,18 @@ function resetForm() {
   $('notepadBackingCustomPrice').value = '';
   $('notepadCount').value = '40';
   $('notepadSize').value  = 'A7';
+  if ($('notepadW')) $('notepadW').value = '';
+  if ($('notepadH')) $('notepadH').value = '';
   $('bindingType').value  = 'saddle';
   $('bindingCount').value = '20';
   $('stitchSize').value   = 'A4';
   $('stitchCount').value  = '10';
+  $('customPromoName').value = '8 月優惠';
+  $('customPromoRate').value = '88';
   $('invoiceNote').value  = '';
-  ['chkUrgent','chkLining','chkNotepad','chkBinding','chkStitch','chkStitchWashi','chkDiscount'].forEach(id => { if ($(id)) $(id).checked = false; });
-  ['notepadSub','bindingSub','stitchSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
+  ['chkUrgent','chkLining','chkNotepad','chkBinding','chkStitch','chkStitchWashi','chkDiscount','chkCustomPromo'].forEach(id => { if ($(id)) $(id).checked = false; });
+  ['notepadSub','bindingSub','stitchSub','customPromoSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
+  updateCustomPromoLabel();
   $('orderType').value = '';
 
   // Reset inks
