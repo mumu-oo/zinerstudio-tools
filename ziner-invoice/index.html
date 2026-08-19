@@ -722,7 +722,7 @@ input,select,textarea,button{font-family:var(--font);}
     </label>
     <div id="notepadSub" class="sub-content" style="display:none;">
       <label class="flbl">本數</label>
-      <input class="finp" id="notepadCount" type="text" inputmode="decimal" data-expr value="40" style="width:100px" oninput="update()">
+      <input class="finp" id="notepadCount" type="number" min="1" value="40" style="width:100px" oninput="update()">
     </div>
     <label class="chk-row" onclick="toggleChk('chkBinding','bindingSub')" style="margin-top:10px;">
       <div class="chk-info">
@@ -742,7 +742,7 @@ input,select,textarea,button{font-family:var(--font);}
         </div>
         <div class="fw1">
           <label class="flbl">本數</label>
-          <input class="finp" id="bindingCount" type="text" inputmode="decimal" data-expr value="20" oninput="update()">
+          <input class="finp" id="bindingCount" type="number" min="1" value="20" oninput="update()">
         </div>
       </div>
     </div>
@@ -764,7 +764,7 @@ input,select,textarea,button{font-family:var(--font);}
         </div>
         <div class="fw1">
           <label class="flbl">本數</label>
-          <input class="finp" id="stitchCount" type="text" inputmode="decimal" data-expr value="10" oninput="update()">
+          <input class="finp" id="stitchCount" type="number" min="1" value="10" oninput="update()">
         </div>
       </div>
       <label class="chk-row" style="margin-top:8px;padding:6px 10px;border-radius:6px;background:var(--panel);">
@@ -1130,9 +1130,9 @@ let paperManagerDraft = [];
 ════════════════════════════ */
 const $   = id => document.getElementById(id);
 const val = id => $(id)?.value ?? '';
-const num = id => evalExpr(val(id)) ?? (parseFloat(val(id)) || 0);
+const num = id => parseFloat(val(id)) || 0;
 
-/* ── 數量格可打算式（穆穆 8/19：劉小姐多筆單 55+55+120+120 不想再按計算機）──
+/* ── 紙材「張數（A3）」可打算式（穆穆 8/19：劉小姐多筆單 55+55+120+120 不想再按計算機；只這一格）──
    只吃數字與 + - × ÷ * / ( ) . 空白；算得出回數字、算不出回 null（呼叫端退回原本 parseFloat）
    失焦（focusout）時把格子裡的算式換成結果、再觸發 input 讓畫面同步 */
 function evalExpr(str) {
@@ -1460,8 +1460,8 @@ function renderOrderRows() {
         </div>
         <div style="flex:2">
           ${i === 0 ? '<label class="flbl">張數</label>' : '<label class="flbl" style="visibility:hidden">張數</label>'}
-          <input class="finp" type="text" inputmode="decimal" data-expr value="${row.qty}"
-            oninput="setOrderField(${row.id},'qty',this.value)" placeholder="0（可打 55+55）">
+          <input class="finp" type="number" min="1" value="${row.qty}"
+            oninput="setOrderField(${row.id},'qty',this.value)" placeholder="0">
         </div>
       </div>
       ${row.size === 'custom' ? `
@@ -1476,7 +1476,7 @@ function renderOrderRows() {
 function setOrderField(id, field, value) {
   const row = orderRows.find(r => r.id === id);
   if (!row) return;
-  row[field] = field === 'qty' ? (evalExpr(value) ?? (parseFloat(value) || '')) : value;
+  row[field] = value;
   if (field === 'size') renderOrderRows();
   update();
 }
@@ -1740,7 +1740,7 @@ function renderNotepadExtraPaperRows() {
           oninput="setNotepadExtraPaperField(${row.id},'customPrice',this.value)" style="margin-bottom:5px;">` : ''}
       <div style="max-width:180px;">
         <label class="flbl">張數（A3）</label>
-        <input class="finp" type="text" inputmode="decimal" data-expr value="${row.sheets || ''}" placeholder="0"
+        <input class="finp" type="number" min="1" value="${row.sheets || ''}" placeholder="0"
           oninput="setNotepadExtraPaperField(${row.id},'sheets',this.value)">
       </div>
     </div>
@@ -1772,7 +1772,7 @@ function removeNotepadExtraPaperRow(id) {
 function setNotepadExtraPaperField(id, field, value) {
   const row = notepadExtraPaperRows.find(r => r.id === id);
   if (!row) return;
-  row[field] = ['customPrice','sheets'].includes(field) ? (evalExpr(value) ?? (parseFloat(value) || 0)) : value;
+  row[field] = ['customPrice','sheets'].includes(field) ? (parseFloat(value) || 0) : value;
   if (field === 'type' || field === 'purpose') renderNotepadExtraPaperRows();
   update();
 }
@@ -1805,7 +1805,7 @@ function renderPaperRows() {
         </div>
         <div style="flex:1">
           <label class="flbl">耗量</label>
-          <input class="finp" type="text" inputmode="decimal" data-expr value="${row.waste||0}"
+          <input class="finp" type="number" min="0" value="${row.waste||0}"
             oninput="setPaperField(${row.id},'waste',this.value)">
         </div>
       </div>
@@ -1845,8 +1845,10 @@ function removePaperRow(id) {
 function setPaperField(id, field, value) {
   const row = paperRows.find(r => r.id === id);
   if (!row) return;
-  if (['sheets','waste','customPrice'].includes(field)) {
-    row[field] = evalExpr(value) ?? (parseFloat(value) || 0);
+  if (field === 'sheets') {
+    row.sheets = evalExpr(value) ?? (parseFloat(value) || 0);   /* 紙材張數吃算式（穆穆 8/19） */
+  } else if (['waste','customPrice'].includes(field)) {
+    row[field] = parseFloat(value) || 0;
   } else if (['suppliedByClient','lining'].includes(field)) {
     row[field] = Boolean(value);
   } else {
@@ -1880,7 +1882,7 @@ function renderCutRows() {
       ${row.type !== 'none' ? `
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
           <label style="font-size:11px;color:var(--muted);white-space:nowrap;">${row.type === 'custom' ? '刀數' : '件數'}</label>
-          <input class="finp" type="text" inputmode="decimal" data-expr value="${row.qty||1}" style="width:72px"
+          <input class="finp" type="number" min="1" value="${row.qty||1}" style="width:72px"
             oninput="setCutField(${row.id},'qty',this.value)">
           <span style="font-size:12px;color:var(--muted)">${row.type === 'custom' ? '刀' : '件'}</span>
         </div>` : ''}
@@ -1922,7 +1924,7 @@ function renderExtraRows() {
         </div>
         <div class="fw1">
           <label class="flbl">數量</label>
-          <input class="finp" type="text" inputmode="decimal" data-expr value="${row.qty}" oninput="setExtraField(${row.id},'qty',this.value)">
+          <input class="finp" type="number" min="1" value="${row.qty}" oninput="setExtraField(${row.id},'qty',this.value)">
         </div>
       </div>
       <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;">
@@ -1943,7 +1945,7 @@ function delExtraRow(id) {
 function setExtraField(id, field, val) {
   const row = extraRows.find(r=>r.id===id);
   if (!row) return;
-  row[field] = (field==='price'||field==='qty') ? (evalExpr(val) ?? (parseFloat(val)||0)) : val;
+  row[field] = (field==='price'||field==='qty') ? (parseFloat(val)||0) : val;
   update();
 }
 
@@ -2058,7 +2060,7 @@ function removeCutRow(id) {
 function setCutField(id, field, value) {
   const row = cutRows.find(r => r.id === id);
   if (!row) return;
-  row[field] = field === 'qty' ? (Math.round(evalExpr(value) ?? parseInt(value)) || 1) : value;
+  row[field] = field === 'qty' ? (parseInt(value)||1) : value;
   if (field === 'type') renderCutRows();
   update();
 }
