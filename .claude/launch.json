@@ -1,0 +1,62 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "riso-quote",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": [
+        "-e",
+        "require('http').createServer((req,res)=>{const fs=require('fs'),path=require('path');let f=path.join('/Users/mumu/Documents/zinerstudio_makesomething',req.url==='/'?'/riso-quote.html':req.url);fs.readFile(f,(e,d)=>{if(e){res.writeHead(404);res.end();}else{const ext=path.extname(f);const t={'html':'text/html','js':'text/javascript','css':'text/css','png':'image/png'}[ext.slice(1)]||'text/plain';res.writeHead(200,{'Content-Type':t});res.end(d);}});}).listen(4321,()=>console.log('ok'))"
+      ],
+      "port": 4321
+    },
+    {
+      "name": "ziner-order",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4322",
+        "--directory",
+        "/Users/mumu/Documents/ziner-order-system/site"
+      ],
+      "port": 4322
+    },
+    {
+      "name": "iframe-test",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4325",
+        "--directory",
+        "/private/tmp/claude-501/-Users-mumu-Documents-zinerstudio-makesomething/8d296de6-2ced-43c6-b4cb-632f35c8341f/scratchpad"
+      ],
+      "port": 4325
+    },
+    {
+      "name": "wo-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4323",
+        "--directory",
+        "/private/tmp/claude-501/-Users-mumu-Documents-zinerstudio-makesomething/8d296de6-2ced-43c6-b4cb-632f35c8341f/scratchpad"
+      ],
+      "port": 4323
+    },
+    {
+      "name": "ziner-invoice",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4326",
+        "--directory",
+        "/Users/mumu/Documents/zinerstudio_makesomething/ziner-invoice"
+      ],
+      "port": 4326
+    }
+  ]
+}
