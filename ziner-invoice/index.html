@@ -802,13 +802,8 @@ input,select,textarea,button{font-family:var(--font);}
         <span class="chk-lbl">試印優惠 88折</span>
         <span class="chk-sub">套用於小計金額</span>
       </div>
-      <div class="sw"><input type="checkbox" id="chkDiscount" onchange="toggleDiscountSub(); update()"><span class="sw-tr"></span></div>
+      <div class="sw"><input type="checkbox" id="chkDiscount" onchange="update()"><span class="sw-tr"></span></div>
     </label>
-    <div id="discountSub" class="sub-content">
-      <label class="flbl">只折這個金額（留空＝整張小計；可打算式）</label>
-      <input class="finp" id="discountBase" type="text" inputmode="decimal" data-expr placeholder="例：250×2+5.5×110" oninput="update()">
-      <div class="chk-sub" id="discountBaseHint" style="margin-top:4px"></div>
-    </div>
   </div>
 
   <!-- 自訂優惠（兩模式都顯示） -->
@@ -2083,7 +2078,6 @@ function shippingChange() {
   update();
 }
 
-function toggleDiscountSub() { const on = chk('chkDiscount'); const el = $('discountSub'); if (el) el.classList.toggle('open', on); }
 function toggleChk(id, subId) {
   setTimeout(() => {
     $(subId)?.classList.toggle('open', chk(id));
@@ -2219,10 +2213,7 @@ function calcStandardAll() {
   // ── 試印折扣（排除折扣項目不進底數） ──
   let discAmt = 0;
   const baseForDiscount = subtotal + urgentAmt - excludedFromDiscount;
-  /* 只折部分（穆穆 8/19：劉小姐一張單裡只有兩件試印）：discountBase 有填就用它當底、沒填照整張 */
-  const discBaseInput = chk('chkDiscount') ? (evalExpr(val('discountBase')) ?? (parseFloat(val('discountBase')) || 0)) : 0;
-  const discBase = discBaseInput > 0 ? Math.min(discBaseInput, baseForDiscount) : baseForDiscount;
-  if (chk('chkDiscount')) discAmt = Math.round(discBase * 0.12);
+  if (chk('chkDiscount')) discAmt = Math.round(baseForDiscount * 0.12);
 
   // ── 自訂優惠（跟試印折扣走同底、可疊但為加成不複利） ──
   let customDiscAmt = 0;
@@ -2244,7 +2235,7 @@ function calcStandardAll() {
   else                            { shipFee = 38; shipLabel = '7-11 賣貨便'; }
 
   const total = subtotal + urgentAmt - discAmt - customDiscAmt + shipFee;
-  return { items, subtotal, urgentAmt, discAmt, discBase, discPartial: discBaseInput > 0, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
+  return { items, subtotal, urgentAmt, discAmt, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
 }
 
 function calcNotepadAll() {
@@ -2430,7 +2421,6 @@ function update() {
   if (data.discAmt > 0) {
     $('invDiscRow').style.display = '';
     $('invDiscAmt').textContent = `-${fmt(data.discAmt)}`;
-    $('discountBaseHint').textContent = data.discPartial ? `只折 ${fmt(data.discBase)} → 折 ${fmt(data.discAmt)}` : `整張小計 ${fmt(data.discBase)} → 折 ${fmt(data.discAmt)}`;
   } else { $('invDiscRow').style.display = 'none'; }
   if (data.customDiscAmt > 0) {
     $('invCustomPromoRow').style.display = '';
@@ -2474,7 +2464,6 @@ function buildBackupPayload() {
       bindingCount: val('bindingCount'),
       stitchSize: val('stitchSize'),
       stitchCount: val('stitchCount'),
-      discountBase: val('discountBase'),
       customPromoName: val('customPromoName'),
       customPromoRate: val('customPromoRate'),
       invoiceNote: val('invoiceNote'),
@@ -2525,7 +2514,6 @@ function applyBackupPayload(payload = {}) {
   $('bindingCount').value = form.bindingCount || '20';
   $('stitchSize').value = form.stitchSize || 'A4';
   $('stitchCount').value = form.stitchCount || '10';
-  $('discountBase').value = form.discountBase || '';
   $('customPromoName').value = form.customPromoName || '8 月優惠';
   $('customPromoRate').value = form.customPromoRate || '88';
   $('invoiceNote').value = form.invoiceNote || '';
@@ -2533,7 +2521,6 @@ function applyBackupPayload(payload = {}) {
   ['chkUrgent', 'chkLining', 'chkNotepad', 'chkBinding', 'chkStitch', 'chkStitchWashi', 'chkDiscount', 'chkCustomPromo'].forEach(id => {
     if ($(id)) $(id).checked = Boolean(form[id]);
   });
-  toggleDiscountSub();
 
   Object.keys(inkFront).forEach(key => delete inkFront[key]);
   Object.assign(inkFront, payload.inkFront || {});
@@ -2692,7 +2679,6 @@ function resetForm() {
   $('customPromoRate').value = '88';
   $('invoiceNote').value  = '';
   ['chkUrgent','chkLining','chkNotepad','chkBinding','chkStitch','chkStitchWashi','chkDiscount','chkCustomPromo'].forEach(id => { if ($(id)) $(id).checked = false; });
-  $('discountBase').value = ''; toggleDiscountSub();
   ['notepadSub','bindingSub','stitchSub','customPromoSub','kuronekoRow'].forEach(id => $(id)?.classList.remove('open'));
   updateCustomPromoLabel();
   $('orderType').value = '';
