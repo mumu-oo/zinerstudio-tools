@@ -168,6 +168,7 @@ input,select,textarea,button{font-family:var(--font);}
 /* collapsible sub-content */
 .sub-content{padding-top:8px;display:none;}
 .sub-content.open{display:block;}
+.trial-block{border:1px dashed var(--lav-strong,#8A76BE);border-radius:8px;padding:10px 12px 12px;margin-top:6px;}
 
 /* Buttons */
 .btn{
@@ -513,7 +514,7 @@ input,select,textarea,button{font-family:var(--font);}
       <a class="form-top-jump-link" href="letter.html">寫信去</a>
     </div>
     Ziner Studio ✦ 報價單產生器
-    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v2.6.0｜2026.08.19</span></small>
+    <small>填寫左欄，右側即時預覽　<span id="uiVersionLabel">v2.7.0｜2026.08.19</span></small>
   </div>
 
   <!-- Logo upload hidden (logo is embedded) -->
@@ -800,10 +801,38 @@ input,select,textarea,button{font-family:var(--font);}
     <label class="chk-row">
       <div class="chk-info">
         <span class="chk-lbl">試印優惠 88折</span>
-        <span class="chk-sub">套用於小計金額</span>
+        <span class="chk-sub">打開後下面多一塊「試印件」，填法跟上面一樣、那塊整塊 88 折</span>
       </div>
-      <div class="sw"><input type="checkbox" id="chkDiscount" onchange="update()"><span class="sw-tr"></span></div>
+      <div class="sw"><input type="checkbox" id="chkDiscount" onchange="toggleDiscountSub(); update()"><span class="sw-tr"></span></div>
     </label>
+    <div id="discountSub" class="sub-content">
+      <div class="trial-block">
+        <div class="stitle" style="margin-top:4px">試印件（這塊 88 折）</div>
+        <div class="frow" style="gap:6px;align-items:end;margin-bottom:10px;">
+          <div style="flex:1">
+            <label class="flbl">試印件數</label>
+            <input class="finp" id="trialOrders" type="number" min="1" value="1" oninput="update()" title="每件 $250 基本費">
+          </div>
+        </div>
+        <div class="ink-side-lbl">▸ 正面墨色</div>
+        <div class="ink-grid" id="inkFrontGrid-trial"></div>
+        <div class="ink-qty-row" id="inkFrontQty-trial"></div>
+        <div class="ink-side-lbl" style="margin-top:10px;">▸ 背面墨色</div>
+        <div class="ink-grid" id="inkBackGrid-trial"></div>
+        <div class="ink-qty-row" id="inkBackQty-trial"></div>
+        <div class="sec-hd" style="margin-top:12px">
+          <div class="stitle">紙材費</div>
+          <button class="btn-add-row" onclick="addPaperRow('trial')">＋ 追加紙材</button>
+        </div>
+        <div id="paperRowsContainer-trial"></div>
+        <div class="sec-hd" style="margin-top:12px">
+          <div class="stitle">裁切費</div>
+          <button class="btn-add-row" onclick="addCutRow('trial')">＋ 追加裁切</button>
+        </div>
+        <div id="cutRowsContainer-trial"></div>
+        <div class="chk-sub" id="discountBaseHint" style="margin-top:8px"></div>
+      </div>
+    </div>
   </div>
 
   <!-- 自訂優惠（兩模式都顯示） -->
@@ -1110,6 +1139,17 @@ let _paperId = 2;
 const cutRows = [{ id:1, type:'postcard', qty:1 }];
 let _cutId = 2;
 
+/* 試印件區塊（穆穆 2026-08-19）：一張單裡另一套「件數／墨色／紙材／裁切」，整塊 88 折。
+   跟正式那套共用同一批 render／calc 函式，只是 scope 不同（'main'｜'trial'） */
+const trialState = { inkFront:{}, inkBack:{}, paperRows:[], cutRows:[], _paperId:1, _cutId:1 };
+function scopeOf(scope) {
+  return scope === 'trial'
+    ? { inkFront: trialState.inkFront, inkBack: trialState.inkBack, paperRows: trialState.paperRows, cutRows: trialState.cutRows, sfx: '-trial', chipPfx: 'chip-trial-', ordersId: 'trialOrders' }
+    : { inkFront, inkBack, paperRows, cutRows, sfx: '', chipPfx: 'chip-', ordersId: 'printOrders' };
+}
+function nextPaperId(scope) { return scope === 'trial' ? trialState._paperId++ : _paperId++; }
+function nextCutId(scope)   { return scope === 'trial' ? trialState._cutId++   : _cutId++; }
+
 // Order description rows (synced with printOrders)
 const orderRows = [{ id:1, size:'A5', qty:'', customSize:'' }];
 let _orderId = 2;
@@ -1299,7 +1339,7 @@ function refreshStaticPaperSelects() {
 }
 
 function sanitizePaperSelections() {
-  paperRows.forEach(row => {
+  [...paperRows, ...trialState.paperRows].forEach(row => {
     Object.assign(row, normalizePaperRow(row));
   });
   notepadExtraPaperRows.forEach(row => {
@@ -1410,6 +1450,8 @@ function setArrayState(target, rows) {
 window.addEventListener('DOMContentLoaded', () => {
   $('quoteDate').value = new Date().toISOString().slice(0,10);
   refreshStaticPaperSelects();
+  if (!trialState.paperRows.length) trialState.paperRows.push(createPaperRow({ id: nextPaperId('trial') }));
+  if (!trialState.cutRows.length)   trialState.cutRows.push({ id: nextCutId('trial'), type:'none', qty:1 });
   buildInkGrids();
   renderOrderRows();
   renderPaperRows();
@@ -1499,26 +1541,28 @@ function loadLogo(inp) {
    Ink grids (dual)
 ════════════════════════════ */
 function buildInkGrids() {
-  buildSideGrid('front');
-  buildSideGrid('back');
+  ['main','trial'].forEach(scope => { buildSideGrid('front', scope); buildSideGrid('back', scope); });
 }
 
-function buildSideGrid(side) {
-  const grid = $(side === 'front' ? 'inkFrontGrid' : 'inkBackGrid');
+function buildSideGrid(side, scope = 'main') {
+  const S = scopeOf(scope);
+  const grid = $((side === 'front' ? 'inkFrontGrid' : 'inkBackGrid') + S.sfx);
+  if (!grid) return;
   grid.innerHTML = '';
   INKS.forEach(ink => {
     const chip = document.createElement('div');
     chip.className = 'ink-chip';
-    chip.id = `chip-${side}-${ink.id}`;
+    chip.id = `${S.chipPfx}${side}-${ink.id}`;
     chip.innerHTML = `<div class="ink-dot" style="background:${ink.hex}"></div><span class="ink-chip-name">${ink.name}</span>`;
-    chip.addEventListener('click', () => toggleInk(ink.id, side));
+    chip.addEventListener('click', () => toggleInk(ink.id, side, scope));
     grid.appendChild(chip);
   });
 }
 
-function toggleInk(id, side) {
-  const map = side === 'front' ? inkFront : inkBack;
-  const chipId = `chip-${side}-${id}`;
+function toggleInk(id, side, scope = 'main') {
+  const S = scopeOf(scope);
+  const map = side === 'front' ? S.inkFront : S.inkBack;
+  const chipId = `${S.chipPfx}${side}-${id}`;
   if (map[id] !== undefined) {
     delete map[id];
     $(chipId)?.classList.remove('on');
@@ -1526,21 +1570,24 @@ function toggleInk(id, side) {
     map[id] = 1;
     $(chipId)?.classList.add('on');
   }
-  renderInkQty(side);
+  renderInkQty(side, scope);
   update();
 }
 
 function setInkQty(input) {
   const side = input.dataset.side;
   const id   = input.dataset.ink;
-  const map  = side === 'front' ? inkFront : inkBack;
+  const S = scopeOf(input.dataset.scope || 'main');
+  const map  = side === 'front' ? S.inkFront : S.inkBack;
   map[id] = Math.max(1, parseInt(input.value) || 1);
   update();
 }
 
-function renderInkQty(side) {
-  const map   = side === 'front' ? inkFront : inkBack;
-  const rowEl = $(side === 'front' ? 'inkFrontQty' : 'inkBackQty');
+function renderInkQty(side, scope = 'main') {
+  const S = scopeOf(scope);
+  const map   = side === 'front' ? S.inkFront : S.inkBack;
+  const rowEl = $((side === 'front' ? 'inkFrontQty' : 'inkBackQty') + S.sfx);
+  if (!rowEl) return;
   rowEl.innerHTML = '';
   INKS.filter(ink => map[ink.id] !== undefined).forEach(ink => {
     const item = document.createElement('div');
@@ -1549,10 +1596,20 @@ function renderInkQty(side) {
       <div class="ink-qty-dot" style="background:${ink.hex}"></div>
       <span class="ink-qty-lbl">${ink.name}</span>
       <input class="ink-qty-inp" type="number" min="1" value="${map[ink.id]}"
-        data-side="${side}" data-ink="${ink.id}" onchange="setInkQty(this)">
+        data-side="${side}" data-ink="${ink.id}" data-scope="${scope}" onchange="setInkQty(this)">
       <span class="ink-tier-badge">版</span>
     `;
     rowEl.appendChild(item);
+  });
+}
+/* 還原／重設後把 chip 亮燈對齊狀態（兩個 scope） */
+function syncInkChips() {
+  document.querySelectorAll('.ink-chip').forEach(c => c.classList.remove('on'));
+  ['main','trial'].forEach(scope => {
+    const S = scopeOf(scope);
+    Object.keys(S.inkFront).forEach(id => $(`${S.chipPfx}front-${id}`)?.classList.add('on'));
+    Object.keys(S.inkBack).forEach(id => $(`${S.chipPfx}back-${id}`)?.classList.add('on'));
+    renderInkQty('front', scope); renderInkQty('back', scope);
   });
 }
 
@@ -1777,36 +1834,43 @@ function setNotepadExtraPaperField(id, field, value) {
   update();
 }
 
-function renderPaperRows() {
-  const c = $('paperRowsContainer');
-  paperRows.forEach(row => {
+function renderPaperRows(scope = 'main') {
+  if (scope === 'main') { renderPaperRowsScope('main'); renderPaperRowsScope('trial'); return; }
+  renderPaperRowsScope(scope);
+}
+function renderPaperRowsScope(scope) {
+  const S = scopeOf(scope), q = `'${scope}'`;
+  const rows = S.paperRows;
+  const c = $('paperRowsContainer' + S.sfx);
+  if (!c) return;
+  rows.forEach(row => {
     Object.assign(row, normalizePaperRow(row));
   });
-  c.innerHTML = paperRows.map((row, i) => `
-    <div class="dyn-row" id="pr-${row.id}">
+  c.innerHTML = rows.map((row, i) => `
+    <div class="dyn-row" id="pr${S.sfx}-${row.id}">
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px;">
-        <select class="fsel" style="flex:1" onchange="setPaperField(${row.id},'type',this.value)">
+        <select class="fsel" style="flex:1" onchange="setPaperField(${row.id},'type',this.value,${q})">
           ${paperSelectHTML(row.type)}
         </select>
-        ${paperRows.length > 1 ? `<button class="row-del" onclick="removePaperRow(${row.id})" title="移除">✕</button>` : ''}
+        ${rows.length > 1 ? `<button class="row-del" onclick="removePaperRow(${row.id},${q})" title="移除">✕</button>` : ''}
       </div>
       ${row.type === 'custom_0' ? `
         <input class="finp" type="text" placeholder="紙種名稱" value="${row.customName}"
-          oninput="setPaperField(${row.id},'customName',this.value)" style="margin-bottom:5px;">
+          oninput="setPaperField(${row.id},'customName',this.value,${q})" style="margin-bottom:5px;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
           <input class="finp" type="number" placeholder="單價 $/A3" value="${row.customPrice||''}"
-            oninput="setPaperField(${row.id},'customPrice',this.value)">
+            oninput="setPaperField(${row.id},'customPrice',this.value,${q})">
         </div>` : ''}
       <div style="display:flex;gap:6px;">
         <div style="flex:2">
           <label class="flbl">張數（A3）</label>
           <input class="finp" type="text" inputmode="decimal" data-expr value="${row.sheets||''}"
-            oninput="setPaperField(${row.id},'sheets',this.value)" placeholder="0">
+            oninput="setPaperField(${row.id},'sheets',this.value,${q})" placeholder="0">
         </div>
         <div style="flex:1">
           <label class="flbl">耗量</label>
           <input class="finp" type="number" min="0" value="${row.waste||0}"
-            oninput="setPaperField(${row.id},'waste',this.value)">
+            oninput="setPaperField(${row.id},'waste',this.value,${q})">
         </div>
       </div>
       <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;">
@@ -1815,35 +1879,38 @@ function renderPaperRows() {
             <span class="chk-lbl">客人自備紙</span>
             <span class="chk-sub">紙材費自動改為 $0</span>
           </div>
-          <div class="sw"><input type="checkbox" ${row.suppliedByClient ? 'checked' : ''} onchange="setPaperField(${row.id},'suppliedByClient',this.checked)"><span class="sw-tr"></span></div>
+          <div class="sw"><input type="checkbox" ${row.suppliedByClient ? 'checked' : ''} onchange="setPaperField(${row.id},'suppliedByClient',this.checked,${q})"><span class="sw-tr"></span></div>
         </label>
         <label class="chk-row" style="margin:0;flex:1;min-width:170px;${canPaperRowUseLining(row) ? '' : 'opacity:.55;'}">
           <div class="chk-info">
             <span class="chk-lbl">加襯紙</span>
             <span class="chk-sub">${canPaperRowUseLining(row) ? '$1.5/A3張，逐筆計算' : '此紙材目前不建議襯紙'}</span>
           </div>
-          <div class="sw"><input type="checkbox" ${row.lining ? 'checked' : ''} ${canPaperRowUseLining(row) ? '' : 'disabled'} onchange="setPaperField(${row.id},'lining',this.checked)"><span class="sw-tr"></span></div>
+          <div class="sw"><input type="checkbox" ${row.lining ? 'checked' : ''} ${canPaperRowUseLining(row) ? '' : 'disabled'} onchange="setPaperField(${row.id},'lining',this.checked,${q})"><span class="sw-tr"></span></div>
         </label>
       </div>
     </div>
   `).join('');
 }
 
-function addPaperRow() {
-  paperRows.push(createPaperRow());
-  renderPaperRows();
+function addPaperRow(scope = 'main') {
+  const S = scopeOf(scope);
+  S.paperRows.push(createPaperRow({ id: nextPaperId(scope) }));
+  renderPaperRows(scope);
   update();
 }
 
-function removePaperRow(id) {
-  if (paperRows.length <= 1) return;
-  paperRows.splice(paperRows.findIndex(r => r.id === id), 1);
-  renderPaperRows();
+function removePaperRow(id, scope = 'main') {
+  const S = scopeOf(scope);
+  if (S.paperRows.length <= 1) return;
+  S.paperRows.splice(S.paperRows.findIndex(r => r.id === id), 1);
+  renderPaperRows(scope);
   update();
 }
 
-function setPaperField(id, field, value) {
-  const row = paperRows.find(r => r.id === id);
+function setPaperField(id, field, value, scope = 'main') {
+  const S = scopeOf(scope);
+  const row = S.paperRows.find(r => r.id === id);
   if (!row) return;
   if (field === 'sheets') {
     row.sheets = evalExpr(value) ?? (parseFloat(value) || 0);   /* 紙材張數吃算式（穆穆 8/19） */
@@ -1855,7 +1922,7 @@ function setPaperField(id, field, value) {
     row[field] = value;
   }
   if (field === 'type' && !canPaperRowUseLining(row)) row.lining = false;
-  if (field === 'type' || field === 'lining' || field === 'suppliedByClient') renderPaperRows();
+  if (field === 'type' || field === 'lining' || field === 'suppliedByClient') renderPaperRows(scope);
   if (field === 'type' && row.type !== 'custom_0') {
     row.customName = '';
     row.customPrice = 0;
@@ -1866,33 +1933,41 @@ function setPaperField(id, field, value) {
 /* ════════════════════════════
    Cut rows
 ════════════════════════════ */
-function renderCutRows() {
-  const c = $('cutRowsContainer');
-  c.innerHTML = cutRows.map(row => `
-    <div class="dyn-row" id="cr-${row.id}">
+function renderCutRows(scope = 'main') {
+  if (scope === 'main') { renderCutRowsScope('main'); renderCutRowsScope('trial'); return; }
+  renderCutRowsScope(scope);
+}
+function renderCutRowsScope(scope) {
+  const S = scopeOf(scope), q = `'${scope}'`;
+  const rows = S.cutRows;
+  const c = $('cutRowsContainer' + S.sfx);
+  if (!c) return;
+  c.innerHTML = rows.map(row => `
+    <div class="dyn-row" id="cr${S.sfx}-${row.id}">
       <div style="display:flex;gap:6px;align-items:center;">
-        <select class="fsel" style="flex:1" onchange="setCutField(${row.id},'type',this.value)">
+        <select class="fsel" style="flex:1" onchange="setCutField(${row.id},'type',this.value,${q})">
           <option value="none"     ${row.type==='none'?'selected':''}>不需裁切　$0</option>
           <option value="namecard" ${row.type==='namecard'?'selected':''}>名片規格（500張以內）$300</option>
           <option value="postcard" ${row.type==='postcard'?'selected':''}>明信片規格（200張以內）$250</option>
           <option value="custom"   ${row.type==='custom'?'selected':''}>指定刀數　$50/刀</option>
         </select>
-        ${cutRows.length > 1 ? `<button class="row-del" onclick="removeCutRow(${row.id})" title="移除">✕</button>` : ''}
+        ${rows.length > 1 ? `<button class="row-del" onclick="removeCutRow(${row.id},${q})" title="移除">✕</button>` : ''}
       </div>
       ${row.type !== 'none' ? `
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
           <label style="font-size:11px;color:var(--muted);white-space:nowrap;">${row.type === 'custom' ? '刀數' : '件數'}</label>
           <input class="finp" type="number" min="1" value="${row.qty||1}" style="width:72px"
-            oninput="setCutField(${row.id},'qty',this.value)">
+            oninput="setCutField(${row.id},'qty',this.value,${q})">
           <span style="font-size:12px;color:var(--muted)">${row.type === 'custom' ? '刀' : '件'}</span>
         </div>` : ''}
     </div>
   `).join('');
 }
 
-function addCutRow() {
-  cutRows.push({ id:_cutId++, type:'postcard', qty:1 });
-  renderCutRows();
+function addCutRow(scope = 'main') {
+  const S = scopeOf(scope);
+  S.cutRows.push({ id: nextCutId(scope), type:'postcard', qty:1 });
+  renderCutRows(scope);
   update();
 }
 
@@ -2050,18 +2125,20 @@ function applyTrialRow() {
   closeTrialModal();
 }
 
-function removeCutRow(id) {
-  if (cutRows.length <= 1) return;
-  cutRows.splice(cutRows.findIndex(r => r.id === id), 1);
-  renderCutRows();
+function removeCutRow(id, scope = 'main') {
+  const S = scopeOf(scope);
+  if (S.cutRows.length <= 1) return;
+  S.cutRows.splice(S.cutRows.findIndex(r => r.id === id), 1);
+  renderCutRows(scope);
   update();
 }
 
-function setCutField(id, field, value) {
-  const row = cutRows.find(r => r.id === id);
+function setCutField(id, field, value, scope = 'main') {
+  const S = scopeOf(scope);
+  const row = S.cutRows.find(r => r.id === id);
   if (!row) return;
   row[field] = field === 'qty' ? (parseInt(value)||1) : value;
-  if (field === 'type') renderCutRows();
+  if (field === 'type') renderCutRows(scope);
   update();
 }
 
@@ -2078,6 +2155,7 @@ function shippingChange() {
   update();
 }
 
+function toggleDiscountSub() { const el = $('discountSub'); if (el) el.classList.toggle('open', chk('chkDiscount')); }
 function toggleChk(id, subId) {
   setTimeout(() => {
     $(subId)?.classList.toggle('open', chk(id));
@@ -2096,12 +2174,14 @@ function updateCustomPromoLabel() {
 /* ════════════════════════════
    Calculation
 ════════════════════════════ */
-function calcStandardAll() {
+/* 一套「件數＋製版＋印刷＋紙材＋襯紙＋裁切」的算法；正式（main）跟試印（trial）各跑一次 */
+function calcPrintBlock(scope = 'main') {
+  const S = scopeOf(scope);
   // ── Pre-pass: paper totals ──
   let totalPaperSheets = 0;
   const paperItems = [];
   const liningItems = [];
-  paperRows.forEach(row => {
+  S.paperRows.forEach(row => {
     const paper = getPaperConfig(row.type, row.customName, row.customPrice);
     const name = getPaperRowDisplayName(row, paper);
     const price = row.suppliedByClient ? 0 : paper.price;
@@ -2123,7 +2203,7 @@ function calcStandardAll() {
   // ── 製版費 ──
   const allInks = {};
   INKS.forEach(ink => {
-    const total = (inkFront[ink.id]||0) + (inkBack[ink.id]||0);
+    const total = (S.inkFront[ink.id]||0) + (S.inkBack[ink.id]||0);
     if (total > 0) allInks[ink.id] = total;
   });
   const tierGroups = { normal:[], neon:[], premium:[], special:[] };
@@ -2138,7 +2218,7 @@ function calcStandardAll() {
   });
 
   // ── 印刷基本費 ──
-  const orders = Math.max(1, num('printOrders') || 1);
+  const orders = Math.max(1, num(S.ordersId) || 1);
   items.push({ name:'印刷基本費', note: orders > 1 ? `${orders} 件` : '', price:250, qty:orders });
 
   // ── 印刷費（按紙材總張數）──
@@ -2153,12 +2233,37 @@ function calcStandardAll() {
   items.push(...liningItems);
 
   // ── 裁切費 ──
-  cutRows.forEach(row => {
+  S.cutRows.forEach(row => {
     const q = Math.max(1, row.qty || 1);
     if (row.type === 'namecard') items.push({ name:'裁切費', note: q > 1 ? `名片規格 ${q}件` : '名片規格', price:300, qty:q });
     if (row.type === 'postcard') items.push({ name:'裁切費', note: q > 1 ? `明信片規格 ${q}件` : '明信片規格', price:250, qty:q });
     if (row.type === 'custom')   items.push({ name:'裁切費', note:'指定裁切', price:50, qty:q });
   });
+  return { items, orders, totalPaperSheets };
+}
+
+function calcStandardAll() {
+  const main = calcPrintBlock('main');
+  const items = main.items;
+  const orders = main.orders;
+  const totalPaperSheets = main.totalPaperSheets;
+
+  // ── 試印件區塊（chkDiscount 開才算）：項目備註加「試印」、整塊 88 折 ──
+  let trialSubtotal = 0;
+  const trialHasContent = trialState.paperRows.some(r => (r.sheets || 0) > 0)
+    || Object.keys(trialState.inkFront).length || Object.keys(trialState.inkBack).length
+    || trialState.cutRows.some(r => r.type !== 'none');
+  if (chk('chkDiscount') && trialHasContent) {   /* 開了但一格沒填＝當沒有、不會多出 250 基本費 */
+    const tb = calcPrintBlock('trial');
+    tb.items.forEach(it => {
+      const hasContent = it.qty > 0 && it.price > 0;
+      if (!hasContent) return;
+      it.note = it.note ? `試印｜${it.note}` : '試印';
+      it.trial = true;
+      items.push(it);
+      trialSubtotal += it.price * it.qty;
+    });
+  }
 
   // ── 加工費 ──
   if (chk('chkNotepad')) {
@@ -2210,10 +2315,10 @@ function calcStandardAll() {
     urgentAmt = Math.round(printTotal * 0.3);
   }
 
-  // ── 試印折扣（排除折扣項目不進底數） ──
+  // ── 試印折扣：只折「試印件」區塊的小計（穆穆 2026-08-19 定版） ──
   let discAmt = 0;
   const baseForDiscount = subtotal + urgentAmt - excludedFromDiscount;
-  if (chk('chkDiscount')) discAmt = Math.round(baseForDiscount * 0.12);
+  if (chk('chkDiscount')) discAmt = Math.round(trialSubtotal * 0.12);
 
   // ── 自訂優惠（跟試印折扣走同底、可疊但為加成不複利） ──
   let customDiscAmt = 0;
@@ -2235,7 +2340,7 @@ function calcStandardAll() {
   else                            { shipFee = 38; shipLabel = '7-11 賣貨便'; }
 
   const total = subtotal + urgentAmt - discAmt - customDiscAmt + shipFee;
-  return { items, subtotal, urgentAmt, discAmt, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
+  return { items, subtotal, urgentAmt, discAmt, trialSubtotal, customDiscAmt, customPromoLabel, shipFee, shipLabel, total, totalPaperSheets };
 }
 
 function calcNotepadAll() {
@@ -2421,6 +2526,7 @@ function update() {
   if (data.discAmt > 0) {
     $('invDiscRow').style.display = '';
     $('invDiscAmt').textContent = `-${fmt(data.discAmt)}`;
+    if ($('discountBaseHint')) $('discountBaseHint').textContent = data.trialSubtotal > 0 ? `試印件小計 ${fmt(data.trialSubtotal)} × 12% → 折 ${fmt(data.discAmt)}` : '試印件還沒填（填了才算進去、才折）';
   } else { $('invDiscRow').style.display = 'none'; }
   if (data.customDiscAmt > 0) {
     $('invCustomPromoRow').style.display = '';
@@ -2483,6 +2589,12 @@ function buildBackupPayload() {
     notepadExtraPaperRows: notepadExtraPaperRows.map(row => ({ ...row })),
     inkFront: { ...inkFront },
     inkBack: { ...inkBack },
+    trial: {
+      orders: val('trialOrders'),
+      inkFront: { ...trialState.inkFront }, inkBack: { ...trialState.inkBack },
+      paperRows: trialState.paperRows.map(row => ({ ...row })),
+      cutRows: trialState.cutRows.map(row => ({ ...row })),
+    },
     logoSrc: $('logoImg')?.src || ''
   };
 }
@@ -2534,6 +2646,13 @@ function applyBackupPayload(payload = {}) {
     (payload.paperRows?.length ? payload.paperRows : [createPaperRow({ id:1 })]).map(row => normalizePaperRow(row, legacyGlobalLining))
   );
   _cutId = setArrayState(cutRows, payload.cutRows?.length ? payload.cutRows : [{ id:1, type:'postcard', qty:1 }]);
+  /* 試印件區塊 */
+  const tr = payload.trial || {};
+  Object.keys(trialState.inkFront).forEach(k => delete trialState.inkFront[k]); Object.assign(trialState.inkFront, tr.inkFront || {});
+  Object.keys(trialState.inkBack).forEach(k => delete trialState.inkBack[k]);  Object.assign(trialState.inkBack,  tr.inkBack  || {});
+  trialState._paperId = setArrayState(trialState.paperRows, (tr.paperRows?.length ? tr.paperRows : [createPaperRow({ id:1 })]).map(row => normalizePaperRow(row)));
+  trialState._cutId   = setArrayState(trialState.cutRows,   tr.cutRows?.length ? tr.cutRows : [{ id:1, type:'none', qty:1 }]);
+  if ($('trialOrders')) $('trialOrders').value = tr.orders || '1';
   _extraId = setArrayState(extraRows, payload.extraRows || []);
   _notepadExtraPaperId = setArrayState(notepadExtraPaperRows, payload.notepadExtraPaperRows || []);
 
@@ -2553,11 +2672,8 @@ function applyBackupPayload(payload = {}) {
   renderExtraRows();
   renderNotepadExtraPaperRows();
 
-  document.querySelectorAll('.ink-chip').forEach(c => c.classList.remove('on'));
-  Object.keys(inkFront).forEach(id => $(`chip-front-${id}`)?.classList.add('on'));
-  Object.keys(inkBack).forEach(id => $(`chip-back-${id}`)?.classList.add('on'));
-  renderInkQty('front');
-  renderInkQty('back');
+  syncInkChips();
+  toggleDiscountSub();
 
   if (payload.logoSrc) {
     $('logoImg').src = payload.logoSrc;
@@ -2699,6 +2815,16 @@ function resetForm() {
   cutRows.length = 0;
   cutRows.push({ id:_cutId++, type:'postcard', qty:1 });
   renderCutRows();
+
+  // Reset 試印件區塊
+  Object.keys(trialState.inkFront).forEach(k => delete trialState.inkFront[k]);
+  Object.keys(trialState.inkBack).forEach(k => delete trialState.inkBack[k]);
+  trialState.paperRows.length = 0; trialState.paperRows.push(createPaperRow({ id: nextPaperId('trial') }));
+  trialState.cutRows.length = 0;   trialState.cutRows.push({ id: nextCutId('trial'), type:'none', qty:1 });
+  if ($('trialOrders')) $('trialOrders').value = '1';
+  syncInkChips();
+  renderPaperRows('trial'); renderCutRows('trial');
+  toggleDiscountSub();
 
   // Reset extra rows
   extraRows.length = 0;
