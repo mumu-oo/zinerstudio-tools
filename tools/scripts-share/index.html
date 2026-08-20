@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>誌造所免費腳本｜孔版印刷完稿工具</title>
+<meta name="description" content="誌造所 ZINER STUDIO 免費分享的 Adobe Illustrator 腳本：數字月曆產生器、圖層分開存檔（孔版印刷分色完稿用）。">
+<style>
+  :root { --ink:#111; --paper:#fff; --line:#E3E3E3; --muted:#4D4D4D; --lav:#C7B8E0; --lav-strong:#8A76BE; --lav-soft:#EEE7F7; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"PingFang TC","Noto Sans TC",sans-serif; background:var(--paper); color:var(--ink); line-height:1.7; }
+  .wrap { max-width:860px; margin:0 auto; padding:48px 24px 80px; }
+  .eyebrow { font-family:"SF Mono",Menlo,monospace; font-size:11px; letter-spacing:.25em; color:var(--lav-strong); text-transform:uppercase; }
+  h1 { font-size:26px; letter-spacing:.12em; margin:6px 0 10px; }
+  .sub { font-size:13px; color:var(--muted); margin-bottom:36px; }
+  .card { border:1.5px solid var(--ink); border-radius:10px; padding:22px 24px; margin-bottom:22px; }
+  .card-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .card h2 { font-size:18px; letter-spacing:.08em; }
+  .badge { font-family:"SF Mono",Menlo,monospace; font-size:10px; letter-spacing:.15em; background:var(--lav-soft); color:var(--lav-strong); border-radius:4px; padding:3px 8px; }
+  .card ul { list-style:none; font-size:13.5px; color:var(--muted); margin:10px 0 16px; }
+  .card li { padding-left:1.2em; position:relative; }
+  .card li::before { content:"·"; position:absolute; left:.3em; color:var(--lav-strong); }
+  .dl { display:inline-block; background:var(--lav-strong); color:#fff; text-decoration:none; font-size:14px; letter-spacing:.1em; padding:10px 22px; border-radius:6px; }
+  .dl:hover { background:var(--ink); }
+  .howto { font-size:12px; color:var(--muted); margin-top:12px; }
+  .foot { margin-top:44px; font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:18px; }
+  .foot a { color:var(--lav-strong); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Ziner Studio · Free Scripts</div>
+  <h1>誌造所免費腳本</h1>
+  <p class="sub">孔版印刷完稿路上的小幫手，免費取用。跑法都一樣：Illustrator → 檔案 → 指令碼 → 其他指令碼… → 選下載的檔。</p>
+
+  <div class="card">
+    <div class="card-head"><h2>數字月曆產生器</h2><span class="badge">ILLUSTRATOR</span></div>
+    <ul>
+      <li>彈窗選 年份／週起始／語言／字體，整年一張 3×4 直接長出來</li>
+      <li>年份隨便打哪年都行、自動重算</li>
+      <li>做年曆海報、桌曆完稿的起手式</li>
+    </ul>
+    <a class="dl" href="數字月曆.jsx" download>下載 數字月曆.jsx</a>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>圖層分開存檔</h2><span class="badge">ILLUSTRATOR</span></div>
+    <ul>
+      <li>孔版分色完稿用：一檔裡的 紅／藍／黃 圖層，一鍵拆成 原檔名_紅、原檔名_藍⋯⋯</li>
+      <li>格式可勾 AI（只含該層）／PDF（保留向量）／JPG（300dpi、尺寸不變）</li>
+      <li>輸出到原檔旁「分層輸出」資料夾，原檔完全不動</li>
+    </ul>
+    <a class="dl" href="圖層分開存檔.jsx" download>下載 圖層分開存檔.jsx</a>
+  </div>
+
+  <div class="foot">
+    腳本由 <a href="https://www.zinerstudio.com" target="_blank" rel="noopener">誌造所 ZINER STUDIO</a> 開發與維護，歡迎分享連結。委託孔版印刷 → <a href="https://www.zinerstudio.com/order" target="_blank" rel="noopener">線上下單</a>
+  </div>
+</div>
+</body>
+</html>
