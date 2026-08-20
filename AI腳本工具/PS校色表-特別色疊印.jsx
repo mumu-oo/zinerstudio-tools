@@ -86,8 +86,9 @@
     }
   }
 
-  // 回到 RGB 複合檢視
+  // 回到 RGB 複合檢視（特別色色版的眼睛要重新點亮、不然畫了也看不到）
   doc.activeChannels = doc.componentChannels;
+  for (var v = 0; v < chans.length; v++) chans[v].visible = true;
   app.preferences.rulerUnits = oldUnits;
   app.runMenuItem(charIDToTypeID('FtOn'));  // 縮放至符合視窗
 
