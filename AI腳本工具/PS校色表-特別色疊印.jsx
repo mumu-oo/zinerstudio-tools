@@ -46,6 +46,8 @@
 
   var black = new SolidColor();
   black.rgb.red = 0; black.rgb.green = 0; black.rgb.blue = 0;
+  var white = new SolidColor();
+  white.rgb.red = 255; white.rgb.green = 255; white.rgb.blue = 255;
 
   // 建 11 個特別色色版（Solidity 0 = PS 預設、透明油墨）
   var chans = [];
@@ -58,6 +60,14 @@
     ch.color = c;
     ch.opacity = 0;   // Solidity 0%
     chans.push(ch);
+  }
+
+  // 新色版預設整面全黑＝油墨 100% 蓋滿 → 先全部洗白（白＝無墨）再開始畫
+  for (var w = 0; w < chans.length; w++) {
+    doc.selection.selectAll();
+    doc.activeChannels = [chans[w]];
+    doc.selection.fill(white);
+    doc.selection.deselect();
   }
 
   function fillRect(chIndex, x1, y1, x2, y2) {
