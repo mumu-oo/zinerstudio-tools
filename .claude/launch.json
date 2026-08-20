@@ -57,6 +57,18 @@
         "/Users/mumu/Documents/zinerstudio_makesomething/ziner-invoice"
       ],
       "port": 4326
+    },
+    {
+      "name": "scratch",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4327",
+        "--directory",
+        "/private/tmp/claude-501/-Users-mumu-Documents-zinerstudio-makesomething/24fd01e4-2274-4dbe-a8c3-a38ff87fe466/scratchpad"
+      ],
+      "port": 4327
     }
   ]
 }
