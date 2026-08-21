@@ -45,14 +45,18 @@
   /* 版圖占位（之後換成 <img>） */
   .ph { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:20px;
         position:relative; overflow:hidden; }
-  .ph::after { content:""; position:absolute; inset:0;
-        background-image:radial-gradient(rgba(0,0,0,.16) 1px, transparent 1.2px); background-size:7px 7px;
+  .ph > * { position:relative; z-index:1; }   /* 文字浮在網點上層、不被蓋 */
+  /* 網點跟底色一組：從底部升起、往上淡出的漸層網點（穆穆 8/21） */
+  .ph::after { content:""; position:absolute; inset:0; z-index:0;
+        background-image:radial-gradient(rgba(0,0,0,.28) 1.2px, transparent 1.5px); background-size:8px 8px;
+        -webkit-mask-image:linear-gradient(to top, #000 0%, rgba(0,0,0,.35) 45%, transparent 75%);
+        mask-image:linear-gradient(to top, #000 0%, rgba(0,0,0,.35) 45%, transparent 75%);
         mix-blend-mode:multiply; pointer-events:none; }
+  .ph-orange { background:linear-gradient(165deg, #FF8A3D 0%, #FF5F00 55%, #E04A00 100%); color:#fff; }
+  .ph-violet { background:linear-gradient(165deg, #B79AE0 0%, #9D7AD2 55%, #7A57B5 100%); color:#fff; }
+  .ph-gray   { background:linear-gradient(165deg, #C9C5BC 0%, #B9B5AC 60%, #A29E94 100%); color:#fff; }
   .ph .big { font-size:64px; font-weight:800; line-height:1.02; letter-spacing:.02em; }
   .ph .tag { font-size:11px; letter-spacing:.25em; }
-  .ph-orange { background:var(--orange); color:#fff; }
-  .ph-violet { background:var(--violet); color:#fff; }
-  .ph-gray   { background:#B9B5AC; color:#fff; }
   .ph-note { position:absolute; right:10px; top:10px; font-size:10px; background:rgba(255,255,255,.85); color:#333;
              padding:2px 8px; border-radius:3px; letter-spacing:.1em; }
 
@@ -126,7 +130,7 @@
 <div class="wrap">
 
   <header class="site">
-    <div class="mono">Ziner Studio · Workshop &amp; Class</div>
+    <div class="mono">Ziner Studio Workshop</div>
     <h1>誌造所報名站</h1>
     <div class="sub">開課中的課程都在這裡，點海報進報名。</div>
   </header>
@@ -291,7 +295,8 @@ fetch('https://ziner-order.pages.dev/api/config').then(r=>r.json()).then(cfg=>{
   document.getElementById('ws-stamp').textContent='開放下單中';
   document.getElementById('ws-line').textContent=(ws.eyebrow?ws.eyebrow+'・':'')+ws.title+(ws.period?'｜'+ws.period:'');
   const tImg=ws.tileImg||ws.heroImg;
-  if(tImg){document.getElementById('ws-art').innerHTML='<img src="'+tImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
+  if(/^#[0-9A-Fa-f]{6}$/.test(ws.themeColor||'')){document.documentElement.style.setProperty('--violet',ws.themeColor);document.documentElement.style.setProperty('--lav-strong',ws.themeColor);}
+  if(tImg){const art=document.getElementById('ws-art');art.style.border='none';art.innerHTML='<img src="'+tImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
   else{const big=document.querySelector('#ws-art .big');if(big)big.innerHTML=ws.title.replace(/</g,'&lt;');
     document.querySelector('#ws-art .ph').className='ph ph-violet';
     const tags=document.querySelectorAll('#ws-art .tag');if(tags[1])tags[1].textContent=ws.period||'OPEN NOW';}
