@@ -55,7 +55,7 @@
   .ph-orange { background:linear-gradient(165deg, #FF8A3D 0%, #FF5F00 55%, #E04A00 100%); color:#fff; }
   .ph-violet { background:linear-gradient(165deg, #B79AE0 0%, #9D7AD2 55%, #7A57B5 100%); color:#fff; }
   .ph-gray   { background:linear-gradient(165deg, #C9C5BC 0%, #B9B5AC 60%, #A29E94 100%); color:#fff; }
-  .ph .big { font-size:64px; font-weight:800; line-height:1.02; letter-spacing:.02em; }
+  .ph .big { font-size:46px; font-weight:800; line-height:1.15; letter-spacing:.02em; }
   .ph .tag { font-size:11px; letter-spacing:.25em; }
   .ph-note { position:absolute; right:10px; top:10px; font-size:10px; background:rgba(255,255,255,.85); color:#333;
              padding:2px 8px; border-radius:3px; letter-spacing:.1em; }
@@ -66,7 +66,7 @@
   .back { display:inline-block; margin-bottom:22px; font-size:13px; color:var(--muted); cursor:pointer; background:none; border:none; font-family:inherit; letter-spacing:.1em; }
   .back:hover { color:var(--ink); }
   .banner { border:none; border-radius:8px; overflow:hidden; aspect-ratio:5/2; margin-bottom:30px; }
-  .banner .ph .big { font-size:52px; }
+  .banner .ph .big { font-size:38px; }
   .course h2.title { font-size:24px; letter-spacing:.1em; margin-bottom:4px; }
   .course .subtitle { font-size:13px; color:var(--muted); margin-bottom:24px; }
 
@@ -123,7 +123,7 @@
 
   .foot { margin-top:56px; font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:18px; text-align:center; }
   .foot a { color:var(--lav-strong); }
-  @media (max-width:640px){ .ph .big{font-size:44px;} header.site h1{font-size:24px;} }
+  @media (max-width:640px){ .ph .big{font-size:34px;} header.site h1{font-size:24px;} }
 </style>
 </head>
 <body>
@@ -295,7 +295,7 @@ fetch('https://ziner-order.pages.dev/api/config').then(r=>r.json()).then(cfg=>{
   const tImg=ws.tileImg||ws.heroImg;
   if(/^#[0-9A-Fa-f]{6}$/.test(ws.themeColor||'')){document.documentElement.style.setProperty('--violet',ws.themeColor);document.documentElement.style.setProperty('--lav-strong',ws.themeColor);}
   if(tImg){const art=document.getElementById('ws-art');art.style.border='none';art.innerHTML='<img src="'+tImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
-  else{const big=document.querySelector('#ws-art .big');if(big)big.innerHTML=ws.title.replace(/</g,'&lt;');
+  else{const big=document.querySelector('#ws-art .big');if(big)big.innerHTML=ws.title.replace(/</g,'&lt;').replace(/\s+/g,'<br>');
     document.querySelector('#ws-art .ph').className='ph ph-violet';
     const tags=document.querySelectorAll('#ws-art .tag');if(tags[1])tags[1].textContent=ws.period||'OPEN NOW';}
 }).catch(()=>{});
