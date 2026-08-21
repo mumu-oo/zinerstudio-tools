@@ -197,23 +197,23 @@
     </div>
 
     <div class="form">
-      <div class="field"><span class="flbl">你的稱呼</span><input type="text" placeholder="怎麼叫你？"></div>
-      <div class="field"><span class="flbl">聯絡 Email</span><input type="email" placeholder="請提供 Gmail（Meet 邀請用）"></div>
+      <div class="field"><span class="flbl">你的稱呼</span><input type="text" id="ai-name" placeholder="怎麼叫你？"></div>
+      <div class="field"><span class="flbl">聯絡 Email</span><input type="email" id="ai-email" placeholder="請提供 Gmail（Meet 邀請用）"></div>
       <div class="field"><span class="flbl">你目前使用 AI 的程度</span>
-        <select><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
+        <select id="ai-level"><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
       </div>
       <div class="field"><span class="flbl">想上課時段</span>
         <div class="slots" id="ai-slots"><div class="hint">時段載入中⋯</div></div>
         <div class="hint">一人即開課；平日 11:00–16:00 也可另約，備註跟我說。</div>
       </div>
-      <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea placeholder="想問什麼都可以先寫"></textarea>
+      <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea id="ai-question" placeholder="想問什麼都可以先寫"></textarea>
         <div class="hint">報名後主要用 Email 聯繫；想直接找 MUMU 也可以走
           <a href="https://line.me/R/ti/p/%40257pcqno" target="_blank" rel="noopener" style="color:var(--theme)">官方 LINE</a>、
           <a href="https://www.instagram.com/zinerstudio/" target="_blank" rel="noopener" style="color:var(--theme)">IG</a> 或
           <a href="https://discord.gg/M7vXbhAgMr" target="_blank" rel="noopener" style="color:var(--theme)">孔版研究俱樂部 Discord</a>。</div>
       </div>
-      <button class="submit" onclick="alert('（mockup 示意，還沒接後端）')">送出報名</button>
-      <div class="pay-note">送出後會自動寄繳費資訊到你的 Email，完成付款才算正式保留名額。</div>
+      <button class="submit" id="ai-submit" onclick="submitAi()">送出報名</button>
+      <div class="pay-note" id="ai-status">送出後會自動寄繳費資訊到你的 Email，完成付款才算正式保留名額。</div>
     </div>
   </section>
 
@@ -291,6 +291,31 @@ function backToWall(){ document.querySelectorAll('.course').forEach(c=>c.classLi
   document.getElementById('wall').style.display='grid'; window.scrollTo(0,0); }
 function pick(el){ el.parentElement.querySelectorAll('.slot').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
 function pickPlan(el){ el.parentElement.querySelectorAll('.plan').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+
+/* AI 課報名送出：走下單系統同一條 Apps Script 管線（type: class-signup） */
+const SIGNUP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwSGzDAvDZlB9TC9Qpr98QVBunujqUGI8zMbE3xfD2tD_RTvs8tucoQrpsHZDylJRuUQA/exec';
+async function submitAi(){
+  const name=document.getElementById('ai-name').value.trim();
+  const email=document.getElementById('ai-email').value.trim();
+  const slotEl=document.querySelector('#ai-slots .slot.on');
+  const st=document.getElementById('ai-status');
+  if(!name){st.textContent='稱呼還沒填喔';st.style.color='#C0392B';return;}
+  if(!/.+@.+\..+/.test(email)){st.textContent='Email 看起來怪怪的、再確認一下';st.style.color='#C0392B';return;}
+  if(!slotEl){st.textContent='選一個想上課的時段';st.style.color='#C0392B';return;}
+  const btn=document.getElementById('ai-submit');btn.disabled=true;btn.style.opacity=.6;
+  st.style.color='';st.textContent='送出中⋯';
+  try{
+    await fetch(SIGNUP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({type:'class-signup',course:'AI 工作流入門課',name,email,
+        level:document.getElementById('ai-level').value,
+        slot:slotEl.textContent.replace(/可報名|已額滿/g,'').trim(),
+        question:document.getElementById('ai-question').value.trim()})});
+    st.textContent='報名收到了！繳費資訊已寄到你的 Email（沒收到先翻垃圾信）。';st.style.color='#2E7D32';
+  }catch(e){
+    st.textContent='沒送出去，網路怪怪的——再試一次，或直接 IG 私訊我。';st.style.color='#C0392B';
+    btn.disabled=false;btn.style.opacity=1;
+  }
+}
 
 /* AI 課時段：讀後台 classes.aiSlots（行首「滿｜」＝額滿） */
 function renderAiSlots(cfg){
