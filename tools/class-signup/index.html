@@ -25,7 +25,7 @@
   /* ── 海報牆 ── */
   .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:34px; }
   .tile { cursor:pointer; border:none; background:none; text-align:left; font:inherit; color:inherit; }
-  .tile .art { aspect-ratio:3/4; border:1.5px solid var(--ink); border-radius:4px; overflow:hidden; position:relative;
+  .tile .art { aspect-ratio:3/4; border:none; border-radius:6px; overflow:hidden; position:relative;
                transition:transform .18s, box-shadow .18s; }
   .tile:hover .art { transform:translate(-3px,-3px); }
   .tile[data-theme=orange]:hover .art { box-shadow:6px 6px 0 var(--orange); }
@@ -65,7 +65,7 @@
   .course.open { display:block; }
   .back { display:inline-block; margin-bottom:22px; font-size:13px; color:var(--muted); cursor:pointer; background:none; border:none; font-family:inherit; letter-spacing:.1em; }
   .back:hover { color:var(--ink); }
-  .banner { border:1.5px solid var(--ink); border-radius:4px; overflow:hidden; aspect-ratio:5/2; margin-bottom:30px; }
+  .banner { border:none; border-radius:8px; overflow:hidden; aspect-ratio:5/2; margin-bottom:30px; }
   .banner .ph .big { font-size:52px; }
   .course h2.title { font-size:24px; letter-spacing:.1em; margin-bottom:4px; }
   .course .subtitle { font-size:13px; color:var(--muted); margin-bottom:24px; }
