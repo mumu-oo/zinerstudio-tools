@@ -113,6 +113,9 @@
   .form input:focus, .form select:focus, .form textarea:focus { border-bottom-color:var(--theme); }
   .form textarea { min-height:70px; resize:vertical; }
   .form .hint { font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .chk-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px 14px; }
+  .chk-grid label { font-size:13.5px; display:flex; align-items:flex-start; gap:7px; cursor:pointer; color:#333; }
+  .chk-grid input { margin-top:4px; accent-color:var(--theme); }
   .slots { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
   .slot { border:1.5px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:.12s; }
   .slot:hover { border-color:var(--theme); }
@@ -191,8 +194,29 @@
     <div class="form">
       <div class="field"><span class="flbl">你的稱呼</span><input type="text" id="ai-name" placeholder="怎麼叫你？"></div>
       <div class="field"><span class="flbl">聯絡 Email</span><input type="email" id="ai-email" placeholder="請提供 Gmail（Meet 邀請用）"></div>
+      <div class="field"><span class="flbl">你比較接近哪一種狀態？</span>
+        <select id="ai-role"><option>創作者</option><option>接案工作者</option><option>小型工作室</option><option>小店經營者</option><option>活動／社群經營者</option><option>一人工作者什麼都要自己來</option><option>只是想先認識 AI</option><option>其他（想說的話那格跟我說）</option></select>
+      </div>
+      <div class="field"><span class="flbl">最常使用的電腦系統</span>
+        <select id="ai-os"><option>MAC OS</option><option>Windows</option><option>兩者皆有</option></select>
+      </div>
       <div class="field"><span class="flbl">你目前使用 AI 的程度</span>
-        <select id="ai-level"><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
+        <select id="ai-level"><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，但覺得很零散，想整理成自己的工作流程</option><option>已具備進階開發或整合經驗（你可以不用來聽啦XD</option></select>
+      </div>
+      <div class="field"><span class="flbl">你最想把 AI 用在哪些事情上？（可複選）</span>
+        <div class="chk-grid" id="ai-uses">
+          <label><input type="checkbox" value="整理想法">整理想法</label>
+          <label><input type="checkbox" value="社群貼文／宣傳文案">社群貼文／宣傳文案</label>
+          <label><input type="checkbox" value="客服或回覆訊息">客服或回覆訊息</label>
+          <label><input type="checkbox" value="活動公告／報名資訊整理">活動公告／報名資訊整理</label>
+          <label><input type="checkbox" value="資料整理">資料整理</label>
+          <label><input type="checkbox" value="視覺草稿／宣傳圖構思">視覺草稿／宣傳圖構思</label>
+          <label><input type="checkbox" value="每天重複做的小事">每天重複做的小事</label>
+          <label><input type="checkbox" value="還不確定，想先聽聽可以怎麼用">還不確定，想先聽聽可以怎麼用</label>
+        </div>
+      </div>
+      <div class="field"><span class="flbl">你現在使用 AI 時，最常卡住的是什麼？</span>
+        <select id="ai-stuck"><option>不知道可以問什麼</option><option>問了之後，回答太空泛</option><option>不知道哪個平台適合自己</option><option>不知道怎麼把 AI 用在工作裡</option><option>覺得名詞太多，還沒開始就先混亂</option><option>擔心 AI 生圖或文字使用上的界線</option><option>其他（想說的話那格跟我說）</option></select>
       </div>
       <div class="field"><span class="flbl">想上課時段</span>
         <div class="slots" id="ai-slots"><div class="hint">時段載入中⋯</div></div>
@@ -299,7 +323,11 @@ async function submitAi(){
   try{
     await fetch(SIGNUP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({type:'class-signup',course:'AI 工作流入門課',name,email,
+        role:document.getElementById('ai-role').value,
+        os:document.getElementById('ai-os').value,
         level:document.getElementById('ai-level').value,
+        uses:[...document.querySelectorAll('#ai-uses input:checked')].map(c=>c.value),
+        stuck:document.getElementById('ai-stuck').value,
         slot:slotEl.textContent.replace(/可報名|已額滿/g,'').trim(),
         question:document.getElementById('ai-question').value.trim()})});
     st.textContent='報名收到了！繳費資訊已寄到你的 Email（沒收到先翻垃圾信）。';st.style.color='#2E7D32';
