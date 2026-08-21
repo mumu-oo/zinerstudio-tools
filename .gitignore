@@ -7,3 +7,5 @@ build
 ziner-invoice/backup/
 ziner-invoice/recovery/
 .claude/worktrees/
+# BOO-POS 自己是獨立倉庫（github.com/mumu-oo/boo-pos-2026）、不進這裡
+BOO-POS_2026/
