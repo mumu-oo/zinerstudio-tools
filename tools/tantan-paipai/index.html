@@ -1,0 +1,3143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>攤攤排排 — Ziner Studio</title>
+<style>
+:root {
+  --bg:     #EEF1F6;
+  --bg2:    #E4E9F1;
+  --surf:   rgba(255,255,255,0.72);
+  --surf2:  rgba(255,255,255,0.92);
+  --panel:  rgba(255,255,255,0.55);
+  --accent: #0A84FF;
+  --acc-h:  #0071E3;
+  --acc-lt: rgba(10,132,255,0.10);
+  --text:   #1C1C1E;
+  --muted:  #6E6E73;
+  --faint:  #AEAEB2;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.14);
+  --ok:     #34C759;
+  --warn:   #FF9F0A;
+  --err:    #FF3B30;
+  --hall3:  #5AC8FA;
+  --hall4:  #FF9F0A;
+  --hall5:  #30D158;
+  --d1-neon:     #FF10F0;
+  --d1-neon-txt: #C4009B;
+  --d1-neon-bg:  rgba(255,20,220,0.14);
+  --d2-neon:     #39FF14;
+  --d2-neon-txt: #1E7F00;
+  --d2-neon-bg:  rgba(57,255,20,0.14);
+  --dbl-mint:    #00A991;
+  --dbl-mint-bg: rgba(0,169,145,0.12);
+  --big-purple:     #AF52DE;
+  --big-purple-dk:  #7C2FBF;
+  --big-purple-bg:  rgba(175,82,222,0.15);
+  --link-indigo:    #5E5CE6;
+  --link-indigo-dk: #4844C7;
+  --link-indigo-bg: rgba(94,92,230,0.14);
+  --r-lg:   16px;
+  --r-md:   10px;
+  --r-sm:   6px;
+  --sh-1:   0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06);
+  --sh-2:   0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.10);
+  --sh-3:   0 4px 12px rgba(0,0,0,0.08), 0 24px 48px rgba(0,0,0,0.14);
+  --font:   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Noto Sans TC', 'PingFang TC', sans-serif;
+}
+/* Dark mode 之後做手動切換、default 一律淡色 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1200px 800px at 15% 0%, rgba(10,132,255,0.08), transparent 60%),
+    radial-gradient(1000px 700px at 100% 100%, rgba(255,159,10,0.06), transparent 55%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App bar ── */
+.app-bar {
+  height: 56px;
+  background: var(--surf2);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  gap: 12px; padding: 0 18px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+.logo { font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+.tool-name { font-size: 12px; font-weight: 600; color: var(--muted); }
+.bar-sep { width: 1px; height: 22px; background: var(--border-strong); opacity: 0.4; }
+.bar-spacer { flex: 1; }
+.bar-btn {
+  height: 32px; padding: 0 14px; font-size: 12.5px; font-weight: 600;
+  background: var(--surf); color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  cursor: pointer; font-family: inherit;
+  box-shadow: var(--sh-1);
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+.bar-btn:hover { background: var(--surf2); box-shadow: var(--sh-2); }
+.bar-btn:active { transform: scale(0.96); }
+.bar-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: var(--sh-1); }
+.bar-btn:disabled:hover { background: var(--surf); box-shadow: var(--sh-1); }
+.bar-btn:disabled:active { transform: none; }
+.bar-btn.primary {
+  background: var(--accent); color: white;
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(10,132,255,0.35), 0 4px 12px rgba(10,132,255,0.25);
+}
+.bar-btn.primary:hover { background: var(--acc-h); }
+.bar-stat { font-size: 12px; color: var(--muted); }
+.bar-stat b { color: var(--text); font-weight: 700; }
+
+/* ── Main layout ── */
+.main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 14px;
+  padding: 14px;
+}
+.sidebar {
+  width: 320px;
+  background: var(--surf);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-1);
+  display: flex; flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.canvas {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 4px 4px 0;
+  position: relative;
+}
+.canvas-toolbar {
+  position: sticky; top: 0;
+  z-index: 30;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 4px 12px;
+  background: linear-gradient(var(--bg) 78%, transparent);
+  margin-bottom: 4px;
+}
+
+/* ── Sidebar ── */
+.side-tabs {
+  display: flex; padding: 8px; gap: 4px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+.side-tab {
+  flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 600;
+  background: transparent; cursor: pointer; border: none;
+  font-family: inherit; color: var(--muted);
+  border-radius: var(--r-sm);
+  transition: background 0.12s, color 0.12s;
+}
+.side-tab:hover { background: var(--acc-lt); color: var(--text); }
+.side-tab.active {
+  background: var(--surf2); color: var(--text);
+  box-shadow: var(--sh-1);
+}
+.side-body { flex: 1; overflow: auto; padding: 14px; min-height: 0; }
+.side-section h3 {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.side-section + .side-section { margin-top: 18px; }
+
+.import-box {
+  width: 100%; min-height: 100px; padding: 10px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-family: 'SF Mono', Menlo, monospace; font-size: 11px;
+  resize: vertical; color: var(--text);
+}
+.import-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+/* ── Filter groups ── */
+.filter-group { margin-bottom: 10px; }
+.filter-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 5px;
+}
+.filter-group-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.8px; text-transform: uppercase;
+}
+.filter-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.filter-chip {
+  font-size: 11px; padding: 5px 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surf); cursor: pointer;
+  font-weight: 600; font-family: inherit;
+  color: var(--text);
+  border-radius: 999px;
+  transition: all 0.12s;
+}
+.filter-chip:hover { background: var(--acc-lt); border-color: var(--accent); }
+.filter-chip.active {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+  box-shadow: 0 1px 2px rgba(10,132,255,0.35);
+}
+.filter-chip.ghost {
+  color: var(--muted); border-color: var(--border);
+  background: transparent;
+}
+.filter-chip.ghost:hover { color: var(--err); border-color: var(--err); background: transparent; }
+.filter-select {
+  width: 100%; padding: 6px 10px; font-size: 12px; font-family: inherit;
+  border: 1px solid var(--border-strong); background: var(--surf);
+  border-radius: var(--r-sm); font-weight: 600; color: var(--text);
+}
+.pool-count { font-size: 11px; color: var(--muted); margin: 10px 0 6px; font-weight: 600; }
+.pool { display: flex; flex-direction: column; gap: 6px; }
+.card {
+  background: var(--surf2); border: 1px solid var(--border);
+  padding: 10px 12px; font-size: 13px; cursor: grab;
+  box-shadow: var(--sh-1);
+  border-radius: var(--r-md);
+  display: flex; flex-direction: column; gap: 5px;
+  user-select: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+}
+.card .card-slot {
+  align-self: flex-start;
+  font-size: 11.5px; color: var(--accent);
+  font-weight: 800; letter-spacing: 0.3px;
+  font-family: 'SF Mono', Menlo, monospace;
+  pointer-events: none;
+  background: rgba(10,132,255,0.10);
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(10,132,255,0.30);
+  white-space: nowrap;
+}
+.card:hover { transform: translateY(-1px); box-shadow: var(--sh-2); }
+.card:active { cursor: grabbing; transform: rotate(1.5deg) scale(1.02); }
+.card.placed { opacity: 0.4; background: var(--panel); }
+.card.placed:hover { transform: none; box-shadow: var(--sh-1); }
+.card-line1 {
+  display: flex; flex-direction: column;
+  align-items: stretch; gap: 6px;
+}
+.card-name {
+  font-weight: 700; font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
+}
+.card-tags {
+  display: flex; gap: 4px;
+  flex-wrap: wrap;
+}
+.card-line2 { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--muted); }
+.card-cat { font-weight: 600; }
+.card-link {
+  color: var(--accent); text-decoration: none; font-size: 10px;
+  padding: 1px 6px; border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+.card-link:hover { background: var(--accent); color: white; }
+.card-tags { display: flex; gap: 3px; flex-shrink: 0; }
+.tag {
+  font-size: 9.5px; padding: 1px 6px; font-weight: 700;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+.tag.d1 { color: var(--d1-neon-txt); background: var(--d1-neon-bg); border-color: var(--d1-neon); font-weight: 800; }
+.tag.d2 { color: var(--d2-neon-txt); background: var(--d2-neon-bg); border-color: var(--d2-neon); font-weight: 800; }
+.tag.both {
+  color: var(--hall4);
+  background: rgba(255,159,10,0.14);
+  border-color: rgba(255,159,10,0.55);
+  font-weight: 800;
+}
+.tag.dbl { color: var(--dbl-mint); background: var(--dbl-mint-bg); border-color: rgba(0,169,145,0.6); }
+.tag.link { color: var(--link-indigo-dk); background: var(--link-indigo-bg); border-color: rgba(72,68,199,0.55); }
+.tag.link-other {
+  color: var(--link-indigo-dk); background: rgba(94,92,230,0.04);
+  border: 1px dashed var(--link-indigo);
+  font-weight: 700; opacity: 0.9;
+}
+.tag.free { color: var(--hall5); background: rgba(48,209,88,0.10); }
+.tag.big { color: var(--big-purple-dk); background: var(--big-purple-bg); border-color: rgba(124,47,191,0.6); font-weight: 800; }
+.card.big-hand { border-color: rgba(175,82,222,0.55); box-shadow: 0 0 0 1px rgba(175,82,222,0.35), var(--sh-1); }
+.card.big-hand:hover { box-shadow: 0 0 0 1px rgba(175,82,222,0.60), var(--sh-2); }
+.card.card-d1-only { border-left: 4px solid var(--d1-neon); padding-left: 10px; }
+.card.card-d2-only { border-left: 4px solid var(--d2-neon); padding-left: 10px; }
+.row-note {
+  font-size: 11.5px;
+  color: #8A5A00;
+  background: rgba(255,159,10,0.14);
+  border-left: 3px solid var(--warn);
+  padding: 5px 10px;
+  margin: 4px 0 3px 30px;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.row-note b { color: var(--warn); margin-right: 4px; }
+.row-note-editor {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; background: var(--surf2);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  margin-bottom: 4px; font-size: 11.5px;
+}
+.row-note-editor input {
+  flex: 1; padding: 4px 6px; font-family: inherit; font-size: 11.5px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--surf); color: var(--text);
+}
+.row-note-editor .row-tag { font-weight: 800; color: var(--muted); min-width: 20px; }
+
+/* 場地編輯器 */
+.venue-editor .hall-block {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px; margin-bottom: 10px;
+}
+.venue-editor .hall-block-head {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.venue-editor .hall-block-head input.hall-name-input {
+  flex: 1; padding: 4px 8px; font-weight: 800; font-size: 13px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--surf2); color: var(--text); font-family: inherit;
+}
+.venue-editor .row-line {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 4px; font-size: 11.5px;
+}
+.venue-editor .row-line input, .venue-editor .row-line select {
+  padding: 3px 6px; font-family: inherit; font-size: 11.5px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--surf2); color: var(--text);
+}
+.venue-editor .row-line .rl-id { width: 40px; text-align: center; font-weight: 800; }
+.venue-editor .row-line .rl-count { width: 55px; text-align: center; }
+.venue-editor .row-line .rl-kind { width: 60px; }
+.venue-editor .row-line .rl-gap { width: 48px; text-align: center; }
+.venue-editor .row-line .rl-note { flex: 1; min-width: 60px; }
+.venue-editor .row-line .rl-del,
+.venue-editor .hall-block-head .rl-del {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--err); font-size: 13px; padding: 3px 6px;
+  border-radius: var(--r-sm);
+}
+.venue-editor .row-line .rl-del:hover,
+.venue-editor .hall-block-head .rl-del:hover {
+  background: rgba(255,59,48,0.10);
+}
+.venue-editor .add-btn {
+  padding: 5px 10px; font-size: 11.5px; font-weight: 700;
+  border: 1px dashed var(--border-strong); background: transparent;
+  color: var(--muted); cursor: pointer; border-radius: var(--r-sm);
+  font-family: inherit;
+}
+.venue-editor .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tag.unlinked {
+  color: var(--err); background: rgba(255,59,48,0.12);
+  cursor: pointer;
+}
+.tag.unlinked:hover { background: rgba(255,59,48,0.22); }
+.card.has-warn {
+  border-color: var(--err);
+  box-shadow: 0 0 0 1px rgba(255,59,48,0.35), var(--sh-1);
+}
+
+/* ── Canvas ── */
+.day-switcher {
+  display: inline-flex; margin-bottom: 14px;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 4px;
+  box-shadow: var(--sh-1);
+}
+.day-btn {
+  padding: 7px 20px; font-size: 12.5px; font-weight: 600;
+  background: transparent; border: none; cursor: pointer;
+  font-family: inherit; color: var(--muted);
+  border-radius: var(--r-sm);
+  transition: all 0.12s;
+}
+.day-btn:hover { color: var(--text); }
+.day-btn.active {
+  background: var(--accent); color: white;
+  box-shadow: 0 1px 2px rgba(10,132,255,0.35);
+}
+
+.hall {
+  background: var(--surf); backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-1);
+  padding: 14px; margin-bottom: 18px;
+}
+.hall-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.hall-name { font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+.hall-tag {
+  font-size: 10px; padding: 3px 8px; color: white; font-weight: 700;
+  border-radius: var(--r-sm);
+}
+.hall-tag.h3 { background: var(--hall3); }
+.hall-tag.h4 { background: var(--hall4); }
+.hall-tag.h5 { background: var(--hall5); }
+.hall-stat { font-size: 11.5px; color: var(--muted); margin-left: auto; font-weight: 600; }
+
+.row {
+  display: flex; align-items: stretch; gap: 6px; margin-bottom: 6px;
+}
+.row-label {
+  width: 24px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+}
+.row-slots {
+  display: flex; gap: 3px; flex-wrap: nowrap; overflow-x: auto;
+  padding-bottom: 2px;
+}
+.slot {
+  width: 60px; height: 64px; flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surf2);
+  border-radius: 0;
+  display: flex; flex-direction: column;
+  position: relative; overflow: visible;
+  box-shadow: var(--sh-1);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.slot:hover { box-shadow: var(--sh-2); }
+.slot-body { overflow: hidden; }
+.slot.free-tan { background: rgba(48,209,88,0.10); }
+.slot.d1-only { border-top: 4px solid var(--d1-neon); box-shadow: 0 -1px 0 rgba(255,16,240,0.4), var(--sh-1); }
+.slot.d2-only { border-top: 4px solid var(--d2-neon); box-shadow: 0 -1px 0 rgba(57,255,20,0.4), var(--sh-1); }
+.slot-gap {
+  width: 20px; height: 64px; flex-shrink: 0;
+  background: repeating-linear-gradient(45deg, rgba(0,0,0,0.06), rgba(0,0,0,0.06) 3px, transparent 3px, transparent 6px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: var(--muted); font-weight: 600;
+}
+.slot-num {
+  font-size: 10px; color: var(--muted);
+  padding: 1px 5px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600; letter-spacing: 0.4px;
+  text-align: right;
+}
+.slot-body {
+  flex: 1; padding: 3px 3px 12px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; overflow: hidden; line-height: 1.2;
+  word-break: break-all;
+}
+.slot.filled .slot-body { background: var(--acc-lt); color: var(--text); }
+.slot.filled { cursor: grab; }
+.slot.filled:hover { transform: translateY(-1px); }
+.slot.filled:active { cursor: grabbing; }
+.slot.link-member { outline: 1.5px solid rgba(10,132,255,0.4); outline-offset: -2px; }
+.slot.link-member.linked { outline: none; }
+.slot.linked { box-shadow: inset 0 -4px 0 var(--accent), var(--sh-1); }
+.slot.linked .slot-body { background: rgba(10,132,255,0.10); }
+.slot.linked.link-start { box-shadow: inset 4px 0 0 var(--accent), inset 0 -4px 0 var(--accent), var(--sh-1); }
+.slot.linked.link-end { box-shadow: inset -4px 0 0 var(--accent), inset 0 -4px 0 var(--accent), var(--sh-1); }
+.slot.warn { outline: 2px solid var(--err); outline-offset: -3px; }
+.slot.dragover { background: var(--acc-lt); outline: 2px dashed var(--accent); outline-offset: -3px; }
+.slot.dbl-main { border-right: 1px dashed rgba(0,169,145,0.35); }
+.slot.dbl-shadow { border-left: 1px dashed rgba(0,169,145,0.35); }
+.slot.dbl-main .slot-body { background: rgba(0,169,145,0.20); color: #003D34; }
+.slot.dbl-shadow .slot-body { background: var(--dbl-mint-bg); color: #007059; display: flex; opacity: 0.75; font-style: italic; }
+.slot.dbl-shadow .slot-body::after { content: '雙攤'; font-size: 10px; font-weight: 700; }
+.slot .cat-badge {
+  position: absolute; bottom: 1px; right: 2px;
+  font-size: 9.5px; padding: 0 4px; color: var(--muted);
+  background: var(--surf2); border-radius: var(--r-sm);
+  font-weight: 700; max-width: 32px;
+  overflow: hidden; white-space: nowrap;
+}
+.slot .group-label {
+  position: absolute; top: 0; left: 0;
+  background: var(--accent); color: white;
+  font-size: 8.5px; padding: 1px 4px; font-weight: 700;
+  letter-spacing: 0.3px; white-space: nowrap;
+  z-index: 5; line-height: 1;
+}
+.slot.big-slot {
+  outline: 2px solid rgba(175,82,222,0.65);
+  outline-offset: -2px;
+}
+.slot.big-slot .slot-body {
+  background: linear-gradient(135deg, rgba(175,82,222,0.28), rgba(124,47,191,0.18)) !important;
+  color: #4A1A75;
+}
+.slot.big-slot .big-star {
+  position: absolute; top: -7px; right: -5px;
+  font-size: 15px; z-index: 6;
+  filter: drop-shadow(0 1px 2px rgba(124,47,191,0.55));
+  pointer-events: none;
+}
+.slot-marks {
+  position: absolute; top: 12px; right: 2px;
+  display: flex; gap: 1px;
+}
+.mark { width: 7px; height: 7px; border-radius: 50%; }
+.mark.power { background: #5AC8FA; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+.mark.plug2 { background: var(--err); box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+.mark.stamp { background: #8E8E93; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+
+/* ── Empty state / modals ── */
+.empty {
+  padding: 44px 20px; text-align: center; color: var(--muted); font-size: 12.5px;
+}
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-mask.open { display: flex; }
+.modal {
+  background: var(--surf2);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-3);
+  width: 520px; max-width: 90vw; max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+.modal-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700; font-size: 15px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-body { padding: 18px; overflow: auto; }
+.modal-close {
+  border: none; background: transparent;
+  font-size: 22px; cursor: pointer; color: var(--muted);
+  line-height: 1;
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+
+/* Workspace history list */
+.ws-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; margin-bottom: 6px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surf); cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.ws-item:hover { background: var(--acc-lt); border-color: var(--accent); }
+.ws-item.current { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(10,132,255,0.25); }
+.ws-item-name { font-weight: 700; font-size: 13px; }
+.ws-now {
+  font-size: 9.5px; color: white; background: var(--accent);
+  padding: 1px 6px; border-radius: 999px; margin-left: 4px;
+}
+.ws-item-meta { font-size: 10.5px; color: var(--muted); font-family: 'SF Mono', Menlo, monospace; margin-top: 2px; }
+.ws-item-del {
+  border: none; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+.ws-item-del:hover { color: var(--err); background: rgba(255,59,48,0.10); }
+
+/* Warnings popover */
+.warn-item {
+  padding: 10px 12px;
+  background: rgba(255,59,48,0.08);
+  border: 1px solid rgba(255,59,48,0.20);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.warn-item b { color: var(--err); }
+
+/* Main tabs（app-bar 上） */
+.main-tabs { display: inline-flex; padding: 3px; background: var(--panel); border-radius: var(--r-md); gap: 2px; }
+.main-tab {
+  padding: 6px 14px; font-size: 12.5px; font-weight: 600;
+  background: transparent; border: none; cursor: pointer;
+  font-family: inherit; color: var(--muted);
+  border-radius: var(--r-sm);
+  transition: all 0.12s;
+}
+.main-tab:hover { color: var(--text); }
+.main-tab.active {
+  background: var(--surf2); color: var(--text);
+  box-shadow: var(--sh-1);
+}
+
+/* Filter tabs（sidebar 內、五組分頁） */
+.filter-tabs {
+  display: flex; gap: 2px; margin-bottom: 10px;
+  background: var(--panel); padding: 3px; border-radius: var(--r-md);
+}
+.filter-tab {
+  flex: 1; padding: 6px 4px; font-size: 11px; font-weight: 600;
+  background: transparent; border: none; cursor: pointer;
+  font-family: inherit; color: var(--muted);
+  border-radius: var(--r-sm); text-align: center;
+  transition: all 0.12s;
+}
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active {
+  background: var(--surf2); color: var(--text);
+  box-shadow: var(--sh-1);
+}
+.filter-tab .dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%; margin-left: 4px;
+  vertical-align: middle;
+}
+.filter-content { min-height: 36px; margin-bottom: 6px; }
+.bar-stat.clickable { cursor: pointer; user-select: none; padding: 2px 8px; border-radius: var(--r-sm); }
+.bar-stat.clickable:hover { background: var(--acc-lt); }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: padding-box; border: 2px solid transparent; }
+::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <span class="logo">✿ 攤攤排排</span>
+  <span class="bar-sep"></span>
+  <div class="main-tabs">
+    <button class="main-tab active" data-tab="pool" onclick="switchTab('pool')">攤主池</button>
+    <button class="main-tab" data-tab="info" onclick="switchTab('info')">規則・場地</button>
+  </div>
+  <span class="bar-sep"></span>
+  <span class="tool-name" id="modeLabel">本機模式</span>
+  <span class="bar-stat">已排 <b id="statPlaced">0</b> / <b id="statTotal">0</b></span>
+  <span class="bar-stat clickable" id="statWarn" onclick="showWarnings()"></span>
+  <span class="bar-stat" id="syncIndicator"></span>
+  <span class="bar-spacer"></span>
+  <button class="bar-btn" id="undoBtn" onclick="undo()" title="復原 ⌘Z" disabled>↩ 復原</button>
+  <button class="bar-btn" id="redoBtn" onclick="redo()" title="重做 ⌘⇧Z" disabled>重做 ↪</button>
+  <span class="bar-sep"></span>
+  <button class="bar-btn" onclick="showWsList()">🗂 我的紀錄</button>
+  <button class="bar-btn" onclick="openImport()">貼上名單</button>
+  <button class="bar-btn" onclick="exportBoothList()">📋 匯出攤位表</button>
+  <button class="bar-btn" id="wsBtn" onclick="onWsBtnClick()">建立共編</button>
+</div>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="side-body" id="sideBody">
+      <div class="side-section" id="secPool">
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-ftab="status" onclick="switchFilterTab('status')">狀態</button>
+          <button class="filter-tab" data-ftab="attend" onclick="switchFilterTab('attend')">攤數</button>
+          <button class="filter-tab" data-ftab="day" onclick="switchFilterTab('day')">日別</button>
+          <button class="filter-tab" data-ftab="prop" onclick="switchFilterTab('prop')">屬性</button>
+          <button class="filter-tab" data-ftab="cat" onclick="switchFilterTab('cat')">分類</button>
+        </div>
+        <div class="filter-content" id="fc-status">
+          <div class="filter-chips">
+            <button class="filter-chip active" data-grp="status" data-v="all">全部</button>
+            <button class="filter-chip" data-grp="status" data-v="unplaced">未排</button>
+          </div>
+        </div>
+        <div class="filter-content" id="fc-attend" style="display:none">
+          <div class="filter-chips">
+            <button class="filter-chip active" data-grp="attend" data-v="all">全部</button>
+            <button class="filter-chip" data-grp="attend" data-v="solo">單攤</button>
+            <button class="filter-chip" data-grp="attend" data-v="dbl">雙攤</button>
+          </div>
+        </div>
+        <div class="filter-content" id="fc-day" style="display:none">
+          <div class="filter-chips">
+            <button class="filter-chip active" data-grp="day" data-v="all">全</button>
+            <button class="filter-chip" data-grp="day" data-v="d1only">只 D1</button>
+            <button class="filter-chip" data-grp="day" data-v="d2only">只 D2</button>
+            <button class="filter-chip" data-grp="day" data-v="both">雙日</button>
+          </div>
+        </div>
+        <div class="filter-content" id="fc-prop" style="display:none">
+          <div class="filter-chips">
+            <button class="filter-chip active" data-grp="prop" data-v="all">全部</button>
+            <button class="filter-chip" data-grp="prop" data-v="linked">連攤</button>
+            <button class="filter-chip" data-grp="prop" data-v="free">自由攤</button>
+            <button class="filter-chip" data-grp="prop" data-v="big">⭐ 大手</button>
+          </div>
+        </div>
+        <div class="filter-content" id="fc-cat" style="display:none">
+          <select class="filter-select" id="catSelect" onchange="setFilter('cat', this.value)">
+            <option value="all">全部分類</option>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;">
+          <span class="pool-count" id="poolCount"></span>
+          <button class="filter-chip ghost" onclick="clearFilters()">✕ 重設篩選</button>
+        </div>
+        <div class="pool" id="pool">
+          <div class="empty">還沒名單。<br>右上「貼上名單」開始。</div>
+        </div>
+      </div>
+      <div class="side-section" id="secInfo" style="display:none">
+        <div style="padding:10px;background:var(--acc-lt);border:1px solid rgba(10,132,255,0.20);border-radius:var(--r-md);">
+          <div style="font-size:11px;font-weight:700;color:var(--acc-h);margin-bottom:6px;">走道間隔</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+            每
+            <input id="gapEveryInput" type="number" min="0" max="40" value="10" style="width:56px;padding:5px;border:1px solid var(--border-strong);border-radius:var(--r-sm);font-family:inherit;font-size:12px;text-align:center;background:var(--surf2);color:var(--text);" onchange="setGapEvery(this.value)">
+            攤插走道
+          </div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:6px;">
+            改了要重畫底圖、已排的攤主不動。設 0 = 不插走道。各排可在下面「場地編輯」的「走」欄個別覆蓋。
+          </div>
+        </div>
+
+        <h3 style="margin-top:20px;">場地編輯（排 / 格數 / 性質 / 備註）</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+          每次活動的場地不同、可以改。<b>桌</b>＝桌攤區、<b>自</b>＝自由攤區。<br>
+          縮小格數時、超出範圍的攤主自動拿回攤主池（不會消失）。備註直接顯示在該排上方。<br>
+          「走」欄＝這排自己的走道：<b>10</b>＝每 10 攤插、<b>4,5,3</b>＝分段（4攤｜走道｜5攤｜走道｜3攤）、<b>0</b>＝不插、留空＝用全域。
+        </p>
+        <div id="rowNotesList" class="venue-editor"></div>
+
+        <h3 style="margin-top:20px;">備份 / 進階</h3>
+        <button class="bar-btn" onclick="exportJSON()" style="width:100%;margin-bottom:6px;">💾 匯出 JSON 備份</button>
+        <p style="font-size:10.5px;color:var(--muted);">
+          給歐歐用的完整快照（含 cards + assignments）、可 restore 用。<br>
+          日常給羽毛用「📋 匯出攤位表」CSV 就好。
+        </p>
+
+        <h3 style="margin-top:20px;">目前規則</h3>
+        <ul style="font-size:12.5px;line-height:1.8;padding-left:16px;color:var(--muted);">
+          <li>雙攤要佔一整桌（01+02、03+04...）</li>
+          <li>拖到偶數格自動 snap 到前一格（奇數起）</li>
+          <li>連攤群組拖任一人 → 提示帶整組排</li>
+          <li>取消 confirm ＝ 拆連攤（只排這張）</li>
+          <li>Day 01 / Day 02 群組獨立（缺席自動縮排）</li>
+          <li>自由攤只能塞 B/C 排、桌攤不能塞 B/C 排</li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="canvas" id="canvas">
+    <div class="canvas-toolbar">
+      <div class="day-switcher" style="margin-bottom:0;">
+        <button class="day-btn active" data-day="1" onclick="switchDay(1)">Day 01</button>
+        <button class="day-btn" data-day="2" onclick="switchDay(2)">Day 02</button>
+      </div>
+      <button class="bar-btn" onclick="clearAssignments()" style="color:var(--err);border-color:rgba(255,59,48,0.35);">🗑 清空排位</button>
+    </div>
+    <div id="halls"></div>
+  </main>
+</div>
+
+<!-- Warnings modal -->
+<div class="modal-mask" id="warnMask">
+  <div class="modal" style="width:420px;">
+    <div class="modal-head">
+      規則提醒
+      <button class="modal-close" onclick="closeWarnings()">×</button>
+    </div>
+    <div class="modal-body" id="warnBody">
+      <div class="empty">目前沒有提醒。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Import modal -->
+<div class="modal-mask" id="importMask">
+  <div class="modal">
+    <div class="modal-head">
+      貼上桌攤名單
+      <button class="modal-close" onclick="closeImport()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:10px;background:var(--acc-lt);border:1.5px dashed var(--accent);margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:800;margin-bottom:6px;color:var(--acc-h);">📊 從 Google Sheet 網址直接抓（推薦）</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="gsheetUrl" style="flex:1;padding:5px 8px;border:1.5px solid var(--border);font-size:11px;font-family:inherit;background:white;" placeholder="https://docs.google.com/spreadsheets/d/... （要選到桌攤那個分頁的網址）">
+          <button class="bar-btn primary" id="gsheetBtn" onclick="importFromGSheetUrl()" style="height:28px;padding:0 12px;font-size:11px;">抓取</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;">
+          Sheet 要開「知道連結的人可查看」。網址會記住、下次自動填。
+        </div>
+      </div>
+      <p class="import-hint" style="margin-bottom:8px;">
+        或直接貼——欄位順序：<b>社團性質・商品敘述・網頁・D1・D2・社團名稱・勾選・D1連攤・D1標示・D2連攤・D2標示</b>
+      </p>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:11px;">
+        <span style="font-weight:800;">這批是：</span>
+        <label style="cursor:pointer;"><input type="radio" name="importKind" value="desk" checked> 桌攤（放 A/D/E/F/G/H/I/J/K/L 排）</label>
+        <label style="cursor:pointer;"><input type="radio" name="importKind" value="free"> 自由攤（只能放 B/C 排）</label>
+      </div>
+      <textarea class="import-box" id="importBox" placeholder="社團性質	商品敘述	網頁	D1	D2	社團名稱	..."></textarea>
+      <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
+        <button class="bar-btn" onclick="closeImport()">取消</button>
+        <button class="bar-btn primary" onclick="doImport()">用貼的匯入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workspace history modal -->
+<div class="modal-mask" id="wsListMask">
+  <div class="modal" style="width:440px;">
+    <div class="modal-head">
+      我的排攤紀錄
+      <button class="modal-close" onclick="closeWsList()">×</button>
+    </div>
+    <div class="modal-body" id="wsListBody"></div>
+  </div>
+</div>
+
+<!-- New event modal（開新場次、選場地包） -->
+<div class="modal-mask" id="newEventMask">
+  <div class="modal" style="width:420px;">
+    <div class="modal-head">
+      開新場次
+      <button class="modal-close" onclick="closeNewEvent()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;margin-bottom:5px;">場次名字</div>
+        <input id="newEventName" type="text" placeholder="例：CH21 百合向ONLY 2027-04" style="width:100%;padding:8px 10px;font-family:inherit;font-size:13px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surf2);color:var(--text);">
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;margin-bottom:6px;">場地（場地包）</div>
+      <div id="newEventTpls"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button class="bar-btn" onclick="closeNewEvent()">取消</button>
+        <button class="bar-btn primary" onclick="confirmNewEvent()">建立</button>
+      </div>
+      <p style="font-size:10.5px;color:var(--muted);margin-top:10px;line-height:1.5;">
+        拿到新場地圖（例：花博爭艷館）丟給歐歐、加進場地包、以後每年直接選。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────
+// 場地資料（松煙 3/4/5 倉，來源：平面圖）
+// ────────────────────────────────────────────────────────
+const VENUE = {
+  gapEvery: 10,  // 每 N 攤插一段走道（每 5 桌 = 10 攤、可在場地 tab 改）
+  halls: [
+    {
+      id: 'h3', name: '三倉', tag: 'h3',
+      rows: [
+        { id: 'A', count: 40, kind: 'desk', edge: 'top' },
+        { id: 'B', count: 22, kind: 'free' },
+        { id: 'C', count: 22, kind: 'free' },
+        { id: 'D', count: 40, kind: 'desk', edge: 'bot' }
+      ]
+    },
+    {
+      id: 'h4', name: '四倉', tag: 'h4',
+      rows: [
+        { id: 'E', count: 30, kind: 'desk', edge: 'top' },
+        { id: 'F', count: 40, kind: 'desk' },
+        { id: 'G', count: 40, kind: 'desk' },
+        { id: 'H', count: 40, kind: 'desk', edge: 'bot' }
+      ]
+    },
+    {
+      id: 'h5', name: '五倉', tag: 'h5',
+      rows: [
+        { id: 'I', count: 40, kind: 'desk', edge: 'top' },
+        { id: 'J', count: 40, kind: 'desk' },
+        { id: 'K', count: 40, kind: 'desk' },
+        { id: 'L', count: 28, kind: 'desk', edge: 'bot' }
+      ]
+    }
+  ],
+  // 特殊標記（由穆穆自己編、之後上介面）
+  marks: {
+    // slot id → array of marks
+    // 範例：'A01': ['plug2'], 'A40': ['power']
+  }
+};
+// ── 場地包（範本庫）──
+// 開新場次時選、每年重用。拿到新場地圖（例：花博爭艷館）丟給歐歐、加一筆進來就永遠在選單裡。
+// 注意要在 VENUE 剛定義完就快照——VENUE.halls 進 workspace 後會被蓋。
+const VENUE_TEMPLATES = [
+  { key: 'songyan', name: '松菸 3/4/5 倉（台創祭）', halls: JSON.parse(JSON.stringify(VENUE.halls)) },
+  { key: 'sanchong', name: '三重體育館 1F（CH 百合向）', halls: [
+    { id: 'h3', name: '三重體育館 1F', tag: 'h3', rows: [
+      { id: 'A', count: 18, kind: 'desk', gapSpec: '6,12' },
+      { id: 'B', count: 30, kind: 'desk', gapSpec: '10' },
+      { id: 'C', count: 30, kind: 'desk', gapSpec: '10' },
+      { id: 'D', count: 28, kind: 'desk', gapSpec: '10,10,6,2' },
+      { id: 'E', count: 28, kind: 'desk', gapSpec: '10,10,6,2' },
+      { id: 'F', count: 30, kind: 'desk', gapSpec: '10', note: 'G↔F 走道 3 格寬、F↔E 走道 5 格寬（現場尺寸、依現場為準）' },
+      { id: 'G', count: 30, kind: 'desk', gapSpec: '10' },
+      { id: 'S', count: 8, kind: 'desk', gapSpec: '2' },
+    ] },
+  ] },
+  // { key: 'expo', name: '花博爭艷館', halls: [...] },  // 圖還沒拿到、拿到就補
+  { key: 'blank', name: '空白場地（從零自己蓋）', halls: [] },
+];
+
+// ────────────────────────────────────────────────────────
+// 狀態
+// ────────────────────────────────────────────────────────
+let state = {
+  cards: [],           // [{id, name, kind, cat, desc, url, d1, d2, d1link, d2link, d1mark, d2mark}]
+  assignments: {       // { 1: {slotId: cardId}, 2: {slotId: cardId} }
+    1: {},
+    2: {}
+  },
+  currentDay: 1,
+  f: {
+    status: 'all',   // all | unplaced
+    attend: 'all',   // all | solo | dbl
+    day: 'all',      // all | d1only | d2only | both
+    prop: 'all',     // all | linked | free
+    cat: 'all',      // all | 'cat name'
+  }
+};
+
+const LS_KEY = 'tantan-paipai-v1';
+
+// ────────── 共編（v2） ──────────
+let wid = null;              // workspace id（null = 本機模式）
+let workspaceName = '';
+let localBaseTs = 0;         // 本地知道的 server updated_at
+let deviceId = getOrMakeDeviceId();
+let pushTimer = null;
+let pullTimer = null;
+let lastPushBusy = false;
+
+function getOrMakeDeviceId() {
+  let id = localStorage.getItem('tantan_device_id');
+  if (!id) {
+    const arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    id = Array.from(arr).map(b => b.toString(36)).join('').slice(0, 8);
+    localStorage.setItem('tantan_device_id', id);
+  }
+  return id;
+}
+
+function isCloud() { return !!wid; }
+
+// ────────── 這台裝置開過的 workspace 紀錄 ──────────
+const WS_HISTORY_KEY = 'tantan_ws_history';
+function getWsHistory() {
+  try { return JSON.parse(localStorage.getItem(WS_HISTORY_KEY)) || []; } catch { return []; }
+}
+function saveWsHistory(list) {
+  localStorage.setItem(WS_HISTORY_KEY, JSON.stringify(list.slice(0, 20)));
+}
+function touchWsHistory(id, name) {
+  const list = getWsHistory().filter(e => e.id !== id);
+  list.unshift({ id, name: name || '', ts: Date.now() });
+  saveWsHistory(list);
+}
+function dropWsHistory(id) {
+  saveWsHistory(getWsHistory().filter(e => e.id !== id));
+}
+function showWsList() {
+  const body = document.getElementById('wsListBody');
+  const list = getWsHistory();
+  const fmt = ts => {
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+  const rows = list.map(e => `
+    <div class="ws-item ${e.id === wid ? 'current' : ''}" onclick="openWs('${e.id}')">
+      <div style="min-width:0;">
+        <div class="ws-item-name">${escapeHtml(e.name || '未命名')}${e.id === wid ? ' <span class="ws-now">目前</span>' : ''}</div>
+        <div class="ws-item-meta">${e.id} · 上次開 ${fmt(e.ts)}</div>
+      </div>
+      <button class="ws-item-del" title="從這台的紀錄移除（雲上資料不會刪）" onclick="event.stopPropagation();removeWsEntry('${e.id}')">✕</button>
+    </div>`).join('');
+  body.innerHTML = `
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+      這台瀏覽器開過的共編紀錄——連結丟了回這裡找。換一台裝置不共通、共編網址記得也存在自己常用的地方。
+    </p>
+    <div class="ws-item" onclick="createNewEvent()" style="border-style:dashed;background:transparent;">
+      <div><div class="ws-item-name">➕ 開新場次</div><div class="ws-item-meta">全新乾淨的排攤頁（一場一條網址、自動進紀錄）</div></div>
+    </div>
+    ${rows || '<div class="empty">這台還沒開過任何共編 workspace。</div>'}
+    ${wid ? `<div class="ws-item" onclick="openWs('')">
+      <div><div class="ws-item-name">🏠 回本機模式</div><div class="ws-item-meta">不連雲、資料只存這台</div></div>
+    </div>` : ''}
+  `;
+  document.getElementById('wsListMask').classList.add('open');
+}
+function closeWsList() { document.getElementById('wsListMask').classList.remove('open'); }
+function openWs(id) {
+  const url = new URL(location.pathname, location.origin);
+  if (id) url.searchParams.set('w', id);
+  location.href = url.toString();
+}
+function removeWsEntry(id) { dropWsHistory(id); showWsList(); }
+
+// 開新場次：全新乾淨 workspace、場地從場地包選
+function createNewEvent() {
+  closeWsList();
+  const tplHtml = VENUE_TEMPLATES.map((t, i) => {
+    const total = t.halls.reduce((s, h) => s + h.rows.reduce((x, r) => x + r.count, 0), 0);
+    return `<label style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px;cursor:pointer;background:var(--surf);">
+      <input type="radio" name="newEventTpl" value="${t.key}" ${i === 0 ? 'checked' : ''}>
+      <span style="font-weight:700;font-size:12.5px;">${t.name}</span>
+      <span style="margin-left:auto;font-size:10.5px;color:var(--muted);">${total ? total + ' 攤' : '—'}</span>
+    </label>`;
+  }).join('');
+  document.getElementById('newEventTpls').innerHTML = tplHtml;
+  document.getElementById('newEventName').value = '';
+  document.getElementById('newEventMask').classList.add('open');
+}
+function closeNewEvent() { document.getElementById('newEventMask').classList.remove('open'); }
+async function confirmNewEvent() {
+  const name = document.getElementById('newEventName').value.trim();
+  const key = document.querySelector('input[name="newEventTpl"]:checked')?.value;
+  const tpl = VENUE_TEMPLATES.find(t => t.key === key) || VENUE_TEMPLATES[VENUE_TEMPLATES.length - 1];
+  closeNewEvent();
+  setSyncStatus('建立中…', 'var(--accent)');
+  try {
+    const r = await fetch('/api/workspace', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: name || '未命名場次',
+        updated_by: deviceId,
+        data: {
+          cards: [], assignments: { 1: {}, 2: {} }, unlinked: null,
+          venue: { gapEvery: 10, rowNotes: {}, halls: JSON.parse(JSON.stringify(tpl.halls)) },
+        },
+      }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    touchWsHistory(j.id, j.name);
+    openWs(j.id);
+  } catch (e) {
+    alert('建立失敗：' + e.message + (location.protocol === 'file:' ? '\n（本機檔案開的頁面連不到雲、要在 tantan-paipai.pages.dev 上用）' : ''));
+    setSyncStatus('');
+  }
+}
+
+// SHA-256 前端雜湊（密碼 + workspace id 當 salt）
+async function hashPassword(pw, w) {
+  if (!pw) return '';
+  const data = new TextEncoder().encode(pw + '|' + w);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function getSessionPasswordHash() {
+  return wid ? sessionStorage.getItem('ws_pw_hash_' + wid) || '' : '';
+}
+function setSessionPasswordHash(hash) {
+  if (wid) sessionStorage.setItem('ws_pw_hash_' + wid, hash || '');
+}
+function authHeaders() {
+  const h = { 'content-type': 'application/json' };
+  const pwh = getSessionPasswordHash();
+  if (pwh) h['x-ws-password-hash'] = pwh;
+  return h;
+}
+
+function setSyncStatus(txt, color) {
+  const el = document.getElementById('syncIndicator');
+  if (!el) return;
+  el.innerHTML = txt ? `<span style="color:${color||'var(--muted)'};font-weight:800">${txt}</span>` : '';
+}
+
+// ────────────────────────────────────────────────────────
+// 初始化
+// ────────────────────────────────────────────────────────
+async function init() {
+  // 判斷模式：URL 有 ?w=xxx → cloud 模式
+  const params = new URLSearchParams(location.search);
+  const w = params.get('w');
+  loadState();  // 先本機、供 fallback
+  ensureSeq();
+  renderHalls();
+  bindFilterChips();
+  refreshCatOptions();
+  updateStats();
+  renderPool();
+  if (w) await enterWorkspace(w);
+  else updateWsButton();
+}
+
+async function enterWorkspace(w) {
+  wid = w;  // 先設、方便 authHeaders 讀 sessionStorage
+  setSyncStatus('連線中…', 'var(--accent)');
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const r = await fetch('/api/workspace/' + encodeURIComponent(w), { headers: authHeaders() });
+      if (r.status === 404) {
+        alert('❌ 找不到這個共編 workspace。可能被刪了或網址錯了。\n退回本機模式。');
+        dropWsHistory(w);
+        wid = null;
+        const url = new URL(location.href); url.searchParams.delete('w'); history.replaceState(null, '', url);
+        setSyncStatus('');
+        return;
+      }
+      if (r.status === 401) {
+        // 要密碼
+        const pw = prompt(attempt === 0
+          ? `這個共編有密碼保護。\n請輸入密碼進入 workspace「${w}」：`
+          : '密碼不對、再試一次：');
+        if (pw == null) {
+          wid = null;
+          setSyncStatus('已取消');
+          return;
+        }
+        setSessionPasswordHash(await hashPassword(pw, w));
+        continue;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const remote = await r.json();
+      workspaceName = remote.name || '';
+      localBaseTs = remote.updated_at;
+      touchWsHistory(w, workspaceName);
+      applyRemoteState(remote.data);
+      document.getElementById('modeLabel').textContent = `☁️ 共編 · ${workspaceName || w}`;
+      updateWsButton();
+      setSyncStatus('✓ 已同步', 'var(--ok)');
+      startPullLoop();
+      return;
+    } catch (e) {
+      alert('共編連線失敗：' + e.message + '\n退回本機模式。');
+      wid = null;
+      setSyncStatus('');
+      return;
+    }
+  }
+  alert('密碼錯太多次、退回本機模式。');
+  wid = null;
+  setSyncStatus('');
+}
+
+function applyVenueData(v) {
+  if (!v) return;
+  if (typeof v.gapEvery === 'number') {
+    VENUE.gapEvery = v.gapEvery;
+    const inp = document.getElementById('gapEveryInput');
+    if (inp) inp.value = VENUE.gapEvery;
+  }
+  if (Array.isArray(v.halls) && v.halls.length > 0) {
+    VENUE.halls = v.halls;
+  }
+  if (v.rowNotes) {
+    for (const hall of VENUE.halls) {
+      for (const row of hall.rows) {
+        row.note = v.rowNotes[row.id] || row.note || '';
+      }
+    }
+  }
+}
+
+function applyRemoteState(data) {
+  state.cards = data.cards || [];
+  state.assignments = data.assignments || { 1: {}, 2: {} };
+  state.unlinked = data.unlinked ? { 1: new Set(data.unlinked[1] || []), 2: new Set(data.unlinked[2] || []) } : null;
+  applyVenueData(data.venue);
+  ensureSeq();
+  renderHalls();
+  refreshCatOptions();
+  renderPool();
+  updateStats();
+}
+
+function serializeState() {
+  const rowNotes = {};
+  for (const hall of VENUE.halls) {
+    for (const row of hall.rows) {
+      if (row.note) rowNotes[row.id] = row.note;
+    }
+  }
+  return {
+    cards: state.cards,
+    assignments: state.assignments,
+    unlinked: state.unlinked ? { 1: [...(state.unlinked[1]||[])], 2: [...(state.unlinked[2]||[])] } : null,
+    venue: { gapEvery: VENUE.gapEvery, rowNotes, halls: VENUE.halls },
+  };
+}
+
+// ────────── Undo / Redo ──────────
+const HISTORY_MAX = 40;
+state.history = [];
+state.future = [];
+
+function snapshotState() {
+  return JSON.stringify(serializeState());
+}
+function pushHistory() {
+  state.history.push(snapshotState());
+  if (state.history.length > HISTORY_MAX) state.history.shift();
+  state.future = [];
+  updateUndoUI();
+}
+function applySnapshot(snap) {
+  applyRemoteState(JSON.parse(snap));
+  markDirty();
+}
+function undo() {
+  if (state.history.length === 0) { flash('沒有可復原的操作'); return; }
+  state.future.push(snapshotState());
+  applySnapshot(state.history.pop());
+  updateUndoUI();
+  flash('已復原');
+}
+function redo() {
+  if (state.future.length === 0) { flash('沒有可重做的操作'); return; }
+  state.history.push(snapshotState());
+  applySnapshot(state.future.pop());
+  updateUndoUI();
+  flash('已重做');
+}
+function updateUndoUI() {
+  const u = document.getElementById('undoBtn');
+  const r = document.getElementById('redoBtn');
+  if (u) u.disabled = state.history.length === 0;
+  if (r) r.disabled = state.future.length === 0;
+}
+document.addEventListener('keydown', e => {
+  // 忽略在 input/textarea 內的 Cmd+Z（讓文字編輯 undo 正常）
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'z' || e.key === 'Z')) {
+    e.preventDefault();
+    if (e.shiftKey) redo(); else undo();
+  }
+});
+
+function markDirty() {
+  // 本機模式：直接寫 localStorage（含場地設定）
+  if (!isCloud()) {
+    localStorage.setItem(LS_KEY, JSON.stringify(serializeState()));
+    return;
+  }
+  // Cloud 模式：debounce 500ms push
+  clearTimeout(pushTimer);
+  setSyncStatus('待同步…', 'var(--muted)');
+  pushTimer = setTimeout(syncPush, 500);
+}
+
+async function syncPush() {
+  if (!isCloud() || lastPushBusy) return;
+  lastPushBusy = true;
+  setSyncStatus('同步中…', 'var(--accent)');
+  try {
+    const r = await fetch('/api/workspace/' + encodeURIComponent(wid), {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        data: serializeState(),
+        updated_by: deviceId,
+        base_updated_at: localBaseTs,
+      }),
+    });
+    if (r.status === 409) {
+      // 衝突：對方剛改、pull 拉最新版再重試
+      setSyncStatus('對方剛改、拉取中…', 'var(--warn)');
+      await syncPull(true);
+      // 重試：以最新 base 再推一次
+      lastPushBusy = false;
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(syncPush, 300);
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    localBaseTs = j.updated_at;
+    setSyncStatus('✓ 已同步', 'var(--ok)');
+  } catch (e) {
+    setSyncStatus('⚠ 同步失敗', 'var(--err)');
+    console.warn('push failed', e);
+  } finally {
+    lastPushBusy = false;
+  }
+}
+
+async function syncPull(silent) {
+  if (!isCloud()) return;
+  if (pushTimer || lastPushBusy) return;  // 有 pending push 就先不 pull（避免 race）
+  try {
+    const r = await fetch('/api/workspace/' + encodeURIComponent(wid), { headers: authHeaders() });
+    if (!r.ok) return;
+    const remote = await r.json();
+    // 只要 remote 比 local 新就 apply（不管 updated_by、因為即使同 device 覆蓋自己也不會出錯）
+    if (remote.updated_at > localBaseTs) {
+      applyRemoteState(remote.data);
+      localBaseTs = remote.updated_at;
+      if (!silent && remote.updated_by !== deviceId) flash('對方剛改了、已同步');
+    }
+  } catch (e) {
+    console.warn('pull failed', e);
+  }
+}
+
+function startPullLoop() {
+  clearInterval(pullTimer);
+  pullTimer = setInterval(syncPull, 5000);
+}
+
+async function onWsBtnClick() {
+  if (isCloud()) {
+    // 複製網址
+    try {
+      await navigator.clipboard.writeText(location.href);
+      flash('共編網址已複製');
+    } catch { alert('網址：' + location.href); }
+    return;
+  }
+  // Step 1: 名字
+  const name = prompt('這個共編 workspace 的名字（例：台創祭 2026）？\n給個好認的名字、丟給夥伴時她一眼認出。', '');
+  if (name === null) return;
+  // Step 2: 密碼（選填）
+  const pw = prompt('要設密碼嗎？（留空 = 不設密碼、任何拿到網址的人都能進）\n\n提醒：密碼要另外丟給夥伴、跟網址分開傳比較安全。', '');
+  if (pw === null) return;
+  // Step 3: 帶當前資料 or 開空白
+  const hasLocalData = state.cards.length > 0 || Object.keys(state.assignments[1] || {}).length > 0;
+  let bringCurrent = true;
+  if (hasLocalData) {
+    bringCurrent = confirm(
+      `本機已有 ${state.cards.length} 個攤主、已排 ${Object.keys(state.assignments[1] || {}).length + Object.keys(state.assignments[2] || {}).length} 個位子。\n\n` +
+      `【確定】＝把當前資料帶上雲（推薦、繼續排）\n【取消】＝開空白 workspace（重新開始）`
+    );
+  }
+  setSyncStatus('建立中…', 'var(--accent)');
+  try {
+    // 先建立 workspace 拿到 id、再算 password hash（因為 hash 要 salt with id）
+    const initialData = bringCurrent ? serializeState() : { cards: [], assignments: { 1: {}, 2: {} }, unlinked: null };
+    const r = await fetch('/api/workspace', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: name || '未命名 workspace',
+        data: initialData,
+        updated_by: deviceId,
+      }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    wid = j.id;
+    workspaceName = j.name;
+    localBaseTs = j.updated_at;
+    touchWsHistory(wid, workspaceName);
+    // 若設密碼、算 hash 上傳
+    if (pw) {
+      const pwh = await hashPassword(pw, wid);
+      setSessionPasswordHash(pwh);
+      const r2 = await fetch('/api/workspace/' + encodeURIComponent(wid), {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', 'x-ws-password-hash': pwh },
+        body: JSON.stringify({ set_password_hash: pwh }),
+      });
+      if (!r2.ok) console.warn('set password failed:', r2.status);
+    }
+    // 若開空白、清 state
+    if (!bringCurrent) {
+      state.cards = [];
+      state.assignments = { 1: {}, 2: {} };
+      state.unlinked = null;
+      renderHalls();
+      refreshCatOptions();
+      renderPool();
+      updateStats();
+    }
+    const url = new URL(location.href);
+    url.searchParams.set('w', wid);
+    history.replaceState(null, '', url);
+    document.getElementById('modeLabel').textContent = `☁️ 共編 · ${workspaceName}${pw ? ' 🔒' : ''}`;
+    updateWsButton();
+    setSyncStatus('✓ 已上雲', 'var(--ok)');
+    startPullLoop();
+    const msg = pw
+      ? `已建立、網址複製到剪貼簿。\n\n把網址跟密碼分開傳給夥伴：\n${location.href}\n密碼：${pw}`
+      : `已建立、網址複製到剪貼簿：\n${location.href}`;
+    try { await navigator.clipboard.writeText(location.href); alert(msg); }
+    catch { alert(msg); }
+  } catch (e) {
+    alert('建立失敗：' + e.message);
+    setSyncStatus('');
+  }
+}
+
+function updateWsButton() {
+  const btn = document.getElementById('wsBtn');
+  if (!btn) return;
+  btn.textContent = isCloud() ? '複製共編網址' : '建立共編';
+  btn.classList.toggle('primary', !isCloud());
+}
+
+function bindFilterChips() {
+  document.querySelectorAll('.filter-chip[data-grp]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const grp = chip.dataset.grp;
+      document.querySelectorAll(`.filter-chip[data-grp="${grp}"]`).forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.f[grp] = chip.dataset.v;
+      renderPool();
+      updateFilterTabDots();
+    });
+  });
+}
+
+function setFilter(key, val) {
+  state.f[key] = val;
+  renderPool();
+  updateFilterTabDots();
+}
+
+function setGapEvery(v) {
+  const n = parseInt(v) || 0;
+  VENUE.gapEvery = n;
+  renderHalls();
+  markDirty();
+}
+
+function ensureSeq() {
+  let maxSeq = state.cards.reduce((mx, c) => Math.max(mx, c.seq || 0), 0);
+  for (const c of state.cards) {
+    if (!c.seq) c.seq = ++maxSeq;
+  }
+}
+
+function refreshCatOptions() {
+  const sel = document.getElementById('catSelect');
+  if (!sel) return;
+  const cats = [...new Set(state.cards.map(c => c.cat).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">全部分類</option>' +
+    cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  sel.value = state.f.cat;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state.cards = saved.cards || [];
+      state.assignments = saved.assignments || { 1: {}, 2: {} };
+      state.unlinked = saved.unlinked ? { 1: new Set(saved.unlinked[1] || []), 2: new Set(saved.unlinked[2] || []) } : null;
+      if (saved.venue) applyVenueData(saved.venue);
+    }
+  } catch (e) { console.warn('load failed', e); }
+}
+
+function saveNow() {
+  markDirty();
+  if (isCloud()) syncPush();
+  flash(isCloud() ? '已推上雲' : '已儲存');
+}
+
+function flash(msg) {
+  const el = document.getElementById('statWarn');
+  const old = el.innerHTML;
+  el.innerHTML = `<span style="color:var(--ok);font-weight:800">✓ ${msg}</span>`;
+  setTimeout(() => { el.innerHTML = old; updateStats(); }, 1500);
+}
+
+// ────────────────────────────────────────────────────────
+// 匯入名單
+// ────────────────────────────────────────────────────────
+function openImport() {
+  document.getElementById('importMask').classList.add('open');
+  // 自動填上次的 gsheet URL
+  const savedUrl = localStorage.getItem(LS_KEY + '_gsheet');
+  if (savedUrl) document.getElementById('gsheetUrl').value = savedUrl;
+}
+function closeImport() { document.getElementById('importMask').classList.remove('open'); }
+
+// CSV parser（支援引號內逗號、跳脫雙引號）
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuote) {
+      if (c === '"') {
+        if (text[i+1] === '"') { field += '"'; i++; }
+        else inQuote = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuote = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+// 判斷 TSV 或 CSV
+function parseTable(text) {
+  // 第一行的 \t 數 vs , 數決定
+  const firstLine = text.split('\n')[0] || '';
+  const tabCount = (firstLine.match(/\t/g) || []).length;
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  if (tabCount >= 3) {
+    return text.split(/\r?\n/).filter(l => l.trim()).map(l => l.split('\t'));
+  }
+  return parseCSV(text).filter(r => r.some(f => (f || '').trim()));
+}
+
+async function importFromGSheetUrl() {
+  const url = document.getElementById('gsheetUrl').value.trim();
+  if (!url) { alert('請貼 Google Sheet 網址'); return; }
+  const idMatch = url.match(/\/spreadsheets\/d\/([\w-]+)/);
+  if (!idMatch) { alert('看不出是 Google Sheet 網址\n要 https://docs.google.com/spreadsheets/d/... 開頭'); return; }
+  // 本地檔案打開會被 CORS 擋
+  if (location.protocol === 'file:') {
+    alert('❌ 本機檔案（file://）打開的 Chrome 有 CORS 限制、無法直接抓 Google Sheet。\n\n【短期解】用下面「用貼的匯入」——從 Sheet 選整片複製貼進 textarea、按藍色按鈕。\n\n【長期解】把這個工具部署到 Cloudflare Pages（就有網址、也能雙人共編）。跟歐歐說「部署上去」。');
+    return;
+  }
+  const sheetId = idMatch[1];
+  const gidMatch = url.match(/[?#&]gid=(\d+)/);
+  const gid = gidMatch ? gidMatch[1] : '0';
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  const btn = document.getElementById('gsheetBtn');
+  const oldTxt = btn.textContent;
+  btn.textContent = '抓取中…'; btn.disabled = true;
+  try {
+    const res = await fetch(csvUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}（Sheet 有開「知道連結的人可查看」嗎？）`);
+    const csv = await res.text();
+    document.getElementById('importBox').value = csv;
+    localStorage.setItem(LS_KEY + '_gsheet', url);
+    btn.textContent = oldTxt; btn.disabled = false;
+    doImport();
+  } catch (e) {
+    alert('抓取失敗：' + e.message + '\n\n可能原因：\n• Sheet 沒開「知道連結的人可查看」\n• 網路斷線\n• 網址錯了\n\n改用下面「用貼的匯入」試試。');
+    btn.textContent = oldTxt; btn.disabled = false;
+  }
+}
+
+function doImport() {
+  const raw = document.getElementById('importBox').value.trim();
+  if (!raw) return;
+  const kindRadio = document.querySelector('input[name="importKind"]:checked');
+  const importKind = kindRadio ? kindRadio.value : 'desk';
+  const rows = parseTable(raw);
+  pushHistory();
+  // 判斷第一行是不是表頭
+  const first = rows[0].map(s => (s || '').trim());
+  const looksHeader = first.includes('社團名稱') || first.includes('D1');
+  const dataRows = looksHeader ? rows.slice(1) : rows;
+
+  let added = 0, skipped = 0;
+  for (const r of dataRows) {
+    const [cat, desc, url, d1, d2, name, chk, d1link, d1mark, d2link, d2mark] = r;
+    const trimName = (name || '').trim();
+    if (!trimName) { skipped++; continue; }
+    const d1n = parseInt(d1) || 0;
+    const d2n = parseInt(d2) || 0;
+    if (d1n === 0 && d2n === 0) { skipped++; continue; }
+    const id = 'c_' + trimName.replace(/[^\w一-龥]/g, '_');
+    // parse 連攤：'01-03' → group='01', order=3
+    const parseLink = (s) => {
+      const t = (s || '').trim();
+      if (!t) return { group: '', order: 0 };
+      const m = t.match(/^(\d+)-(\d+)$/);
+      if (m) return { group: m[1], order: parseInt(m[2]) };
+      return { group: t, order: 0 };
+    };
+    const d1p = parseLink(d1link);
+    const d2p = parseLink(d2link);
+    // 覆蓋既有卡片、保留現有 assignment
+    const existing = state.cards.findIndex(c => c.id === id);
+    // seq：既有卡保留舊 seq；新卡拿目前 max+1
+    const existingSeq = existing >= 0 ? state.cards[existing].seq : 0;
+    const maxSeq = state.cards.reduce((mx, c) => Math.max(mx, c.seq || 0), 0);
+    const card = {
+      id, name: trimName, cat: cat || '', desc: desc || '', url: normalizeUrl(url || ''),
+      d1: d1n, d2: d2n,
+      d1link: (d1link || '').trim(), d2link: (d2link || '').trim(),
+      d1mark: (d1mark || '').trim(), d2mark: (d2mark || '').trim(),
+      d1group: d1p.group, d1order: d1p.order,
+      d2group: d2p.group, d2order: d2p.order,
+      kind: importKind,
+      seq: existingSeq || (maxSeq + 1),
+    };
+    if (existing >= 0) {
+      // 攤數縮減 → 清該卡在該天多出的 slot（副格 or 全清）
+      const oldCard = state.cards[existing];
+      for (const day of [1, 2]) {
+        const oldAttend = day === 1 ? oldCard.d1 : oldCard.d2;
+        const newAttend = day === 1 ? card.d1 : card.d2;
+        if (newAttend < oldAttend) {
+          const asg = state.assignments[day];
+          const slots = Object.entries(asg)
+            .filter(([, cid]) => cid === id)
+            .map(([sid]) => sid)
+            .sort((a, b) => {
+              const pa = parseSlot(a), pb = parseSlot(b);
+              if (pa.row !== pb.row) return pa.row < pb.row ? -1 : 1;
+              return pa.num - pb.num;
+            });
+          for (let k = newAttend; k < slots.length; k++) {
+            delete asg[slots[k]];
+          }
+        }
+      }
+      state.cards[existing] = card;
+    } else {
+      state.cards.push(card);
+    }
+    added++;
+  }
+  closeImport();
+  ensureSeq();
+  refreshCatOptions();
+  renderPool();
+  updateStats();
+  flash(`匯入 ${added} 筆（跳過 ${skipped} 筆）`);
+}
+
+// ────────────────────────────────────────────────────────
+// 場地渲染
+// ────────────────────────────────────────────────────────
+function renderHalls() {
+  const container = document.getElementById('halls');
+  container.innerHTML = '';
+  for (const hall of VENUE.halls) {
+    const div = document.createElement('div');
+    div.className = 'hall';
+    div.innerHTML = `
+      <div class="hall-head">
+        <span class="hall-name">${hall.name}</span>
+        <span class="hall-tag ${hall.tag}">${hall.tag.toUpperCase()}</span>
+        <span class="hall-stat" id="stat-${hall.id}"></span>
+      </div>
+      <div class="hall-body" id="body-${hall.id}"></div>
+    `;
+    const body = div.querySelector('.hall-body');
+    for (const row of hall.rows) {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'row';
+      let slotsHtml = '';
+      const gapAfter = rowGapPositions(row);
+      for (let i = 1; i <= row.count; i++) {
+        const slotId = buildSlot(row.id, i);
+        const isEdge = (i === 1 || i === row.count);
+        slotsHtml += `<div class="slot ${row.kind === 'free' ? 'free-tan' : ''} ${isEdge ? 'edge' : ''}"
+                          data-slot="${slotId}" data-row="${row.id}" data-kind="${row.kind}"
+                          draggable="true"
+                          ondragstart="onSlotCardDragStart(event, '${slotId}')"
+                          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"
+                          ondrop="onDrop(event)" onclick="onSlotClick('${slotId}')">
+          <div class="slot-num">${slotId}</div>
+          <div class="slot-body" data-slot-body="${slotId}"></div>
+          <div class="slot-marks" data-slot-marks="${slotId}"></div>
+        </div>`;
+        // 走道：照這排的設定插（每 N 攤 or 分段、沒設就用全域）
+        if (gapAfter.has(i)) {
+          slotsHtml += `<div class="slot-gap" title="走道"></div>`;
+        }
+      }
+      rowDiv.innerHTML = `<div class="row-label">${row.id}</div>
+                          <div class="row-slots">${slotsHtml}</div>`;
+      if (row.note) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'row-note';
+        noteDiv.innerHTML = `<b>${row.id}</b>${escapeHtml(row.note)}`;
+        body.appendChild(noteDiv);
+      }
+      body.appendChild(rowDiv);
+    }
+    container.appendChild(div);
+  }
+  refreshAllSlots();
+}
+
+function refreshAllSlots() {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  // 清空
+  document.querySelectorAll('.slot').forEach(el => {
+    el.classList.remove('filled', 'warn', 'dbl-main', 'dbl-shadow', 'linked', 'link-start', 'link-end', 'link-single', 'link-member', 'big-slot', 'd1-only', 'd2-only');
+    const body = el.querySelector('.slot-body');
+    if (body) { body.textContent = ''; body.title = ''; }
+    const oldBadge = el.querySelector('.cat-badge');
+    if (oldBadge) oldBadge.remove();
+    const oldLabel = el.querySelector('.group-label');
+    if (oldLabel) oldLabel.remove();
+    const oldStar = el.querySelector('.big-star');
+    if (oldStar) oldStar.remove();
+  });
+  // 填入
+  const processed = new Set();
+  for (const [slotId, cardId] of Object.entries(asg)) {
+    if (processed.has(slotId)) continue;
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) continue;
+    const attend = getAttend(card, day);
+    const el = document.querySelector(`[data-slot="${slotId}"]`);
+    if (!el) continue;
+    const body = el.querySelector('.slot-body');
+
+    // 判斷是主格還是副格（下一格是否同卡且是雙攤）
+    const next = nextSlot(slotId);
+    const isMain = attend === 2 && asg[next] === cardId;
+    const isShadow = attend === 2 && !isMain; // 副格：卡是雙攤但下一格不是同卡
+
+    if (isShadow) {
+      // 副格由主格處理
+      continue;
+    }
+
+    body.textContent = shorten(card.name, 10);
+    body.title = card.name + (card.cat ? ' · ' + card.cat : '') + (card.desc ? '\n' + card.desc : '');
+    el.classList.add('filled');
+    if (card.cat) {
+      const badge = document.createElement('div');
+      badge.className = 'cat-badge';
+      badge.textContent = card.cat.slice(0, 2);  // 取前兩字、不省略
+      badge.title = card.cat;
+      el.appendChild(badge);
+    }
+    if (card.bigHand) {
+      el.classList.add('big-slot');
+    }
+    // 日別邊條：只 D1 橘、只 D2 淡藍、雙日不加
+    if (card.d1 > 0 && card.d2 === 0) el.classList.add('d1-only');
+    else if (card.d2 > 0 && card.d1 === 0) el.classList.add('d2-only');
+    processed.add(slotId);
+
+    if (isMain) {
+      el.classList.add('dbl-main');
+      const secondEl = document.querySelector(`[data-slot="${next}"]`);
+      if (secondEl) {
+        secondEl.classList.add('dbl-shadow', 'filled');
+        if (card.bigHand) secondEl.classList.add('big-slot');
+        if (card.d1 > 0 && card.d2 === 0) secondEl.classList.add('d1-only');
+        else if (card.d2 > 0 && card.d1 === 0) secondEl.classList.add('d2-only');
+        processed.add(next);
+      }
+    }
+  }
+  // 標記（電源等）
+  for (const [slotId, marks] of Object.entries(VENUE.marks)) {
+    const el = document.querySelector(`[data-slot-marks="${slotId}"]`);
+    if (!el) continue;
+    el.innerHTML = marks.map(m => `<span class="mark ${m}"></span>`).join('');
+  }
+  markLinkedSlots();
+  checkRules();
+  updateHallStats();
+}
+
+function markLinkedSlots() {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+
+  // 第一輪：每個屬於連攤群組的 slot → link-member 淡邊 + G 標籤（主格才掛 G）
+  for (const [sid, cardId] of Object.entries(asg)) {
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) continue;
+    const g = getGroup(card, day);
+    if (!g) continue;
+    const el = document.querySelector(`[data-slot="${sid}"]`);
+    if (!el) continue;
+    el.classList.add('link-member');
+    // 只有主格掛 G 標籤（副格 = 前一格是同 cardId）
+    const p = parseSlot(sid);
+    const prev = buildSlot(p.row, p.num - 1);
+    if (asg[prev] === cardId) continue;
+    const oldLabel = el.querySelector('.group-label');
+    if (oldLabel) oldLabel.remove();
+    const label = document.createElement('div');
+    label.className = 'group-label';
+    label.textContent = 'G' + g;
+    el.appendChild(label);
+  }
+
+  // 第二輪：段落 ≥2 → 深色連通條（linked / link-start / link-end）
+  for (const hall of VENUE.halls) {
+    for (const row of hall.rows) {
+      let segStart = null;
+      let segGroup = null;
+      const finish = (endNum) => {
+        if (segStart == null || segGroup == null) return;
+        if (endNum - segStart >= 1) {
+          for (let k = segStart; k <= endNum; k++) {
+            const sid = buildSlot(row.id, k);
+            const el = document.querySelector(`[data-slot="${sid}"]`);
+            if (!el) continue;
+            el.classList.add('linked');
+            if (k === segStart) el.classList.add('link-start');
+            if (k === endNum) el.classList.add('link-end');
+          }
+        }
+        segStart = null; segGroup = null;
+      };
+      for (let i = 1; i <= row.count; i++) {
+        const sid = buildSlot(row.id, i);
+        const cardId = asg[sid];
+        const card = cardId ? state.cards.find(c => c.id === cardId) : null;
+        const group = card ? (getGroup(card, day)) : null;
+        if (group && group === segGroup) {
+          // 延續
+        } else {
+          finish(i - 1);
+          if (group) { segStart = i; segGroup = group; }
+        }
+      }
+      finish(row.count);
+    }
+  }
+}
+
+function shorten(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+
+// ────────────────────────────────────────────────────────
+// 拖拉
+// ────────────────────────────────────────────────────────
+let dragCardId = null;
+let dragFromSlot = null;
+
+function onCardDragStart(ev, cardId) {
+  dragCardId = cardId;
+  dragFromSlot = null;
+  ev.dataTransfer.effectAllowed = 'move';
+}
+function onSlotCardDragStart(ev, slotId) {
+  const cardId = state.assignments[state.currentDay][slotId];
+  if (!cardId) return;
+  dragCardId = cardId;
+  dragFromSlot = slotId;
+  ev.dataTransfer.effectAllowed = 'move';
+  ev.stopPropagation();
+}
+function onDragOver(ev) {
+  if (!dragCardId) return;
+  ev.preventDefault();
+  ev.currentTarget.classList.add('dragover');
+}
+function onDragLeave(ev) {
+  ev.currentTarget.classList.remove('dragover');
+}
+function onDrop(ev) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('dragover');
+  const slotId = ev.currentTarget.dataset.slot;
+  if (!dragCardId) return;
+  placeCard(dragCardId, slotId, dragFromSlot);
+  dragCardId = null;
+  dragFromSlot = null;
+}
+
+function findHallRow(rowId) {
+  for (const hall of VENUE.halls) {
+    const row = hall.rows.find(r => r.id === rowId);
+    if (row) return { hall, row };
+  }
+  return null;
+}
+function findRowById(rowId) {
+  return findHallRow(rowId)?.row || null;
+}
+
+// 走道設定解析：'10' = 每 10 攤、'4,5,3' = 分段（4攤｜走道｜5攤｜走道｜3攤…段用完就不插）、'0' = 不插
+function parseGapSpec(spec) {
+  const t = String(spec ?? '').trim();
+  if (t === '') return null;
+  if (/^\d+$/.test(t)) return { type: 'uniform', n: parseInt(t) };
+  const segs = t.split(/[,，、\s]+/).map(s => parseInt(s)).filter(n => n > 0);
+  return segs.length ? { type: 'pattern', segs } : null;
+}
+// 這一排「第幾攤之後要插走道」的集合（排尾不插）
+function rowGapPositions(row) {
+  const own = (row.gapSpec !== undefined && String(row.gapSpec).trim() !== '') ? row.gapSpec
+            : (typeof row.gapEvery === 'number') ? row.gapEvery : undefined;
+  const spec = parseGapSpec(own !== undefined ? own : VENUE.gapEvery);
+  const out = new Set();
+  if (!spec) return out;
+  if (spec.type === 'uniform') {
+    if (spec.n > 0) for (let k = spec.n; k < row.count; k += spec.n) out.add(k);
+  } else {
+    let acc = 0;
+    for (const s of spec.segs) { acc += s; if (acc >= row.count) break; out.add(acc); }
+  }
+  return out;
+}
+
+// 「該卡在某天」的存取 helper——把 day===1 ? card.d1... 消掉
+function getAttend(card, day) { return day === 1 ? card['d1'] : card['d2']; }
+// ⚠ 連攤組號是「每天各自的編號空間」——D1 G07 跟 D2 G07 是兩組不同的人。
+//   絕不能跨天 fallback（|| 另一天的 group）、會讓陌生組互相污染、拖一下就誤觸整組重排／拆連攤。
+function getGroup(card, day)  { return day === 1 ? card['d1group'] : card['d2group']; }
+function getOrder(card, day)  { return day === 1 ? card['d1order'] : card['d2order']; }
+function getLink(card, day)   { return day === 1 ? card['d1link'] : card['d2link']; }
+
+// slotId parse：允許排 ID 多字元、中文、注音、任何非數字字元
+function parseSlot(slotId) {
+  const s = String(slotId);
+  const m = s.match(/^(\D+)(\d+)$/);
+  if (m) return { row: m[1], num: parseInt(m[2]) };
+  return { row: s.slice(0, -2), num: parseInt(s.slice(-2)) || 0 };
+}
+function buildSlot(row, num) {
+  return row + String(num).padStart(2, '0');
+}
+function nextSlot(slotId) {
+  const p = parseSlot(slotId);
+  return buildSlot(p.row, p.num + 1);
+}
+function prevSlot(slotId) {
+  const p = parseSlot(slotId);
+  if (p.num <= 1) return null;
+  return buildSlot(p.row, p.num - 1);
+}
+
+function getGroupMembers(cardId, day) {
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return [];
+  const group = getGroup(card, day);
+  return getGroupMembersByName(group, day);
+}
+
+// 找某卡在某天的主 slot（skip 副格）——回 slotId or null
+function findAssignedMainSlot(cardId, day) {
+  const asg = state.assignments[day] || {};
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return null;
+  const attend = getAttend(card, day);
+  for (const [sid, cid] of Object.entries(asg)) {
+    if (cid !== cardId) continue;
+    if (attend === 2) {
+      const p = parseSlot(sid);
+      const prev = buildSlot(p.row, p.num - 1);
+      if (asg[prev] === cardId) continue;  // 副格、跳過
+    }
+    return sid;
+  }
+  return null;
+}
+
+// 給攤主池的位置徽章用：single = 'A01'、double = 'A01+A02'
+function slotBadgeForCard(card, day) {
+  const main = findAssignedMainSlot(card.id, day);
+  if (!main) return null;
+  const attend = getAttend(card, day);
+  if (attend !== 2) return main;
+  const p = parseSlot(main);
+  return `${main}+${buildSlot(p.row, p.num + 1)}`;
+}
+
+// dry-run：算 members 從 startSlot 開始會佔哪些 slot（不動 assignments）
+function simulateLayout(members, startSlot, day) {
+  const row = parseSlot(startSlot).row;
+  const rowInfo = findRowById(row);
+  if (!rowInfo || !members || !members.length) return [];
+  let num = parseSlot(startSlot).num;
+  const firstIsDouble = getAttend(members[0], day) === 2;
+  if (firstIsDouble && num % 2 === 0 && num > 1) num -= 1;
+  const laidOut = [];
+  for (const m of members) {
+    const isDbl = getAttend(m, day) === 2;
+    if (isDbl && num % 2 === 0) num += 1;
+    if (num > rowInfo.count) break;
+    const mainSlot = buildSlot(row, num);
+    let secondarySlot = null;
+    if (isDbl && num + 1 <= rowInfo.count) {
+      secondarySlot = buildSlot(row, num + 1);
+      num += 2;
+    } else {
+      num += 1;
+    }
+    laidOut.push({ mainSlot, secondarySlot, member: m });
+  }
+  return laidOut;
+}
+
+// 從 startSlot 開始、把 members 依序排入 day 的 assignments
+function layoutMembers(day, members, startSlot) {
+  const asg = state.assignments[day];
+  const _sp = parseSlot(startSlot);
+  const row = _sp.row;
+  const rowInfo = findRowById(row);
+  if (!rowInfo || !members || members.length === 0) return;
+  let num = _sp.num;
+  const firstIsDouble = getAttend(members[0], day) === 2;
+  if (firstIsDouble && num % 2 === 0 && num > 1) num -= 1;
+
+  // 清這些成員在該天的舊位置
+  const ids = new Set(members.map(m => m.id));
+  for (const [sid, cid] of Object.entries(asg)) {
+    if (ids.has(cid)) delete asg[sid];
+  }
+
+  for (const m of members) {
+    const isDbl = (getAttend(m, day)) === 2;
+    if (isDbl && num % 2 === 0) num += 1;
+    if (num > rowInfo.count) break;
+    const mainSlot = buildSlot(row, num);
+    asg[mainSlot] = m.id;
+    if (isDbl) {
+      const next = buildSlot(row, num + 1);
+      if (num + 1 <= rowInfo.count) asg[next] = m.id;
+      num += 2;
+    } else {
+      num += 1;
+    }
+  }
+}
+
+// 找某群組在某天的成員（按 order 排序、排除拆連攤者）
+function getGroupMembersByName(group, day) {
+  if (!group) return [];
+  const unlinked = state.unlinked && state.unlinked[day];
+  return state.cards
+    .filter(c => {
+      const g = getGroup(c, day);
+      const a = getAttend(c, day);
+      if (unlinked && unlinked.has(c.id)) return false;
+      return g === group && a > 0;
+    })
+    .sort((a, b) => getOrder(a, day) - getOrder(b, day));
+}
+
+// 群組在某天已排成員的相鄰性（雙攤兩格都算；走道不佔號、連號＝相鄰）
+function groupContiguity(group, day) {
+  const asg = state.assignments[day];
+  const unl = (state.unlinked && state.unlinked[day]) || new Set();
+  const occ = [];
+  const ids = new Set();
+  for (const [sid, cid] of Object.entries(asg)) {
+    const c = state.cards.find(x => x.id === cid);
+    if (!c || getGroup(c, day) !== group || unl.has(c.id)) continue;
+    const p = parseSlot(sid);
+    occ.push({ row: p.row, num: p.num, sid, card: c });
+    ids.add(cid);
+  }
+  if (occ.length === 0) return { members: 0, contiguous: true, occ };
+  const rows = new Set(occ.map(o => o.row));
+  let contiguous;
+  if (rows.size > 1) contiguous = false;
+  else {
+    const nums = occ.map(o => o.num).sort((a, b) => a - b);
+    contiguous = nums[nums.length - 1] - nums[0] + 1 === nums.length;
+  }
+  return { members: ids.size, contiguous, occ };
+}
+
+function placeGroup(members, startSlot) {
+  const day = state.currentDay;
+  const otherDay = day === 1 ? 2 : 1;
+  const asg = state.assignments[day];
+  const otherAsg = state.assignments[otherDay];
+
+  // ⛔ 跨天防呆：dry-run 算整組會落在哪、檢查是否覆蓋別人雙日綁位
+  {
+    const _dry = simulateLayout(members, startSlot, day);
+    const _mIds = new Set(members.map(m => m.id));
+    const _conflicts = [];
+    for (const { mainSlot, secondarySlot, member } of _dry) {
+      const _slotsToCheck = secondarySlot ? [mainSlot, secondarySlot] : [mainSlot];
+      for (const s of _slotsToCheck) {
+        const oCidCur = asg[s];
+        const oCidOther = otherAsg[s];
+        if (!oCidCur || !oCidOther || oCidCur !== oCidOther) continue;
+        if (_mIds.has(oCidCur)) continue;  // 本 group 成員不算
+        const oCard = state.cards.find(c => c.id === oCidCur);
+        if (!oCard) continue;
+        _conflicts.push({ slot: s, member, otherCard: oCard });
+      }
+    }
+    if (_conflicts.length > 0) {
+      const _names = _conflicts.slice(0, 5).map(c => `${c.slot}(${c.otherCard.name})`).join('、');
+      const _more = _conflicts.length > 5 ? `…共 ${_conflicts.length} 撞` : '';
+      alert(`⛔ 連攤整組排會蓋到雙日綁位：${_names}${_more}\n\n請先挪那位、或選別的起始格。`);
+      return;
+    }
+  }
+
+  // 當天：照傳入的 members 排（縮排連續）
+  layoutMembers(day, members, startSlot);
+
+  // 另一天處理——「另一天的同一組」要用【被排成員裡雙日成員】在另一天填的組號來認。
+  // ⚠ 組號是每天各自的編號空間：D1 G07 跟 D2 G07 可能是兩組不相干的人、
+  //   絕不能拿本日組號直接去另一天查同名（會把陌生組整組搬走——鳩米花×花男事故根因）。
+  const otherGroupNames = [...new Set(members
+    .filter(m => getAttend(m, otherDay) > 0)
+    .map(m => getGroup(m, otherDay))
+    .filter(Boolean))];
+  const otherMembers = [];
+  {
+    const _omSeen = new Set();
+    for (const gn of otherGroupNames) {
+      for (const m of getGroupMembersByName(gn, otherDay)) {
+        if (!_omSeen.has(m.id)) { _omSeen.add(m.id); otherMembers.push(m); }
+      }
+    }
+  }
+  const memberIds = new Set(members.map(m => m.id));
+
+  // 清 Day-other 內所有涉及攤主（含 members 中的雙日、與 otherMembers 中的成員）的舊位置
+  const allIds = new Set([...members.map(m => m.id), ...otherMembers.map(m => m.id)]);
+  for (const [sid, cid] of Object.entries(otherAsg)) {
+    if (allIds.has(cid)) delete otherAsg[sid];
+  }
+
+  // (a) 雙日綁位：members 中每個「另一天也有」的成員 → 用當天位置（另一天被別人佔就跳過、報出來）
+  const lockedSlots = [];  // 用來算後面新加成員的起點
+  const syncSkipped = [];
+  for (const m of members) {
+    const otherAttend = getAttend(m, otherDay);
+    if (otherAttend === 0) continue;  // 另一天沒到
+    const daySlot = findAssignedMainSlot(m.id, day);
+    if (!daySlot) continue;
+    const _next = otherAttend === 2 ? nextSlot(daySlot) : null;
+    const _o1 = otherAsg[daySlot], _o2 = _next ? otherAsg[_next] : null;
+    if ((_o1 && !allIds.has(_o1)) || (_o2 && !allIds.has(_o2))) {
+      const _bId = (_o1 && !allIds.has(_o1)) ? _o1 : _o2;
+      const _bc = state.cards.find(c => c.id === _bId);
+      syncSkipped.push(`${m.name}（D${otherDay} ${daySlot} 被「${_bc ? _bc.name : '別攤'}」佔）`);
+      continue;
+    }
+    otherAsg[daySlot] = m.id;
+    let endNum = parseSlot(daySlot).num;
+    if (otherAttend === 2 && _next) {
+      otherAsg[_next] = m.id;
+      endNum += 1;
+    }
+    lockedSlots.push({ row: parseSlot(daySlot).row, endNum });
+  }
+
+  // (b) 只在另一天的新成員（在 otherMembers 但不在 members） → 接在最後鎖定位置之後（被佔的格自動往後找空位）
+  const newInOther = otherMembers.filter(m => !memberIds.has(m.id));
+  if (newInOther.length > 0) {
+    let row, nextNum;
+    if (lockedSlots.length > 0) {
+      const last = lockedSlots.reduce((a, b) => (b.endNum > a.endNum ? b : a));
+      row = last.row;
+      nextNum = last.endNum + 1;
+    } else {
+      const _sp = parseSlot(startSlot);
+      row = _sp.row;
+      nextNum = _sp.num;
+    }
+    const rowInfo = findRowById(row);
+    if (rowInfo) {
+      let mi = 0;
+      while (mi < newInOther.length && nextNum <= rowInfo.count) {
+        const m = newInOther[mi];
+        const isDbl = getAttend(m, otherDay) === 2;
+        if (isDbl && nextNum % 2 === 0) { nextNum++; continue; }
+        if (isDbl && nextNum + 1 > rowInfo.count) break;
+        const s = buildSlot(row, nextNum);
+        const nx = isDbl ? buildSlot(row, nextNum + 1) : null;
+        const _o1 = otherAsg[s], _o2 = nx ? otherAsg[nx] : null;
+        if ((_o1 && !allIds.has(_o1)) || (_o2 && !allIds.has(_o2))) { nextNum++; continue; }
+        otherAsg[s] = m.id;
+        if (nx) otherAsg[nx] = m.id;
+        nextNum += isDbl ? 2 : 1;
+        mi++;
+      }
+    }
+  }
+
+  if (syncSkipped.length > 0) {
+    flash(`⚠ D${otherDay} 綁位沒跟上：${syncSkipped.join('；')}`);
+  }
+
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+}
+
+function placeCard(cardId, slotId, fromSlot) {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return;
+  pushHistory();
+  const attend = getAttend(card, day);
+  const isDouble = attend === 2;
+
+  // 連攤群組（從池子拖）：
+  //   群組本日還沒人排 → 詢問整組入座
+  //   已有成員在場上 → 直接入座加入隊伍、不重排別人、不算拆連攤
+  //  （D2-only 成員接雙日 sync 進來的錨點、走的就是這條——治鳩米花×花男 case）
+  const members = getGroupMembers(cardId, day);
+  if (members.length > 1 && !fromSlot) {
+    const mates = members.filter(m => m.id !== cardId && findAssignedMainSlot(m.id, day));
+    if (mates.length > 0) {
+      const mateInfo = mates.slice(0, 2).map(m => `${m.name} 在 ${findAssignedMainSlot(m.id, day)}`).join('、');
+      flash(`已加入連攤 G${getGroup(card, day)}（${mateInfo}）`);
+    } else {
+      const names = members.map(m => m.name + ((getAttend(m, day)) === 2 ? '×2' : '')).join(' → ');
+      const ok = confirm(`「${card.name}」是連攤群組 G${getGroup(card, day)}(${members.length} 攤):\n${names}\n\n要從 ${slotId} 開始整組一起排嗎？\n\n【確定】＝整組排\n【取消】＝只排這一張(拆連攤)`);
+      if (ok) return placeGroup(members, slotId);
+      // 取消：只排這張、加入 unlinked
+      if (!state.unlinked) state.unlinked = { 1: new Set(), 2: new Set() };
+      state.unlinked[day].add(cardId);
+      const g = getGroup(card, day);
+      const o = getOrder(card, day);
+      if (g) flash(`⚠ 已拆連攤 G${g}·${String(o).padStart(2,'0')}(${card.name})`);
+    }
+  }
+
+  // 雙攤規則：必須放在奇數格（一張桌 = 兩攤成對：01+02、03+04...）
+  let mainSlot = slotId;
+  let secondarySlot = null;
+  if (isDouble) {
+    const _p = parseSlot(slotId);
+    const row = _p.row;
+    const num = _p.num;
+    // 拖到偶數 → snap 到前一格奇數（一起佔該桌）
+    if (num % 2 === 0) {
+      mainSlot = prevSlot(slotId);
+    }
+    secondarySlot = nextSlot(mainSlot);
+    // 檢查副格存在（不超出該排）
+    const rowInfo = findRowById(row);
+    const mainNum = parseSlot(mainSlot).num;
+    if (!rowInfo || mainNum + 1 > rowInfo.count) {
+      alert(`⚠ ${mainSlot} 是本排最後一格、雙攤放不下\n（雙攤要佔一整張桌、01+02、03+04 這樣配）`);
+      return;
+    }
+    // 副格若被別人佔、詢問
+    const otherId = asg[secondarySlot];
+    if (otherId && otherId !== cardId) {
+      const otherCard = state.cards.find(c => c.id === otherId);
+      const otherName = otherCard ? otherCard.name : '別攤';
+      if (!confirm(`副格 ${secondarySlot} 被「${otherName}」佔了、要把它擠回攤主池嗎？`)) return;
+      // 清掉對方（包含它自己的副格如果它也是雙攤）
+      const otherAttend = otherCard ? getAttend(otherCard, day) : 1;
+      if (otherAttend === 2) {
+        const otherNext = nextSlot(secondarySlot);
+        if (asg[otherNext] === otherId) delete asg[otherNext];
+      }
+      delete asg[secondarySlot];
+    }
+  }
+
+  // ⛔ 跨天防呆：對方在兩天同 slot 都佔 = 雙日綁位、不能覆蓋（副格空的允許塞）
+  {
+    const _otherDay = day === 1 ? 2 : 1;
+    const _otherAsg = state.assignments[_otherDay];
+    const _slotsToCheck = [mainSlot];
+    if (isDouble && secondarySlot) _slotsToCheck.push(secondarySlot);
+    const _conflicts = [];
+    for (const s of _slotsToCheck) {
+      const oCidCur = asg[s];
+      const oCidOther = _otherAsg[s];
+      // 對方雙日綁位：兩天同格皆為同一位對方、且不是自己
+      if (!oCidCur || !oCidOther || oCidCur !== oCidOther || oCidCur === cardId) continue;
+      const oCard = state.cards.find(c => c.id === oCidCur);
+      if (!oCard) continue;
+      _conflicts.push({ slot: s, otherCard: oCard });
+    }
+    if (_conflicts.length > 0) {
+      const _names = _conflicts.map(c => `${c.slot}（${c.otherCard.name}）`).join('、');
+      alert(`⛔ 這格是雙日綁位、兩天鎖著、不能覆蓋——${_names}\n\n請改放別的格子、或先把那位挪走。`);
+      return;
+    }
+  }
+
+  // 清來源（如果從別的 slot 拖來、把來源的主+副都清掉）
+  if (fromSlot) {
+    delete asg[fromSlot];
+    const fromNext = nextSlot(fromSlot);
+    if (asg[fromNext] === cardId) delete asg[fromNext];
+  }
+  // 清本卡所有其他佔位（防重複）
+  for (const [sid, cid] of Object.entries(asg)) {
+    if (cid === cardId) delete asg[sid];
+  }
+
+  // 放主格（+副格）
+  asg[mainSlot] = cardId;
+  if (isDouble && secondarySlot) {
+    asg[secondarySlot] = cardId;
+  }
+
+  // 雙日同步分兩種：
+  //   D1 攤數 === D2 攤數（純雙日單/雙攤）→ 兩天綁死、無論池子/已排拖都 sync
+  //   D1 攤數 !== D2 攤數（如 Gigle D1=2 D2=1）→ 只有從池子拖時 sync、從已排拖只動當前 Day
+  if (card.d1 > 0 && card.d2 > 0 && (!fromSlot || card.d1 === card.d2)) {
+    const otherDay = day === 1 ? 2 : 1;
+    const otherAsg = state.assignments[otherDay];
+    const otherIsDbl = getAttend(card, otherDay) === 2;
+    const _sec = otherIsDbl ? (secondarySlot || nextSlot(mainSlot)) : null;
+    // 目標格另一天被別的單日攤佔 → 不硬蓋、另一天保持原位、提醒手動處理
+    const _b1 = otherAsg[mainSlot], _b2 = _sec ? otherAsg[_sec] : null;
+    const _blockId = (_b1 && _b1 !== cardId) ? _b1 : (_b2 && _b2 !== cardId) ? _b2 : null;
+    if (_blockId) {
+      const _bc = state.cards.find(c => c.id === _blockId);
+      flash(`⚠ D${otherDay} ${mainSlot} 被「${_bc ? _bc.name : '別攤'}」佔、雙日沒跟上（D${otherDay} 保持原位）`);
+    } else {
+      // 清 otherDay 內這卡的舊位（含副格）
+      for (const [sid, cid] of Object.entries(otherAsg)) {
+        if (cid === cardId) delete otherAsg[sid];
+      }
+      otherAsg[mainSlot] = cardId;
+      // 若另一天也是雙攤、副格 sync（不超排尾）
+      if (otherIsDbl) {
+        const _row = parseSlot(mainSlot).row;
+        const _rowInfo = findRowById(_row);
+        if (_rowInfo && _sec && parseSlot(_sec).num <= _rowInfo.count) {
+          otherAsg[_sec] = cardId;
+        }
+      }
+    }
+  }
+
+  // 從已排 slot 拖：搬完看隊形——還相鄰＝沒拆；被拖散＝自動視為拆連攤（點紅 tag 還原）
+  if (fromSlot) {
+    const dayGroup = getGroup(card, day);
+    const already = state.unlinked && state.unlinked[day] && state.unlinked[day].has(cardId);
+    if (dayGroup && !already) {
+      const chk = groupContiguity(dayGroup, day);
+      if (chk.members >= 2 && !chk.contiguous) {
+        if (!state.unlinked) state.unlinked = { 1: new Set(), 2: new Set() };
+        state.unlinked[day].add(cardId);
+        flash(`⚠ 已拆連攤 G${dayGroup}·${String(getOrder(card, day)).padStart(2,'0')}(${card.name})、點紅 tag 還原`);
+      }
+    }
+  }
+
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+}
+
+function onSlotClick(slotId) {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  const cardId = asg[slotId];
+  if (!cardId) return;
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return;
+  if (!confirm(`把「${card.name}」拿回攤主池？`)) return;
+  pushHistory();
+  // 清主+副兩格
+  delete asg[slotId];
+  const next = nextSlot(slotId);
+  const prev = prevSlot(slotId);
+  if (asg[next] === cardId) delete asg[next];
+  if (prev && asg[prev] === cardId) delete asg[prev];
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+}
+
+// ────────────────────────────────────────────────────────
+// 攤主池
+// ────────────────────────────────────────────────────────
+function renderPool() {
+  const pool = document.getElementById('pool');
+  if (state.cards.length === 0) {
+    pool.innerHTML = '<div class="empty">還沒名單。<br>右上「貼上名單」開始。</div>';
+    return;
+  }
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  // 攤主池獨立於 Day view：兩天任一天有排 = 「已排」、灰化
+  const placedD1 = new Set(Object.values(state.assignments[1] || {}));
+  const placedD2 = new Set(Object.values(state.assignments[2] || {}));
+  const placedAny = new Set([...placedD1, ...placedD2]);
+  // 「未排」= 該攤主應排的日子還有沒排完的
+  const isPlacedFully = (c) =>
+    (c.d1 === 0 || placedD1.has(c.id)) &&
+    (c.d2 === 0 || placedD2.has(c.id));
+  // 排到有 warning 的 slot 的卡、池子那張也標紅框（只看當前 Day）
+  const warnCardIds = new Set();
+  if (state.warnings) {
+    for (const w of state.warnings) {
+      if (w.slot && asg[w.slot]) warnCardIds.add(asg[w.slot]);
+    }
+  }
+
+  const f = state.f;
+  const filtered = state.cards.filter(c => {
+    // 池子顯示全體品牌（不 filter Day、跟頂欄「/ 361」對齊）
+    if (f.status === 'unplaced' && isPlacedFully(c)) return false;
+    // 攤數：兩天任一天有雙攤/單攤
+    if (f.attend === 'solo' && !(c.d1 === 1 || c.d2 === 1)) return false;
+    if (f.attend === 'dbl' && !(c.d1 === 2 || c.d2 === 2)) return false;
+    // 日別：卡片自身屬性、跟 Day view 無關
+    if (f.day === 'd1only' && !(c.d1 > 0 && c.d2 === 0)) return false;
+    if (f.day === 'd2only' && !(c.d2 > 0 && c.d1 === 0)) return false;
+    if (f.day === 'both' && !(c.d1 > 0 && c.d2 > 0)) return false;
+    // 連攤：兩天任一天在連攤群組
+    if (f.prop === 'linked' && !(c.d1group || c.d2group)) return false;
+    if (f.prop === 'free' && c.kind !== 'free') return false;
+    if (f.prop === 'big' && !c.bigHand) return false;
+    if (f.cat !== 'all' && c.cat !== f.cat) return false;
+    return true;
+  });
+  const cntEl = document.getElementById('poolCount');
+  if (cntEl) cntEl.textContent = `顯示 ${filtered.length} / ${state.cards.length} 攤主`;
+
+  pool.innerHTML = filtered.map(c => {
+    const attend = getAttend(c, day);
+    const link = getLink(c, day);
+    const isPlaced = placedAny.has(c.id);
+    const tags = [];
+    if (c.d1 > 0 && c.d2 > 0) tags.push('<span class="tag both">雙日</span>');
+    else if (c.d1 > 0) tags.push('<span class="tag d1">D1</span>');
+    else if (c.d2 > 0) tags.push('<span class="tag d2">D2</span>');
+    // 雙攤：分兩天各自標
+    if (c.d1 === 2 && c.d2 === 2) tags.push('<span class="tag dbl">雙攤</span>');
+    else if (c.d1 === 2) tags.push('<span class="tag dbl">D1 雙攤</span>');
+    else if (c.d2 === 2) tags.push('<span class="tag dbl">D2 雙攤</span>');
+    // 兩天連攤資訊都顯示（sheet 填了 group 就顯示、資料矛盾也標出來）
+    for (const targetDay of [1, 2]) {
+      const g = getGroup(c, targetDay);
+      const o = getOrder(c, targetDay);
+      if (!g) continue;
+      // sheet 上該 group 的成員總數（不管當天有沒到）
+      const sheetMembers = state.cards.filter(cc => {
+        const cg = getGroup(cc, targetDay);
+        return cg === g;
+      });
+      if (sheetMembers.length <= 1) continue;  // sheet 上只他一人、不算群組
+      // 實際到的成員數（用於「共 N 攤」）
+      const attendCount = sheetMembers.filter(cc => (getAttend(cc, targetDay)) > 0).length;
+      const cAttend = getAttend(c, targetDay);
+      const unlinkedThatDay = state.unlinked && state.unlinked[targetDay] && state.unlinked[targetDay].has(c.id);
+      const isCurrent = targetDay === day;
+      const dayLabel = `D${targetDay}`;
+      const orderStr = String(o).padStart(2, '0');
+      // 資料矛盾：他 sheet 填了 group 但那天 attend=0
+      const dataMismatch = cAttend === 0;
+      if (unlinkedThatDay) {
+        const clickHandler = isCurrent ? `event.stopPropagation();restoreLink('${c.id}');` : '';
+        tags.push(`<span class="tag unlinked" onclick="${clickHandler}" title="${dayLabel} 已拆連攤${isCurrent ? '、點還原' : ''}">${dayLabel} 拆 G${g}·${orderStr}</span>`);
+      } else if (dataMismatch) {
+        tags.push(`<span class="tag unlinked" title="⚠ sheet 資料矛盾：他 sheet 填 D${targetDay}連攤但 D${targetDay}=0（那天沒到）">⚠ ${dayLabel} G${g}·${orderStr}·未到</span>`);
+      } else {
+        const cls = isCurrent ? 'link' : 'link-other';
+        const cntLabel = attendCount > 1 ? `·共${attendCount}` : '·單';
+        tags.push(`<span class="tag ${cls}" title="${dayLabel} 連攤群組 G${g}、實際到 ${attendCount} 攤">${dayLabel} 連 G${g}·${orderStr}${cntLabel}</span>`);
+      }
+    }
+    if (c.kind === 'free') tags.push('<span class="tag free">自由</span>');
+    if (c.bigHand) tags.push('<span class="tag big" title="大手攤 · 人潮警戒">⭐ 大手</span>');
+    const safeUrl = normalizeUrl(c.url);
+    const linkHtml = safeUrl ? `<a class="card-link" href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">↗</a>` : '';
+    const catHtml = c.cat ? `<span class="card-cat">${escapeHtml(c.cat)}</span>` : '';
+    const descHtml = c.desc ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.desc.slice(0, 30))}</span>` : '';
+    const dayCls = (c.d1 > 0 && c.d2 === 0) ? 'card-d1-only' : (c.d2 > 0 && c.d1 === 0) ? 'card-d2-only' : '';
+    return `<div class="card ${isPlaced ? 'placed' : ''} ${warnCardIds.has(c.id) ? 'has-warn' : ''} ${c.bigHand ? 'big-hand' : ''} ${dayCls}" draggable="true"
+                 data-card="${c.id}"
+                 ondragstart="onCardDragStart(event, '${c.id}')"
+                 ondblclick="toggleBigHand('${c.id}')"
+                 title="${escapeHtml(c.name)}${c.cat ? ' · ' + c.cat : ''}${c.desc ? '\n' + c.desc : ''}\n(雙擊卡片切換大手攤標記)">
+      <div class="card-line1">
+        <span class="card-name">${escapeHtml(c.name)}</span>
+        <span class="card-tags">${tags.join('')}</span>
+      </div>
+      <div class="card-line2">
+        ${catHtml}
+        ${descHtml}
+        ${linkHtml}
+      </div>
+      ${(() => {
+        const s1 = slotBadgeForCard(c, 1), s2 = slotBadgeForCard(c, 2);
+        if (!s1 && !s2) return '';
+        const parts = [];
+        if (s1) parts.push(`D1 ${s1}`);
+        if (s2) parts.push(`D2 ${s2}`);
+        return `<span class="card-slot" title="這位已排到的攤位">📍 ${parts.join(' · ')}</span>`;
+      })()}
+    </div>`;
+  }).join('') || '<div class="empty">篩選結果為空。</div>';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function normalizeUrl(u) {
+  if (!u) return '';
+  // 去除全部空白（含 URL 中間的空格、如「https:// abc.com」）
+  let s = String(u).trim().replace(/\s+/g, '');
+  if (!s) return '';
+  // 已有 protocol → 保留（http/https/mailto/tel/etc）
+  if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return s;
+  // 沒 protocol → 補 https://
+  return 'https://' + s;
+}
+
+// ────────────────────────────────────────────────────────
+// 規則檢查
+// ────────────────────────────────────────────────────────
+function checkRules() {
+  const warnings = [];
+  // 清舊 slot title
+  document.querySelectorAll('.slot').forEach(el => { el.removeAttribute('data-warn-reason'); });
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+
+  function addWarn(slotEl, slotId, reason) {
+    slotEl.classList.add('warn');
+    slotEl.title = reason;
+    warnings.push({ slot: slotId, reason });
+  }
+
+  // 1. 自由攤放到桌攤位、桌攤放到自由攤位
+  for (const [slotId, cardId] of Object.entries(asg)) {
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) continue;
+    const slotEl = document.querySelector(`[data-slot="${slotId}"]`);
+    if (!slotEl) continue;
+    const slotKind = slotEl.dataset.kind;
+    if (card.kind !== slotKind) {
+      const cn = card.kind === 'free' ? '自由攤' : '桌攤';
+      const sn = slotKind === 'free' ? '自由攤排' : '桌攤排';
+      addWarn(slotEl, slotId, `${cn}「${card.name}」放到${sn}（B/C 排＝自由攤區、其他排＝桌攤區）`);
+    }
+  }
+
+  // 3. 單日攤主排到另一天（他那天沒到）
+  for (const [slotId, cardId] of Object.entries(asg)) {
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) continue;
+    const attend = getAttend(card, day);
+    if (attend === 0) {
+      const slotEl = document.querySelector(`[data-slot="${slotId}"]`);
+      const otherDay = day === 1 ? 2 : 1;
+      if (slotEl) addWarn(slotEl, slotId, `「${card.name}」只 D${otherDay} 參加、Day ${String(day).padStart(2,'0')} 沒到、不該排在 ${slotId}`);
+    }
+  }
+
+  // 2. 雙攤放到偶數格（本排最後一格意外殘留）
+  for (const [slotId, cardId] of Object.entries(asg)) {
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) continue;
+    const attend = getAttend(card, day);
+    if (attend !== 2) continue;
+    const num = parseSlot(slotId).num;
+    if (num % 2 === 0) {
+      const prev = prevSlot(slotId);
+      if (asg[prev] !== cardId) {
+        const el = document.querySelector(`[data-slot="${slotId}"]`);
+        if (el) addWarn(el, slotId, `雙攤「${card.name}」主格是偶數（該落在奇數位、01+02 或 03+04 這種桌組）`);
+      }
+    } else {
+      const next = nextSlot(slotId);
+      if (asg[next] !== cardId) {
+        const el = document.querySelector(`[data-slot="${slotId}"]`);
+        if (el) addWarn(el, slotId, `雙攤「${card.name}」只佔一格（該連著下一格、變兩格佔滿一桌）`);
+      }
+    }
+  }
+
+  // 5. 連攤群組本日已排 ≥2 人但沒排相鄰（雙日 sync 帶進來的錨點最容易漏）
+  {
+    const groupsSeen = new Set();
+    for (const cardId of Object.values(asg)) {
+      const c = state.cards.find(x => x.id === cardId);
+      if (!c) continue;
+      const g = getGroup(c, day);
+      if (!g || groupsSeen.has(g)) continue;
+      groupsSeen.add(g);
+      const chk = groupContiguity(g, day);
+      if (chk.members < 2 || chk.contiguous) continue;
+      const names = [...new Set(chk.occ.map(o => o.card.name))].join('、');
+      const slots = [...new Set(chk.occ.map(o => o.sid))].sort();
+      for (const s of slots) {
+        const el = document.querySelector(`[data-slot="${s}"]`);
+        if (el) { el.classList.add('warn'); el.title = `連攤 G${g} 沒排相鄰`; }
+      }
+      warnings.push({ slot: slots[0], reason: `連攤 G${g} 沒排相鄰：${names}（${slots.join('、')}）` });
+    }
+  }
+
+  // 4. 跨天同格衝突（backstop、只當有人的雙日綁位在同格但被覆蓋才算撞）
+  const _otherDay = day === 1 ? 2 : 1;
+  const _otherAsg = state.assignments[_otherDay] || {};
+  for (const [slotId, cardId] of Object.entries(asg)) {
+    const otherCardId = _otherAsg[slotId];
+    if (!otherCardId || otherCardId === cardId) continue;
+    const cur = state.cards.find(c => c.id === cardId);
+    const oth = state.cards.find(c => c.id === otherCardId);
+    if (!cur || !oth) continue;
+    // 只警告「兩人分別雙日、且各自另一天位置也對稱」= 真的撞到綁位
+    // 簡化：另一天此格若不是「對方本人在對方那天也佔」、就不算撞
+    // 因為兩天不同 card 佔同格、可以是單日 vs 單日不同天 OR 別人副格空位塞人
+    // 抓 broken 綁位：oth 在本天別處也佔某格、又跟另一天 slotId 不同 = 兩天位置不 sync
+    const othOnThisDay = Object.entries(asg).find(([_, cid]) => cid === otherCardId);
+    if (!othOnThisDay) continue;  // oth 本天沒排 = 純另一天佔位、不算 broken
+    if (othOnThisDay[0] === slotId) continue;  // 對稱、就是我們自己（本天 slotId = cardId、不會發生）
+    // 縮攤 sync 例外：若 oth 本天所佔的所有格 ⊆ 對方天所佔的格（含副格）→ 縮攤、不算 broken
+    // 例：D1 雙攤 K21+K22、D2 縮成單攤 K22 → K22 ⊆ [K21,K22]、位置有對到、不報
+    const othOtherDaySlots = Object.entries(_otherAsg).filter(([, cid]) => cid === otherCardId).map(([sid]) => sid);
+    const othThisDaySlots  = Object.entries(asg)      .filter(([, cid]) => cid === otherCardId).map(([sid]) => sid);
+    if (othThisDaySlots.every(sid => othOtherDaySlots.includes(sid))) continue;
+    // oth 本天佔別格、另一天佔本 slotId、位置不 sync
+    const slotEl = document.querySelector(`[data-slot="${slotId}"]`);
+    const dayLabel = _otherDay === 1 ? 'Day 01' : 'Day 02';
+    if (slotEl) addWarn(slotEl, slotId, `雙日綁位破損：「${oth.name}」本天在 ${othOnThisDay[0]}、${dayLabel} 卻在此格——位置沒 sync`);
+  }
+
+  state.warnings = warnings;
+  const el = document.getElementById('statWarn');
+  if (warnings.length > 0) {
+    el.innerHTML = `<span style="color:var(--err);font-weight:700">⚠ ${warnings.length} 個提醒</span>`;
+    el.title = '點開看理由';
+  } else {
+    el.innerHTML = '';
+    el.title = '';
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 統計
+// ────────────────────────────────────────────────────────
+function updateStats() {
+  // 整場活動進度：分母 = 全體品牌、分子 = 兩天該去的都排上
+  const placedD1 = new Set(Object.values(state.assignments[1] || {}));
+  const placedD2 = new Set(Object.values(state.assignments[2] || {}));
+  const fully = state.cards.filter(c =>
+    (c.d1 === 0 || placedD1.has(c.id)) &&
+    (c.d2 === 0 || placedD2.has(c.id))
+  ).length;
+  document.getElementById('statTotal').textContent = state.cards.length;
+  document.getElementById('statPlaced').textContent = fully;
+}
+
+function updateHallStats() {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  for (const hall of VENUE.halls) {
+    const total = hall.rows.reduce((s, r) => s + r.count, 0);
+    const filled = hall.rows.reduce((s, r) => {
+      let c = 0;
+      for (let i = 1; i <= r.count; i++) {
+        const sid = buildSlot(r.id, i);
+        if (asg[sid]) c++;
+      }
+      return s + c;
+    }, 0);
+    const el = document.getElementById(`stat-${hall.id}`);
+    if (el) el.textContent = `${filled} / ${total}`;
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 切換
+// ────────────────────────────────────────────────────────
+function switchDay(d) {
+  state.currentDay = d;
+  document.querySelectorAll('.day-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.day === d);
+  });
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.main-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === t);
+  });
+  document.getElementById('secPool').style.display = (t === 'pool') ? 'block' : 'none';
+  document.getElementById('secInfo').style.display = (t === 'info') ? 'block' : 'none';
+  if (t === 'info') renderRowNotesList();
+}
+
+function renderRowNotesList() {
+  const container = document.getElementById('rowNotesList');
+  if (!container) return;
+  const parts = [];
+  for (const hall of VENUE.halls) {
+    parts.push(`<div class="hall-block">
+      <div class="hall-block-head">
+        <input class="hall-name-input" type="text" value="${escapeHtml(hall.name)}" onchange="setHallName('${hall.id}', this.value)" placeholder="倉名">
+        <button class="rl-del" title="刪整個倉" onclick="deleteHall('${hall.id}')">🗑</button>
+      </div>`);
+    for (const row of hall.rows) {
+      parts.push(`<div class="row-line">
+        <span class="rl-id">${row.id}</span>
+        <input class="rl-count" type="number" min="0" max="99" value="${row.count}" onchange="setRowCount('${row.id}', this.value)" title="格數">
+        <select class="rl-kind" onchange="setRowKind('${row.id}', this.value)">
+          <option value="desk" ${row.kind === 'desk' ? 'selected' : ''}>桌</option>
+          <option value="free" ${row.kind === 'free' ? 'selected' : ''}>自</option>
+        </select>
+        <input class="rl-gap" type="text" placeholder="走${VENUE.gapEvery}" value="${row.gapSpec !== undefined ? escapeHtml(String(row.gapSpec)) : (typeof row.gapEvery === 'number' ? row.gapEvery : '')}" onchange="setRowGap('${row.id}', this.value)" title="這排的走道：填 10＝每 10 攤插走道；填 4,5,3＝分段（4攤｜走道｜5攤｜走道｜3攤、段用完不再插）；0＝這排不插；留空＝用全域（目前 ${VENUE.gapEvery}）">
+        <input class="rl-note" type="text" placeholder="備註（例：靠門口有輕食）" value="${escapeHtml(row.note || '')}" onchange="setRowNote('${row.id}', this.value)">
+        <button class="rl-del" title="刪這一排" onclick="deleteRow('${row.id}')">🗑</button>
+      </div>`);
+    }
+    parts.push(`<div style="display:flex;gap:4px;margin-top:6px;">
+      <button class="add-btn" onclick="addRow('${hall.id}')">＋ 加一排</button>
+      <button class="add-btn" onclick="batchAddRows('${hall.id}')">＋ 批次加排</button>
+    </div>`);
+    parts.push(`</div>`);
+  }
+  parts.push(`<button class="add-btn" onclick="addHall()" style="width:100%;margin-top:10px;padding:8px;">＋ 加新的倉</button>`);
+  container.innerHTML = parts.join('');
+}
+
+function setRowCount(rowId, newCount) {
+  const found = findHallRow(rowId);
+  if (!found) return;
+  const n = Math.max(0, Math.min(99, parseInt(newCount) || 0));
+  pushHistory();
+  // 縮小 → 拿回超出範圍的攤主
+  if (n < found.row.count) {
+    for (const day of [1, 2]) {
+      const asg = state.assignments[day];
+      for (let i = n + 1; i <= found.row.count; i++) {
+        const sid = buildSlot(rowId, i);
+        delete asg[sid];
+      }
+    }
+  }
+  found.row.count = n;
+  renderHalls();
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+}
+
+function setRowKind(rowId, kind) {
+  const found = findHallRow(rowId);
+  if (!found) return;
+  pushHistory();
+  found.row.kind = kind;
+  renderHalls();
+  refreshAllSlots();
+  markDirty();
+}
+
+function setRowGap(rowId, v) {
+  const found = findHallRow(rowId);
+  if (!found) return;
+  const t = String(v).trim();
+  if (t !== '' && !parseGapSpec(t)) {
+    alert(`走道格式看不懂：「${t}」\n\n填法：\n• 10 ＝ 每 10 攤插走道\n• 4,5,3 ＝ 分段（4攤｜走道｜5攤｜走道｜3攤）\n• 0 ＝ 這排不插\n• 留空 ＝ 用全域設定`);
+    renderRowNotesList();  // 還原輸入框
+    return;
+  }
+  pushHistory();
+  delete found.row.gapEvery;  // 舊數字欄位淘汰、統一存 gapSpec
+  if (t === '') delete found.row.gapSpec;
+  else found.row.gapSpec = t;
+  renderHalls();
+  markDirty();
+}
+
+function deleteRow(rowId) {
+  for (const hall of VENUE.halls) {
+    const idx = hall.rows.findIndex(r => r.id === rowId);
+    if (idx < 0) continue;
+    if (!confirm(`確定刪 ${rowId} 排？該排的攤主會拿回攤主池。`)) return;
+    pushHistory();
+    for (const day of [1, 2]) {
+      const asg = state.assignments[day];
+      for (const sid of Object.keys(asg)) {
+        if (parseSlot(sid).row === rowId) delete asg[sid];
+      }
+    }
+    hall.rows.splice(idx, 1);
+    renderHalls();
+    refreshAllSlots();
+    renderPool();
+    updateStats();
+    renderRowNotesList();
+    markDirty();
+    return;
+  }
+}
+
+function addRow(hallId) {
+  const hall = VENUE.halls.find(h => h.id === hallId);
+  if (!hall) return;
+  const rawId = prompt(`新排的 ID？（1-4 字元、英文/中文/注音都行、跟現有的不能重複、不能只有數字）`, '');
+  if (!rawId) return;
+  const newId = rawId.trim().slice(0, 4);
+  if (!newId || /^\d+$/.test(newId)) { alert('排 ID 不能空、不能只是數字'); return; }
+  const allIds = new Set();
+  for (const h of VENUE.halls) for (const r of h.rows) allIds.add(r.id);
+  if (allIds.has(newId)) { alert(`排 ${newId} 已存在`); return; }
+  const rawCount = prompt('這一排要幾格？', '40');
+  const count = parseInt(rawCount);
+  if (!count || count < 1) return;
+  pushHistory();
+  hall.rows.push({ id: newId, count, kind: 'desk' });
+  renderHalls();
+  refreshAllSlots();
+  renderRowNotesList();
+  markDirty();
+}
+
+function batchAddRows(hallId) {
+  const hall = VENUE.halls.find(h => h.id === hallId);
+  if (!hall) return;
+  const raw = prompt(
+    `批次加排（用逗號分隔多段、每段格式 排ID:格數）：\n\n` +
+    `範圍：E-J:40 → E/F/G/H/I/J 各 40 格\n` +
+    `個別：E:40, F:30\n` +
+    `混合：E-H:40, I:30\n` +
+    `中文/注音：甲-戊:40（連續字元也支援）`,
+    'E-J:40'
+  );
+  if (!raw) return;
+  const existingIds = new Set();
+  for (const h of VENUE.halls) for (const r of h.rows) existingIds.add(r.id);
+  const results = [];
+  const skipped = [];
+  const segments = raw.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  for (const seg of segments) {
+    const m = seg.match(/^(.+?):(\d+)$/);
+    if (!m) { skipped.push(seg + '（格式錯）'); continue; }
+    const idPart = m[1].trim();
+    const count = parseInt(m[2]);
+    if (!count || count < 1) { skipped.push(seg + '（格數錯）'); continue; }
+    // 範圍：一個字元 - 一個字元（Unicode 通吃）
+    const rangeMatch = idPart.match(/^(.)-(.)$/);
+    if (rangeMatch) {
+      const startCode = rangeMatch[1].codePointAt(0);
+      const endCode = rangeMatch[2].codePointAt(0);
+      if (endCode < startCode) { skipped.push(seg + '（範圍反了）'); continue; }
+      for (let c = startCode; c <= endCode; c++) {
+        const id = String.fromCodePoint(c);
+        if (existingIds.has(id)) { skipped.push(id + '（已存在）'); continue; }
+        results.push({ id, count });
+        existingIds.add(id);
+      }
+    } else {
+      const id = idPart.slice(0, 4);
+      if (!id || /^\d+$/.test(id)) { skipped.push(seg + '（ID 錯）'); continue; }
+      if (existingIds.has(id)) { skipped.push(id + '（已存在）'); continue; }
+      results.push({ id, count });
+      existingIds.add(id);
+    }
+  }
+  if (results.length === 0) { alert('沒有加成功任何一排：\n' + skipped.join('\n')); return; }
+  pushHistory();
+  for (const r of results) hall.rows.push({ id: r.id, count: r.count, kind: 'desk' });
+  renderHalls();
+  refreshAllSlots();
+  renderRowNotesList();
+  markDirty();
+  const msg = `加了 ${results.length} 排：${results.map(r => r.id).join(', ')}`;
+  flash(msg);
+  if (skipped.length > 0) setTimeout(() => alert('跳過：\n' + skipped.join('\n')), 100);
+}
+
+function setHallName(hallId, name) {
+  const hall = VENUE.halls.find(h => h.id === hallId);
+  if (!hall) return;
+  pushHistory();
+  hall.name = (name || '').trim() || '未命名';
+  renderHalls();
+  markDirty();
+}
+
+function deleteHall(hallId) {
+  const idx = VENUE.halls.findIndex(h => h.id === hallId);
+  if (idx < 0) return;
+  const hall = VENUE.halls[idx];
+  if (!confirm(`確定刪整個「${hall.name}」？該倉所有排的攤主都會拿回攤主池。`)) return;
+  pushHistory();
+  const rowIds = new Set(hall.rows.map(r => r.id));
+  for (const day of [1, 2]) {
+    const asg = state.assignments[day];
+    for (const sid of Object.keys(asg)) {
+      if (rowIds.has(parseSlot(sid).row)) delete asg[sid];
+    }
+  }
+  VENUE.halls.splice(idx, 1);
+  renderHalls();
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  renderRowNotesList();
+  markDirty();
+}
+
+function addHall() {
+  const name = prompt('新倉的名字？（例：六倉）', '');
+  if (!name) return;
+  const existingIds = new Set(VENUE.halls.map(h => h.id));
+  let idx = 3;
+  while (existingIds.has('h' + idx)) idx++;
+  const hallId = 'h' + idx;
+  const tag = 'h' + (idx > 5 ? 5 : idx);  // 顏色 tag 循環
+  pushHistory();
+  VENUE.halls.push({ id: hallId, name: name.trim(), tag, rows: [] });
+  renderHalls();
+  renderRowNotesList();
+  markDirty();
+}
+
+function switchFilterTab(t) {
+  document.querySelectorAll('.filter-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.ftab === t);
+  });
+  ['status','attend','day','prop','cat'].forEach(k => {
+    const el = document.getElementById('fc-' + k);
+    if (el) el.style.display = (k === t) ? 'block' : 'none';
+  });
+}
+
+function toggleBigHand(cardId) {
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return;
+  pushHistory();
+  card.bigHand = !card.bigHand;
+  renderPool();
+  markDirty();
+  flash(card.bigHand ? `⭐ 標為大手攤：${card.name}` : `已取消大手：${card.name}`);
+}
+
+function setRowNote(rowId, note) {
+  for (const hall of VENUE.halls) {
+    for (const row of hall.rows) {
+      if (row.id === rowId) {
+        pushHistory();
+        row.note = note || '';
+        renderHalls();  // 重畫底圖以顯示 dot
+        markDirty();
+        return;
+      }
+    }
+  }
+}
+
+function restoreLink(cardId) {
+  const day = state.currentDay;
+  if (!state.unlinked || !state.unlinked[day] || !state.unlinked[day].has(cardId)) {
+    flash('這張沒被拆'); return;
+  }
+  const card = state.cards.find(c => c.id === cardId);
+  if (!card) return;
+  pushHistory();
+  state.unlinked[day].delete(cardId);
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+  flash(`「${card.name}」已還原到連攤群組`);
+}
+
+function clearAssignments() {
+  const day = state.currentDay;
+  const asg = state.assignments[day];
+  const placedIds = new Set(Object.values(asg));
+  if (placedIds.size === 0) { flash('本日沒排任何攤主'); return; }
+  const otherDay = day === 1 ? 2 : 1;
+  const both = confirm(
+    `真的要把 Day ${String(day).padStart(2, '0')} 的 ${placedIds.size} 個攤主全部拿回攤主池嗎？\n\n` +
+    `【確定】＝清 Day ${String(day).padStart(2, '0')} 排位\n【取消】＝不動`
+  );
+  if (!both) return;
+  const alsoOther = Object.keys(state.assignments[otherDay] || {}).length > 0
+    ? confirm(`Day ${String(otherDay).padStart(2, '0')} 也有排位、要一起清嗎？\n\n【確定】＝兩天都清\n【取消】＝只清 Day ${String(day).padStart(2, '0')}`)
+    : false;
+  pushHistory();
+  state.assignments[day] = {};
+  if (alsoOther) state.assignments[otherDay] = {};
+  refreshAllSlots();
+  renderPool();
+  updateStats();
+  markDirty();
+  flash(alsoOther ? '已清空 Day 01 + Day 02 排位' : `已清空 Day ${String(day).padStart(2, '0')} 排位`);
+}
+
+function clearFilters() {
+  state.f = { status: 'all', attend: 'all', day: 'all', prop: 'all', cat: 'all' };
+  document.querySelectorAll('.filter-chip[data-grp]').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.v === 'all');
+  });
+  const sel = document.getElementById('catSelect');
+  if (sel) sel.value = 'all';
+  renderPool();
+  updateFilterTabDots();
+  flash('已清除所有篩選');
+}
+
+function updateFilterTabDots() {
+  // 每個 filter tab 若有非 all 的狀態、加圓點
+  const f = state.f;
+  const keys = { status: f.status, attend: f.attend, day: f.day, prop: f.prop, cat: f.cat };
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    const k = tab.dataset.ftab;
+    const label = tab.textContent.replace(/\s*●$/, '').trim();
+    tab.innerHTML = keys[k] && keys[k] !== 'all'
+      ? `${label} <span class="dot"></span>`
+      : label;
+  });
+}
+
+function showWarnings() {
+  const warnings = state.warnings || [];
+  const body = document.getElementById('warnBody');
+  if (warnings.length === 0) {
+    body.innerHTML = '<div class="empty">目前沒有提醒 ✓</div>';
+  } else {
+    body.innerHTML = warnings.map(w => `<div class="warn-item"><b>${escapeHtml(w.slot || '')}</b> · ${escapeHtml(w.reason || w)}</div>`).join('');
+  }
+  document.getElementById('warnMask').classList.add('open');
+}
+function closeWarnings() {
+  document.getElementById('warnMask').classList.remove('open');
+}
+
+// ────────────────────────────────────────────────────────
+// 匯出
+// ────────────────────────────────────────────────────────
+function exportJSON() {
+  const data = JSON.stringify({
+    exportAt: new Date().toISOString(),
+    cards: state.cards,
+    assignments: state.assignments
+  }, null, 2);
+  downloadFile(data, `tantan-paipai-備份-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(v) {
+  const s = String(v ?? '');
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function buildBoothListCSV(day) {
+  const asg = state.assignments[day] || {};
+  const rows = [['攤號', '攤名', '性質', '商品敘述', '網頁', '攤數', '連攤組', '連攤序', '備註']];
+  for (const hall of VENUE.halls) {
+    for (const row of hall.rows) {
+      for (let i = 1; i <= row.count; i++) {
+        const slotId = buildSlot(row.id, i);
+        const cardId = asg[slotId];
+        if (!cardId) continue;
+        const card = state.cards.find(c => c.id === cardId);
+        if (!card) continue;
+        const attend = getAttend(card, day);
+        // 副格 skip（雙攤只在主格出現一次）
+        if (attend === 2) {
+          const prev = buildSlot(row.id, i - 1);
+          if (asg[prev] === cardId) continue;
+        }
+        const boothLabel = attend === 2
+          ? `${slotId}+${buildSlot(row.id, i + 1)}`
+          : slotId;
+        const group = getGroup(card, day);
+        const order = getOrder(card, day);
+        rows.push([
+          boothLabel,
+          card.name,
+          card.cat || '',
+          card.desc || '',
+          normalizeUrl(card.url || ''),
+          attend === 2 ? '雙攤' : '單攤',
+          group || '',
+          order ? String(order).padStart(2, '0') : '',
+          card.kind === 'free' ? '自由攤' : '',
+        ]);
+      }
+    }
+  }
+  return rows.map(r => r.map(csvEscape).join(',')).join('\n');
+}
+
+function buildUnplacedCSV() {
+  const placedD1 = new Set(Object.values(state.assignments[1] || {}));
+  const placedD2 = new Set(Object.values(state.assignments[2] || {}));
+  const rows = [['攤名', '性質', 'D1', 'D2', '攤數(D1)', '攤數(D2)', '連攤組(D1)', '連攤組(D2)', '網頁']];
+  for (const c of state.cards) {
+    const inD1 = c.d1 > 0 && !placedD1.has(c.id);
+    const inD2 = c.d2 > 0 && !placedD2.has(c.id);
+    if (!inD1 && !inD2) continue;
+    rows.push([
+      c.name,
+      c.cat || '',
+      inD1 ? '未排' : (c.d1 > 0 ? '已排' : '—'),
+      inD2 ? '未排' : (c.d2 > 0 ? '已排' : '—'),
+      c.d1 === 2 ? '雙攤' : (c.d1 === 1 ? '單攤' : ''),
+      c.d2 === 2 ? '雙攤' : (c.d2 === 1 ? '單攤' : ''),
+      c.d1group || '',
+      c.d2group || '',
+      normalizeUrl(c.url || ''),
+    ]);
+  }
+  if (rows.length === 1) return '';
+  return rows.map(r => r.map(csvEscape).join(',')).join('\n');
+}
+
+function exportBoothList() {
+  const name = (workspaceName || '攤位表').replace(/[\/\\:*?"<>|]/g, '_');
+  const today = new Date().toISOString().slice(0, 10);
+  const BOM = '﻿';
+  let count = 0;
+  for (const day of [1, 2]) {
+    const csv = buildBoothListCSV(day);
+    const dayLabel = 'Day' + String(day).padStart(2, '0');
+    const lines = csv.split('\n').length - 1;  // 去表頭
+    if (lines > 0) {
+      downloadFile(BOM + csv, `${name}_${dayLabel}攤位表_${today}.csv`, 'text/csv;charset=utf-8');
+      count++;
+    }
+  }
+  const unplaced = buildUnplacedCSV();
+  if (unplaced) {
+    downloadFile(BOM + unplaced, `${name}_未排名單_${today}.csv`, 'text/csv;charset=utf-8');
+    count++;
+  }
+  flash(count > 0 ? `已下載 ${count} 個 CSV` : '沒有資料可匯出');
+}
+
+// ────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

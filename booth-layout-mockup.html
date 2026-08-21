@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>攤位配置模擬 — Ziner Studio</title>
+<style>
+  :root{
+    --bg:#F5F0E4; --surf:#FDFAF2; --panel:#EDE8DA; --accent:#D4714A;
+    --acc-h:#B95C38; --text:#33334D; --muted:#6B6878; --faint:#9B97A8;
+    --font:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);color:var(--text);background:var(--bg);
+    background-image:radial-gradient(circle,rgba(51,51,77,.08) .75px,transparent .75px);
+    background-size:8px 8px;padding:24px 16px 60px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  h1{font-size:20px;font-weight:900;margin-bottom:4px;}
+  .sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+  .stage{background:var(--surf);border:2px solid var(--text);box-shadow:5px 5px 0 var(--text);padding:14px;}
+  svg{width:100%;height:auto;display:block;}
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:18px;}
+  .lg{display:flex;align-items:center;gap:8px;font-size:12px;background:var(--surf);border:1.5px solid rgba(51,51,77,.18);padding:7px 10px;}
+  .sw{width:16px;height:16px;flex-shrink:0;border:1.5px solid var(--text);}
+  .flow{margin-top:18px;background:var(--surf);border:2px solid var(--text);box-shadow:3px 3px 0 var(--text);padding:14px 18px;}
+  .flow h2{font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .flow ol{margin-left:4px;list-style:none;}
+  .flow li{font-size:13px;padding:5px 0;border-bottom:1px solid rgba(51,51,77,.08);display:flex;gap:10px;align-items:baseline;}
+  .flow li:last-child{border-bottom:none;}
+  .num{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>攤位配置模擬．3×2 大攤</h1>
+  <div class="sub">俯視平面圖 ｜ 機台靠走道展示、背靠後牆 ｜ 誌造所 × 創集繪 05.30</div>
+
+  <div class="stage">
+    <svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+      <!-- 攤位邊界（後牆 + 兩側，開口朝下） -->
+      <rect x="50" y="55" width="800" height="470" fill="none" stroke="#33334D" stroke-width="3"/>
+      <line x1="50" y1="525" x2="850" y2="525" stroke="#9B97A8" stroke-width="2" stroke-dasharray="8 6"/>
+      <text x="450" y="560" text-anchor="middle" font-size="15" font-weight="700" fill="#9B97A8" font-family="sans-serif">↑ 走道（人流方向）↑</text>
+
+      <!-- 後牆作品牆 -->
+      <rect x="56" y="61" width="788" height="34" fill="#EDE8DA"/>
+      <g>
+        <rect x="70"  y="67" width="34" height="22" fill="#D4714A"/>
+        <rect x="112" y="67" width="34" height="22" fill="#62A8E5"/>
+        <rect x="154" y="67" width="34" height="22" fill="#00A95C"/>
+        <rect x="196" y="67" width="34" height="22" fill="#FF6E9A"/>
+        <rect x="238" y="67" width="34" height="22" fill="#FFE800"/>
+        <rect x="600" y="67" width="34" height="22" fill="#9D7AD2"/>
+        <rect x="642" y="67" width="34" height="22" fill="#FF5F00"/>
+        <rect x="684" y="67" width="34" height="22" fill="#62A8E5"/>
+        <rect x="726" y="67" width="34" height="22" fill="#E82020"/>
+        <rect x="768" y="67" width="34" height="22" fill="#00A95C"/>
+      </g>
+      <text x="450" y="84" text-anchor="middle" font-size="13" font-weight="800" fill="#6B6878" font-family="sans-serif">後牆掛滿作品（遠距吸睛）</text>
+
+      <!-- 畫圖桌 1（後排左，作品牆下） -->
+      <rect x="90" y="120" width="320" height="115" fill="#FDFAF2" stroke="#33334D" stroke-width="2.5"/>
+      <text x="250" y="170" text-anchor="middle" font-size="14" font-weight="800" fill="#33334D" font-family="sans-serif">畫圖桌 1</text>
+      <text x="250" y="190" text-anchor="middle" font-size="10.5" fill="#6B6878" font-family="sans-serif">草稿紙·描圖紙·筆·範例</text>
+      <rect x="160" y="200" width="30" height="22" rx="4" fill="#EDE8DA" stroke="#33334D" stroke-width="2"/>
+      <rect x="310" y="200" width="30" height="22" rx="4" fill="#EDE8DA" stroke="#33334D" stroke-width="2"/>
+
+      <!-- 畫圖桌 2（後排右，作品牆下） -->
+      <rect x="490" y="120" width="320" height="115" fill="#FDFAF2" stroke="#33334D" stroke-width="2.5"/>
+      <text x="650" y="170" text-anchor="middle" font-size="14" font-weight="800" fill="#33334D" font-family="sans-serif">畫圖桌 2</text>
+      <text x="650" y="190" text-anchor="middle" font-size="10.5" fill="#6B6878" font-family="sans-serif">草稿紙·描圖紙·筆·範例</text>
+      <rect x="560" y="200" width="30" height="22" rx="4" fill="#EDE8DA" stroke="#33334D" stroke-width="2"/>
+      <rect x="710" y="200" width="30" height="22" rx="4" fill="#EDE8DA" stroke="#33334D" stroke-width="2"/>
+
+      <!-- RISO 機台（前排左，靠走道展示） -->
+      <rect x="110" y="370" width="250" height="125" fill="#33334D"/>
+      <circle cx="155" cy="432" r="24" fill="none" stroke="#FDFAF2" stroke-width="3"/>
+      <rect x="200" y="410" width="120" height="45" fill="none" stroke="#FDFAF2" stroke-width="2"/>
+      <text x="235" y="518" text-anchor="middle" font-size="14" font-weight="800" fill="#33334D" font-family="sans-serif">RISO 機台</text>
+      <text x="235" y="392" text-anchor="middle" font-size="11" font-weight="700" fill="#D4714A" font-family="sans-serif">★ 朝走道，現場印給人看 ★</text>
+
+      <!-- 櫃檯（前排右，靠走道） -->
+      <rect x="500" y="380" width="260" height="105" fill="#D4714A"/>
+      <text x="630" y="423" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="sans-serif">櫃　檯</text>
+      <text x="630" y="444" text-anchor="middle" font-size="10.5" fill="#FDF0EA" font-family="sans-serif">收稿·選色·結帳·號碼牌</text>
+
+      <!-- 你的位置（機台與櫃檯之間） -->
+      <circle cx="430" cy="430" r="16" fill="#FDFAF2" stroke="#33334D" stroke-width="2.5"/>
+      <text x="430" y="435" text-anchor="middle" font-size="12" font-weight="800" fill="#33334D" font-family="sans-serif">你</text>
+
+      <!-- 人流動線 -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#D4714A"/>
+        </marker>
+      </defs>
+      <!-- 走道 → 看機台 → 進去畫圖桌 -->
+      <path d="M300 515 C 280 480, 270 320, 255 245" fill="none" stroke="#D4714A" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+      <!-- 畫圖桌 → 櫃檯交稿 -->
+      <path d="M560 235 C 600 300, 620 340, 630 372" fill="none" stroke="#D4714A" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <div class="lg"><span class="sw" style="background:#33334D"></span>RISO 機台（靠走道、朝外展示）</div>
+    <div class="lg"><span class="sw" style="background:#D4714A"></span>櫃檯（收稿·結帳）</div>
+    <div class="lg"><span class="sw" style="background:#FDFAF2"></span>畫圖桌 ×2（作品牆下）</div>
+    <div class="lg"><span class="sw" style="background:#EDE8DA"></span>後牆作品牆（吸睛背景）</div>
+  </div>
+
+  <div class="flow">
+    <h2>客人動線（5 步）</h2>
+    <ol>
+      <li><span class="num">1</span>被靠走道的機台＋現場印刷吸引，停下走進攤位</li>
+      <li><span class="num">2</span>往內走到畫圖桌（後牆作品就是創作靈感牆）</li>
+      <li><span class="num">3</span>畫完到櫃檯交稿、選色、結帳、領號碼牌</li>
+      <li><span class="num">4</span>去逛展（約 30 分鐘，你在機台前現場印）</li>
+      <li><span class="num">5</span>回櫃檯憑號碼牌取件，帶一疊回家</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "tantan-paipai",
+  "compatibility_date": "2026-01-01",
+  "pages_build_output_dir": ".",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tantan-paipai-db",
+      "database_id": "227f7b12-b56b-4bbf-9e9b-e6efb7964a43"
+    }
+  ]
+}
