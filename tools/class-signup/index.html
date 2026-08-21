@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>誌造所報名站｜課程與工作坊</title>
+<meta name="description" content="誌造所 ZINER STUDIO 課程報名：AI 工作流入門課、孔版印刷工作坊。">
+<style>
+  :root {
+    --ink:#111; --paper:#FFFEFB; --line:#E5E2DC; --muted:#5A574F;
+    --orange:#FF5F00; --orange-soft:#FFF0E6;
+    --violet:#9D7AD2; --violet-soft:#F1EBFA;
+    --lav-strong:#8A76BE;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"PingFang TC","Noto Sans TC",sans-serif; background:var(--paper); color:var(--ink); line-height:1.75; }
+  .mono { font-family:"SF Mono",Menlo,monospace; letter-spacing:.22em; text-transform:uppercase; }
+
+  .wrap { max-width:960px; margin:0 auto; padding:52px 24px 90px; }
+  header.site { text-align:center; margin-bottom:52px; }
+  header.site .mono { font-size:11px; color:var(--muted); }
+  header.site h1 { font-size:30px; letter-spacing:.35em; text-indent:.35em; margin:8px 0 6px; }
+  header.site .sub { font-size:13px; color:var(--muted); }
+
+  /* ── 海報牆 ── */
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:34px; }
+  .tile { cursor:pointer; border:none; background:none; text-align:left; font:inherit; color:inherit; }
+  .tile .art { aspect-ratio:3/4; border:1.5px solid var(--ink); border-radius:4px; overflow:hidden; position:relative;
+               transition:transform .18s, box-shadow .18s; }
+  .tile:hover .art { transform:translate(-3px,-3px); }
+  .tile[data-theme=orange]:hover .art { box-shadow:6px 6px 0 var(--orange); }
+  .tile[data-theme=violet]:hover .art { box-shadow:6px 6px 0 var(--violet); }
+  .tile .meta { display:flex; align-items:baseline; gap:10px; margin-top:12px; }
+  .tile h2 { font-size:17px; letter-spacing:.06em; }
+  .tile .one-liner { font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .stamp { font-size:11px; letter-spacing:.18em; padding:3px 10px; border:1.5px solid; border-radius:3px;
+           transform:rotate(-4deg); white-space:nowrap; font-weight:700; }
+  .stamp.open-o { color:var(--orange); border-color:var(--orange); background:var(--orange-soft); }
+  .stamp.open-v { color:var(--lav-strong); border-color:var(--lav-strong); background:var(--violet-soft); }
+  .stamp.closed { color:var(--muted); border-color:var(--muted); background:#F2F0EB; transform:rotate(3deg); }
+  .tile.closed { cursor:default; }
+  .tile.closed .art { filter:grayscale(.9) opacity(.55); }
+  .tile.closed:hover .art { transform:none; box-shadow:none; }
+
+  /* 版圖占位（之後換成 <img>） */
+  .ph { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:20px;
+        position:relative; overflow:hidden; }
+  .ph::after { content:""; position:absolute; inset:0;
+        background-image:radial-gradient(rgba(0,0,0,.16) 1px, transparent 1.2px); background-size:7px 7px;
+        mix-blend-mode:multiply; pointer-events:none; }
+  .ph .big { font-size:64px; font-weight:800; line-height:1.02; letter-spacing:.02em; }
+  .ph .tag { font-size:11px; letter-spacing:.25em; }
+  .ph-orange { background:var(--orange); color:#fff; }
+  .ph-violet { background:var(--violet); color:#fff; }
+  .ph-gray   { background:#B9B5AC; color:#fff; }
+  .ph-note { position:absolute; right:10px; top:10px; font-size:10px; background:rgba(255,255,255,.85); color:#333;
+             padding:2px 8px; border-radius:3px; letter-spacing:.1em; }
+
+  /* ── 課程頁 ── */
+  .course { display:none; }
+  .course.open { display:block; }
+  .back { display:inline-block; margin-bottom:22px; font-size:13px; color:var(--muted); cursor:pointer; background:none; border:none; font-family:inherit; letter-spacing:.1em; }
+  .back:hover { color:var(--ink); }
+  .banner { border:1.5px solid var(--ink); border-radius:4px; overflow:hidden; aspect-ratio:5/2; margin-bottom:30px; }
+  .banner .ph .big { font-size:52px; }
+  .course h2.title { font-size:24px; letter-spacing:.1em; margin-bottom:4px; }
+  .course .subtitle { font-size:13px; color:var(--muted); margin-bottom:24px; }
+
+  .chips { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+  .chip { font-size:12.5px; border:1px solid var(--line); border-radius:20px; padding:5px 14px; color:var(--muted); }
+  .chip b { color:var(--ink); font-weight:600; }
+
+  .sec { margin-bottom:30px; }
+  .sec-title { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .sec-title .mono { font-size:10px; }
+  .sec-title h3 { font-size:15px; letter-spacing:.12em; }
+  .sec p, .sec li { font-size:14px; color:#333; }
+  .sec ul { list-style:none; }
+  .sec li { padding-left:1.3em; position:relative; margin-bottom:4px; }
+  .rule-card { border:1px solid var(--line); border-radius:8px; padding:16px 18px; margin-bottom:10px; font-size:13.5px; color:#333; }
+
+  /* 一課一墨色 */
+  .course[data-theme=orange] { --theme:var(--orange); --theme-soft:var(--orange-soft); }
+  .course[data-theme=violet] { --theme:var(--lav-strong); --theme-soft:var(--violet-soft); }
+  .course .sec li::before { content:"◦"; position:absolute; left:.3em; color:var(--theme); font-weight:700; }
+  .course .sec-title .mono { color:var(--theme); }
+
+  /* 方案卡 */
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .plan { border:1.5px solid var(--line); border-radius:8px; padding:14px; cursor:pointer; text-align:center; transition:.12s; }
+  .plan:hover { border-color:var(--theme); }
+  .plan.on { border-color:var(--theme); background:var(--theme-soft); box-shadow:3px 3px 0 var(--theme); transform:translate(-2px,-2px); }
+  .plan .p-name { font-size:13.5px; letter-spacing:.06em; }
+  .plan .p-price { font-size:19px; font-weight:700; margin-top:2px; }
+  .plan .p-note { font-size:11px; color:var(--muted); }
+
+  /* 表單 */
+  .form { border:1.5px solid var(--ink); border-radius:10px; padding:26px 26px 22px; }
+  .form .flbl { display:inline-block; font-size:11.5px; letter-spacing:.15em; color:var(--theme);
+                background:var(--theme-soft); border-radius:4px; padding:3px 10px; margin-bottom:6px; }
+  .form .field { margin-bottom:20px; }
+  .form input[type=text], .form input[type=email], .form select, .form textarea {
+    width:100%; font-family:inherit; font-size:15px; padding:10px 2px; background:transparent;
+    border:0; border-bottom:1.5px solid var(--line); outline:none; border-radius:0; color:var(--ink); }
+  .form input:focus, .form select:focus, .form textarea:focus { border-bottom-color:var(--theme); }
+  .form textarea { min-height:70px; resize:vertical; }
+  .form .hint { font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .slots { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+  .slot { border:1.5px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:.12s; }
+  .slot:hover { border-color:var(--theme); }
+  .slot.on { border-color:var(--theme); background:var(--theme-soft); }
+  .slot .left { font-size:11px; color:var(--muted); }
+  .slot.full { color:#B0ACA2; border-style:dashed; cursor:not-allowed; }
+  .submit { display:block; width:100%; margin-top:6px; background:var(--theme); color:#fff; border:none; font-family:inherit;
+            font-size:15px; letter-spacing:.3em; text-indent:.3em; padding:14px; border-radius:8px; cursor:pointer;
+            box-shadow:3px 3px 0 var(--ink); transition:.12s; }
+  .submit:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--ink); }
+  .pay-note { font-size:12px; color:var(--muted); text-align:center; margin-top:12px; }
+
+  .foot { margin-top:56px; font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:18px; text-align:center; }
+  .foot a { color:var(--lav-strong); }
+  @media (max-width:640px){ .ph .big{font-size:44px;} header.site h1{font-size:24px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <div class="mono">Ziner Studio · Workshop &amp; Class</div>
+    <h1>誌造所報名站</h1>
+    <div class="sub">開課中的課程都在這裡，點海報進報名。</div>
+  </header>
+
+  <!-- ══ 海報牆 ══ -->
+  <div class="tiles" id="wall">
+    <button class="tile" data-theme="orange" onclick="openCourse('ai')">
+      <div class="art"><div class="ph ph-orange">
+        <span class="ph-note">版圖占位・換妳的圖</span>
+        <span class="tag">ONLINE WORKSHOP</span>
+        <span class="big">AI<br>工作流<br>入門課</span>
+        <span class="tag">EVERY FRI. 13:00</span>
+      </div></div>
+      <div class="meta"><h2>AI 工作流入門課</h2><span class="stamp open-o">可報名</span></div>
+      <div class="one-liner">線上一小時，把 AI 放進你的工作流程。</div>
+    </button>
+
+    <button class="tile" data-theme="violet" onclick="openCourse('riso')">
+      <div class="art"><div class="ph ph-violet">
+        <span class="ph-note">版圖占位・換妳的圖</span>
+        <span class="tag">RISOGRAPH WORKSHOP</span>
+        <span class="big">孔版<br>印刷<br>工作坊</span>
+        <span class="tag">TAIPEI · 2HRS · MAX 4</span>
+      </div></div>
+      <div class="meta"><h2>孔版印刷工作坊</h2><span class="stamp open-v">可報名</span></div>
+      <div class="one-liner">實機操作，現場繪製直接印刷帶回家。</div>
+    </button>
+
+    <div class="tile closed">
+      <div class="art"><div class="ph ph-gray">
+        <span class="tag">MONTHLY SPECIAL</span>
+        <span class="big">孔版<br>線上<br>工作坊</span>
+        <span class="tag">COMING BACK SOON</span>
+      </div></div>
+      <div class="meta"><h2>孔版線上工作坊</h2><span class="stamp closed">本期沒開</span></div>
+      <div class="one-liner">每月優惠方案，下期主題醞釀中。</div>
+    </div>
+  </div>
+
+  <!-- ══ AI 課 ══ -->
+  <section class="course" id="course-ai" data-theme="orange">
+    <button class="back" onclick="backToWall()">← 回課程列表</button>
+    <div class="banner"><div class="ph ph-orange">
+      <span class="ph-note">banner 占位・同版圖</span>
+      <span class="tag">ONLINE WORKSHOP｜誌造所看菜貢</span>
+      <span class="big">AI 工作流入門課</span>
+      <span class="tag">GOOGLE MEET · 1HR · NT$500</span>
+    </div></div>
+    <h2 class="title">AI 工作流入門課</h2>
+    <div class="subtitle">每週五下午一點，一小時線上聽講 MUMU 閒聊 AI 五四三。</div>
+    <div class="chips"><span class="chip">形式 <b>Google Meet 線上</b></span><span class="chip">時長 <b>約 1 小時</b></span><span class="chip">費用 <b>NT$500</b></span></div>
+
+    <div class="sec">
+      <div class="sec-title"><span class="mono">01 About</span><h3>這堂課給誰上</h3></div>
+      <p>創作者、小型工作室、接案工作者、小店經營者，以及常常一個人處理文案、宣傳、客服、資料整理的人。不是工程師課、也不是寫程式課——用日常好理解的方式認識常見 AI 平台，理解 AI 能幫你做什麼、不能做什麼，把 AI 放進自己的工作流程裡。</p>
+    </div>
+
+    <div class="form">
+      <div class="field"><span class="flbl">你的稱呼</span><input type="text" placeholder="怎麼叫你？"></div>
+      <div class="field"><span class="flbl">聯絡 Email</span><input type="email" placeholder="請提供 Gmail（Meet 邀請用）"></div>
+      <div class="field"><span class="flbl">社群帳號</span><input type="text" placeholder="IG／Threads／Discord，通知課程資訊用"></div>
+      <div class="field"><span class="flbl">你目前使用 AI 的程度</span>
+        <select><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
+      </div>
+      <div class="field"><span class="flbl">想上課時段</span>
+        <div class="slots">
+          <div class="slot" onclick="pick(this)">08/28（五）13:00 <span class="left">可報名</span></div>
+          <div class="slot" onclick="pick(this)">09/08（二）13:00 <span class="left">可報名</span></div>
+          <div class="slot" onclick="pick(this)">09/11（五）13:00 <span class="left">可報名</span></div>
+          <div class="slot full">09/15（二）13:00 <span class="left">已額滿</span></div>
+        </div>
+        <div class="hint">一人即開課；平日 11:00–16:00 也可另約，備註跟我說。</div>
+      </div>
+      <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea placeholder="想問什麼都可以先寫"></textarea></div>
+      <button class="submit" onclick="alert('（mockup 示意，還沒接後端）')">送出報名</button>
+      <div class="pay-note">送出後會自動寄繳費資訊到你的 Email，完成付款才算正式保留名額。</div>
+    </div>
+  </section>
+
+  <!-- ══ 工作坊 ══ -->
+  <section class="course" id="course-riso" data-theme="violet">
+    <button class="back" onclick="backToWall()">← 回課程列表</button>
+    <div class="banner"><div class="ph ph-violet">
+      <span class="ph-note">banner 占位・同版圖</span>
+      <span class="tag">RISOGRAPH WORKSHOP</span>
+      <span class="big">孔版印刷工作坊</span>
+      <span class="tag">TAIPEI · 2HRS · MAX 4</span>
+    </div></div>
+    <h2 class="title">孔版印刷工作坊</h2>
+    <div class="subtitle">開放工作室體驗實機操作——現場繪製、直接印刷、裁切完帶回家。</div>
+    <div class="chips"><span class="chip">時長 <b>約 2 小時</b></span><span class="chip">名額 <b>一堂最多 4 位</b></span><span class="chip">地點 <b>台北・近南門市場</b></span><span class="chip">親子 <b>7 歲以下免加價陪同</b></span></div>
+
+    <div class="sec">
+      <div class="sec-title"><span class="mono">01 Takeaway</span><h3>可帶回</h3></div>
+      <ul><li>孔版印刷工作坊講義</li><li>明信片 × 20 張／名片 × 50 張／A3 × 5 張／A4 × 10 張（擇一）</li></ul>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span class="mono">02 Schedule</span><h3>工作坊行程</h3></div>
+      <ul><li>印刷說明 約 15 分鐘</li><li>繪製時間 約 75 分鐘（可先在家想好構圖）</li><li>先畫完先印，體驗印刷操作、裁切完下課</li></ul>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title"><span class="mono">03 Rules</span><h3>小規範</h3></div>
+      <div class="rule-card">參加者都需付費，不可攜伴純旁觀（另一位坐旁邊滑手機我也很尷尬）。不可帶寵物。中文解說為主、全日文完全可以，NO English。</div>
+      <div class="rule-card">請盡量準時、於時間內完成繪製——因為下午我要去接我女鵝下課，無法延長，請見諒 🙇</div>
+      <div class="rule-card">前一天晚上九點前取消可全額退費或改期；當日取消退 60%（天災全退）。</div>
+    </div>
+
+    <div class="form">
+      <div class="field"><span class="flbl">如何稱呼你</span><input type="text" placeholder="怎麼叫你？"></div>
+      <div class="field"><span class="flbl">E-mail</span><input type="email" placeholder="繳費通知寄到這裡"></div>
+      <div class="field"><span class="flbl">IG 帳號</span><input type="text" placeholder="會分享上課風景並 tag 你（可留空）"></div>
+      <div class="field"><span class="flbl">油墨方案</span>
+        <div class="plans">
+          <div class="plan on" onclick="pickPlan(this)"><div class="p-name">單色</div><div class="p-price">$1,100</div><div class="p-note">週末 +100</div></div>
+          <div class="plan" onclick="pickPlan(this)"><div class="p-name">雙色</div><div class="p-price">$1,200</div><div class="p-note">週末 +100</div></div>
+          <div class="plan" onclick="pickPlan(this)"><div class="p-name">單色金墨</div><div class="p-price">$1,150</div><div class="p-note">金墨限定</div></div>
+          <div class="plan" onclick="pickPlan(this)"><div class="p-name">雙色+金</div><div class="p-price">$1,350</div><div class="p-note">其一為金</div></div>
+        </div>
+        <div class="hint">買過誌造所印樣（任一版）現場出示折 $100。</div>
+      </div>
+      <div class="field"><span class="flbl">報名時段</span>
+        <div class="slots">
+          <div class="slot" onclick="pick(this)">09/02（三）10:30 <span class="left">剩 3 位</span></div>
+          <div class="slot" onclick="pick(this)">09/09（三）10:30 <span class="left">剩 4 位</span></div>
+          <div class="slot full">09/05（六）10:00 <span class="left">已額滿</span></div>
+        </div>
+        <div class="hint">週末課請自行揪滿 3 人（最多 4 人）私訊約包課。</div>
+      </div>
+      <div class="field"><span class="flbl">你對孔版的了解</span>
+        <select><option>〔入門〕沒印過也沒看過實品</option><option>〔入門〕沒印過但看過實品</option><option>〔進階〕印過但次數極少</option><option>〔魔鬼等級〕常印、做稿熟悉</option></select>
+      </div>
+      <div class="field"><span class="flbl">預計製稿方式</span>
+        <select><option>電繪（平板／筆電自帶）</option><option>手繪（工作室有提供繪筆）</option><option>剪貼（材料請自備）</option></select>
+      </div>
+      <div class="field"><span class="flbl">備註</span><textarea placeholder="有想說的話 ᐠ( ᑒ )ᐟ"></textarea></div>
+      <button class="submit" onclick="alert('（mockup 示意，還沒接後端）')">送出報名</button>
+      <div class="pay-note">送出後會自動寄繳費資訊，完成付款才算正式保留名額；地址於收款後寄送。</div>
+    </div>
+  </section>
+
+  <div class="foot">誌造所 ZINER STUDIO · <a href="https://www.zinerstudio.com" target="_blank" rel="noopener">zinerstudio.com</a></div>
+</div>
+
+<script>
+function openCourse(id){ document.getElementById('wall').style.display='none';
+  document.querySelectorAll('.course').forEach(c=>c.classList.remove('open'));
+  document.getElementById('course-'+id).classList.add('open'); window.scrollTo(0,0); }
+function backToWall(){ document.querySelectorAll('.course').forEach(c=>c.classList.remove('open'));
+  document.getElementById('wall').style.display='grid'; window.scrollTo(0,0); }
+function pick(el){ el.parentElement.querySelectorAll('.slot').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+function pickPlan(el){ el.parentElement.querySelectorAll('.plan').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+</script>
+</body>
+</html>
