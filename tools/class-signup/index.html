@@ -203,12 +203,7 @@
         <select><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
       </div>
       <div class="field"><span class="flbl">想上課時段</span>
-        <div class="slots">
-          <div class="slot" onclick="pick(this)">08/28（五）13:00 <span class="left">可報名</span></div>
-          <div class="slot" onclick="pick(this)">09/08（二）13:00 <span class="left">可報名</span></div>
-          <div class="slot" onclick="pick(this)">09/11（五）13:00 <span class="left">可報名</span></div>
-          <div class="slot full">09/15（二）13:00 <span class="left">已額滿</span></div>
-        </div>
+        <div class="slots" id="ai-slots"><div class="hint">時段載入中⋯</div></div>
         <div class="hint">一人即開課；平日 11:00–16:00 也可另約，備註跟我說。</div>
       </div>
       <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea placeholder="想問什麼都可以先寫"></textarea>
@@ -297,8 +292,22 @@ function backToWall(){ document.querySelectorAll('.course').forEach(c=>c.classLi
 function pick(el){ el.parentElement.querySelectorAll('.slot').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
 function pickPlan(el){ el.parentElement.querySelectorAll('.plan').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
 
+/* AI 課時段：讀後台 classes.aiSlots（行首「滿｜」＝額滿） */
+function renderAiSlots(cfg){
+  const box=document.getElementById('ai-slots'); if(!box)return;
+  const slots=((cfg.classes||{}).aiSlots)||[];
+  if(!slots.length){box.innerHTML='<div class="hint">時段安排中——想上課先用備註跟我約平日 11:00–16:00。</div>';return;}
+  const esc=t=>String(t).replace(/</g,'&lt;');
+  box.innerHTML=slots.map(x=>{
+    const full=x.startsWith('滿｜');const label=full?x.slice(2):x;
+    return full?`<div class="slot full">${esc(label)} <span class="left">已額滿</span></div>`
+               :`<div class="slot" onclick="pick(this)">${esc(label)} <span class="left">可報名</span></div>`;
+  }).join('');
+}
+
 /* 線上工作坊磚：讀下單系統的 config 自動換裝（後台一個開關管兩邊） */
 fetch('https://ziner-order.pages.dev/api/config').then(r=>r.json()).then(cfg=>{
+  renderAiSlots(cfg);
   const ws=cfg.workshop||{};
   if(!((cfg.workshopEnabled||ws.ctaUrl)&&ws.title))return;   /* CTA 指別的分頁＝優惠照樣開、不用開工作坊籤 */
   const tile=document.getElementById('ws-tile');
