@@ -155,15 +155,15 @@
       <div class="one-liner">實機操作，現場繪製直接印刷帶回家。</div>
     </button>
 
-    <div class="tile closed">
-      <div class="art"><div class="ph ph-gray">
+    <a class="tile closed" id="ws-tile" href="https://ziner-order.pages.dev/workshop" style="text-decoration:none">
+      <div class="art" id="ws-art"><div class="ph ph-gray">
         <span class="tag">MONTHLY SPECIAL</span>
         <span class="big">孔版<br>線上<br>工作坊</span>
         <span class="tag">COMING BACK SOON</span>
       </div></div>
-      <div class="meta"><h2>孔版線上工作坊</h2><span class="stamp closed">本期沒開</span></div>
-      <div class="one-liner">每月優惠方案，下期主題醞釀中。</div>
-    </div>
+      <div class="meta"><h2>孔版線上工作坊</h2><span class="stamp closed" id="ws-stamp">本期沒開</span></div>
+      <div class="one-liner" id="ws-line">每月優惠方案，下期主題醞釀中。</div>
+    </a>
   </div>
 
   <!-- ══ AI 課 ══ -->
@@ -280,6 +280,21 @@ function backToWall(){ document.querySelectorAll('.course').forEach(c=>c.classLi
   document.getElementById('wall').style.display='grid'; window.scrollTo(0,0); }
 function pick(el){ el.parentElement.querySelectorAll('.slot').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
 function pickPlan(el){ el.parentElement.querySelectorAll('.plan').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+
+/* 線上工作坊磚：讀下單系統的 config 自動換裝（後台一個開關管兩邊） */
+fetch('https://ziner-order.pages.dev/api/config').then(r=>r.json()).then(cfg=>{
+  const ws=cfg.workshop||{};
+  if(!(cfg.workshopEnabled&&ws.title))return;
+  const tile=document.getElementById('ws-tile');
+  tile.classList.remove('closed'); tile.dataset.theme='violet';
+  document.getElementById('ws-stamp').className='stamp open-v';
+  document.getElementById('ws-stamp').textContent='開放下單中';
+  document.getElementById('ws-line').textContent=(ws.eyebrow?ws.eyebrow+'・':'')+ws.title+(ws.period?'｜'+ws.period:'');
+  if(ws.heroImg){document.getElementById('ws-art').innerHTML='<img src="'+ws.heroImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
+  else{const big=document.querySelector('#ws-art .big');if(big)big.innerHTML=ws.title.replace(/</g,'&lt;');
+    document.querySelector('#ws-art .ph').className='ph ph-violet';
+    const tags=document.querySelectorAll('#ws-art .tag');if(tags[1])tags[1].textContent=ws.period||'OPEN NOW';}
+}).catch(()=>{});
 </script>
 </body>
 </html>
