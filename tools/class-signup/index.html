@@ -24,6 +24,7 @@
 
   /* ── 海報牆 ── */
   .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:34px; }
+  @media (min-width:900px){ .tiles { grid-template-columns:repeat(3,1fr); } }
   .tile { cursor:pointer; border:none; background:none; text-align:left; font:inherit; color:inherit; }
   .tile .art { aspect-ratio:3/4; border:none; border-radius:6px; overflow:hidden; position:relative;
                transition:transform .18s, box-shadow .18s; }
@@ -189,7 +190,6 @@
     <div class="form">
       <div class="field"><span class="flbl">你的稱呼</span><input type="text" placeholder="怎麼叫你？"></div>
       <div class="field"><span class="flbl">聯絡 Email</span><input type="email" placeholder="請提供 Gmail（Meet 邀請用）"></div>
-      <div class="field"><span class="flbl">社群帳號</span><input type="text" placeholder="IG／Threads／Discord，通知課程資訊用"></div>
       <div class="field"><span class="flbl">你目前使用 AI 的程度</span>
         <select><option>完全沒用過，想從零開始</option><option>有打開過，但不知道怎麼問</option><option>偶爾用來寫文案、整理資料或生圖</option><option>已經會用，想整理成自己的工作流程</option></select>
       </div>
@@ -202,7 +202,12 @@
         </div>
         <div class="hint">一人即開課；平日 11:00–16:00 也可另約，備註跟我說。</div>
       </div>
-      <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea placeholder="想問什麼都可以先寫"></textarea></div>
+      <div class="field"><span class="flbl">有沒有想先問的問題</span><textarea placeholder="想問什麼都可以先寫"></textarea>
+        <div class="hint">報名後主要用 Email 聯繫；想直接找 MUMU 也可以走
+          <a href="https://line.me/R/ti/p/%40257pcqno" target="_blank" rel="noopener" style="color:var(--theme)">官方 LINE</a>、
+          <a href="https://www.instagram.com/zinerstudio/" target="_blank" rel="noopener" style="color:var(--theme)">IG</a> 或
+          <a href="https://discord.gg/M7vXbhAgMr" target="_blank" rel="noopener" style="color:var(--theme)">孔版研究俱樂部 Discord</a>。</div>
+      </div>
       <button class="submit" onclick="alert('（mockup 示意，還沒接後端）')">送出報名</button>
       <div class="pay-note">送出後會自動寄繳費資訊到你的 Email，完成付款才算正式保留名額。</div>
     </div>
