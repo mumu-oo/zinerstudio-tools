@@ -290,7 +290,8 @@ fetch('https://ziner-order.pages.dev/api/config').then(r=>r.json()).then(cfg=>{
   document.getElementById('ws-stamp').className='stamp open-v';
   document.getElementById('ws-stamp').textContent='開放下單中';
   document.getElementById('ws-line').textContent=(ws.eyebrow?ws.eyebrow+'・':'')+ws.title+(ws.period?'｜'+ws.period:'');
-  if(ws.heroImg){document.getElementById('ws-art').innerHTML='<img src="'+ws.heroImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
+  const tImg=ws.tileImg||ws.heroImg;
+  if(tImg){document.getElementById('ws-art').innerHTML='<img src="'+tImg.replace(/"/g,'&quot;')+'" alt="'+ws.title.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block">';}
   else{const big=document.querySelector('#ws-art .big');if(big)big.innerHTML=ws.title.replace(/</g,'&lt;');
     document.querySelector('#ws-art .ph').className='ph ph-violet';
     const tags=document.querySelectorAll('#ws-art .tag');if(tags[1])tags[1].textContent=ws.period||'OPEN NOW';}
