@@ -25,7 +25,9 @@
   /* ── 海報牆 ── */
   .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:34px; }
   @media (min-width:900px){ .tiles { grid-template-columns:repeat(3,1fr); } }
-  .tile { cursor:pointer; border:none; background:none; text-align:left; font:inherit; color:inherit; }
+  .tile { cursor:pointer; border:none; background:none; text-align:left; font:inherit; color:inherit;
+          display:flex; flex-direction:column; justify-content:flex-start; padding:0; }   /* button 預設垂直置中會讓卡片下滑、強制貼頂 */
+  .tile .art { width:100%; }
   .tile .art { aspect-ratio:3/4; border:none; border-radius:6px; overflow:hidden; position:relative;
                transition:transform .18s, box-shadow .18s; }
   .tile:hover .art { transform:translate(-3px,-3px); }
